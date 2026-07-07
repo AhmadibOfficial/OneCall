@@ -1,0 +1,39 @@
+# Environment
+.env
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+
+.idea/
+
+# macOS
+.DS_Store
+
+# Linux
+*.swp
+
+# Coverage
+coverage/
+
+# Docker
+docker-data/
+
+# Node
+node_modules/
+
+# PostgreSQL
+*.db
+
+# Generated
+build/
+
+# Firebase
+firebase-debug.log
+
+# Secrets
+*.pem
+*.key

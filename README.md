@@ -12,7 +12,7 @@ Everything You Need, One Call Away.
 
 ## Overview
 
-OneCall - Nigeria's Super App for Ride Booking, Delivery, Home Services, Marketplace, and Everyday Solutions.
+OneCall is a modern on-demand Super App designed for Nigeria.
 
 Customers can request multiple services from a single application while trusted providers receive and complete jobs through a dedicated provider app.
 

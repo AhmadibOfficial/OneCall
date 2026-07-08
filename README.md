@@ -91,7 +91,7 @@ Version: 0.1.0
 
 ---
 
-## Founder & Chief Systems Architect
+## Co-Founder & Chief Technology Officer (CTO)
 
 Ahmad Ibrahim
 

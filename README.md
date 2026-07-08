@@ -91,7 +91,7 @@ Version: 0.1.0
 
 ---
 
-## Founder
+## Founder & Chief Systems Architect
 
 Ahmad Ibrahim
 

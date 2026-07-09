@@ -69,17 +69,33 @@ The first launch will focus on:
 
 ## Project Structure
 
-```
-onecall/
-│
+`onecall/
 ├── apps/
-├── backend/
+│   ├── mobile/          # Flutter app
+│   ├── backend/         # NestJS API
+│   ├── admin/           # React admin dashboard
+│   └── website/         # Marketing site
+│
 ├── packages/
-├── database/
+│   ├── shared/
+│   ├── ui/
+│   ├── config/
+│   └── types/
+│
 ├── infrastructure/
+│   ├── docker/
+│   ├── nginx/
+│   └── terraform/
+│
 ├── docs/
+│
+├── scripts/
+│
+├── .github/
+│
+├── package.json
+├── pnpm-workspace.yaml
 └── README.md
-```
 
 ---
 

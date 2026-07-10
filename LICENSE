@@ -1,21 +1,91 @@
-MIT License
+# OneCall Proprietary License
 
-Copyright (c) 2026 Ahmad ib
+**Copyright © 2026 OneCall Technologies. All Rights Reserved.**
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## 1. Ownership
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The OneCall platform, including but not limited to its source code, documentation, architecture, algorithms, workflows, user interfaces, databases, APIs, engineering standards, designs, trademarks, graphics, scripts, infrastructure definitions, and all related intellectual property, is the exclusive property of OneCall Technologies.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+All rights not expressly granted are reserved.
+
+---
+
+## 2. No Permission to Use
+
+Unless expressly authorized in writing by OneCall Technologies, no person or organization may:
+
+* Copy any portion of this repository.
+* Modify or create derivative works.
+* Distribute or redistribute the software.
+* Publish the source code or documentation.
+* Sell, sublicense, lease, rent, or commercialize any part of the project.
+* Reverse engineer or attempt to reconstruct proprietary components where prohibited by applicable law.
+* Use the OneCall name, logo, or branding without prior written permission.
+
+---
+
+## 3. Confidential Information
+
+This repository may contain confidential business information, engineering methodologies, architectural designs, and proprietary processes.
+
+Access to the repository does not transfer ownership or grant any intellectual property rights.
+
+---
+
+## 4. Internal Development
+
+Authorized contributors may access and modify the software solely for approved OneCall development activities and in accordance with project policies.
+
+All contributions become the exclusive intellectual property of OneCall Technologies unless otherwise agreed in writing.
+
+---
+
+## 5. Contributions
+
+By submitting code, documentation, designs, or other materials to this repository, contributors represent that they have the necessary rights to do so and agree that such contributions may be incorporated into the project under this proprietary license.
+
+---
+
+## 6. Trademarks
+
+"OneCall," associated logos, branding, product names, and service names are trademarks or registered trademarks of OneCall Technologies and may not be used without prior written authorization.
+
+---
+
+## 7. No Warranty
+
+This software is provided "AS IS," without warranties of any kind, whether express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, title, or non-infringement.
+
+---
+
+## 8. Limitation of Liability
+
+To the fullest extent permitted by applicable law, OneCall Technologies shall not be liable for any direct, indirect, incidental, consequential, special, exemplary, or punitive damages arising from the use of, or inability to use, this software.
+
+---
+
+## 9. Termination
+
+Any unauthorized use of this software automatically terminates any permission previously granted to access or use the repository.
+
+OneCall Technologies reserves the right to pursue all legal remedies available under applicable law.
+
+---
+
+## 10. Governing Law
+
+This license shall be governed by the laws applicable in the jurisdiction where OneCall Technologies is organized, unless otherwise required by applicable law.
+
+---
+
+## 11. Contact
+
+For licensing inquiries, commercial partnerships, or requests for written permission, contact OneCall Technologies through its official business channels.
+
+---
+
+**OneCall Technologies**
+
+Building trusted technology for Africa's digital future.
+
+**All Rights Reserved.**

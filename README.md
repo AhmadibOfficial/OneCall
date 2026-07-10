@@ -1,118 +1,319 @@
 # OneCall
 
-<p align="center">
-  <img src="docs/assets/logo.png" width="180">
-</p>
+> **Everything You Need, One Call Away.**
 
-<h2 align="center">
-Everything You Need, One Call Away.
-</h2>
+OneCall is a next-generation on-demand services platform designed to connect customers with trusted service providers through a unified digital ecosystem. The platform integrates transportation, home services, professional services, logistics, marketplace capabilities, digital payments, advertising, and analytics into a single scalable platform.
 
 ---
 
-## Overview
+# Vision
 
-OneCall is a modern on-demand Super App designed for Nigeria.
-
-Customers can request multiple services from a single application while trusted providers receive and complete jobs through a dedicated provider app.
-
-The first launch will focus on:
-
-- Kaduna
-- Abuja
+To become Africa's most trusted platform for connecting people with services while building technology that creates economic opportunities for millions.
 
 ---
 
-## Services
+# Mission
 
-- 🚕 Ride Booking
-- 📦 Parcel Delivery
-- 🍔 Food Delivery
-- 🛒 Grocery & Provision
-- 🥘 Soup Ingredients
-- 👕 Laundry
-- ✂️ Tailoring
-- 👞 Shoe Repair
-- 🔧 Plumbing
-- ⚡ Electrical
-- ☀️ Solar Installation
-- 🪚 Carpentry
-- 🎨 Painting
-- 🚗 Auto Mechanic
-- 💇 Beauty & Barber
-- 🧹 Home Cleaning
+Build a secure, scalable, and intelligent engineering platform that simplifies everyday life by connecting customers, service providers, businesses, and communities through one digital ecosystem.
 
 ---
 
-## Technology Stack
+# Engineering Philosophy
 
-### Mobile
+At OneCall, software is treated as a long-term business asset.
 
-- Flutter
-- Riverpod
-- GoRouter
+We build:
 
-### Backend
+* Systems before features
+* Platforms before products
+* Documentation before assumptions
+* Automation before repetition
+* Security by design
+* Quality by default
 
-- NestJS
-- PostgreSQL
-- Redis
-- Socket.IO
-
-### Infrastructure
-
-- Oracle Cloud
-- Docker
-- Nginx
+Engineering decisions are guided by the **OneCall Git Engineering Standard (OGES)** and supporting architecture documents.
 
 ---
 
-## Project Structure
+# Platform Components
 
-`onecall/
-├── apps/
-│   ├── mobile/          # Flutter app
-│   ├── backend/         # NestJS API
-│   ├── admin/           # React admin dashboard
-│   └── website/         # Marketing site
+```text
+OneCall
 │
-├── packages/
-│   ├── shared/
-│   ├── ui/
-│   ├── config/
-│   └── types/
-│
-├── infrastructure/
-│   ├── docker/
-│   ├── nginx/
-│   └── terraform/
-│
-├── docs/
-│
-├── scripts/
+├── Customer Mobile Application
+├── Provider Mobile Application
+├── Admin Web Portal
+├── Backend Services
+├── Platform Services
+├── Shared Packages
+├── Infrastructure
+├── Engineering Documentation
+└── Automation
+```
+
+---
+
+# Repository Structure
+
+```text
+onecall/
 │
 ├── .github/
+├── apps/
+│   ├── customer_app/
+│   ├── provider_app/
+│   └── admin_web/
 │
-├── package.json
-├── pnpm-workspace.yaml
+├── backend/
+├── platform/
+├── domains/
+├── packages/
+├── database/
+├── infrastructure/
+├── docs/
+├── engineering/
+├── scripts/
+├── tests/
+├── tools/
+│
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── CODE_OF_CONDUCT.md
+├── LICENSE
 └── README.md
+```
 
 ---
 
-## Status
+# Technology Stack
 
-🚧 Under Active Development
+## Frontend
 
-Version: 0.1.0
+* Flutter
+* Dart
+
+## Backend
+
+* NestJS
+* TypeScript
+
+## Database
+
+* PostgreSQL
+* Redis
+
+## Infrastructure
+
+* Docker
+* GitHub Actions
+* Oracle Cloud Infrastructure (OCI)
+
+## Architecture
+
+* Domain-Driven Design (DDD)
+* Clean Architecture
+* Event-Driven Architecture
+* REST APIs
+* Background Workers
+* Modular Monolith (initially), with a path toward microservices where justified
 
 ---
 
-## Co-Founder & Chief Technology Officer (CTO)
+# Core Business Domains
 
-Ahmad Ibrahim
+* Authentication
+* Customer Management
+* Provider Management
+* Booking Engine
+* Wallet
+* Payments
+* Advertisement
+* Notifications
+* Analytics
+* Administration
 
 ---
 
-## License
+# Branch Strategy
 
-MIT License
+Permanent branches:
+
+```text
+main
+develop
+```
+
+Capability branches:
+
+```text
+capability/authentication
+capability/provider
+capability/customer
+capability/booking
+capability/payment
+capability/wallet
+capability/advertisement
+capability/notification
+capability/admin
+capability/analytics
+capability/infrastructure
+```
+
+Releases:
+
+```text
+release/vX.Y.Z
+hotfix/*
+```
+
+---
+
+# Development Workflow
+
+```text
+Issue
+    ↓
+Architecture
+    ↓
+Capability Branch
+    ↓
+Development
+    ↓
+Pull Request
+    ↓
+Code Review
+    ↓
+Testing
+    ↓
+Merge into develop
+    ↓
+Release Branch
+    ↓
+Production
+```
+
+---
+
+# Commit Convention
+
+OneCall follows Conventional Commits.
+
+Examples:
+
+```text
+feat(authentication):
+feat(booking):
+fix(wallet):
+perf(search):
+security(jwt):
+docs(prd):
+test(payment):
+infra(oracle):
+build(ci):
+```
+
+---
+
+# Continuous Integration
+
+Every push triggers automated quality checks:
+
+* Checkout
+* Dependency Installation
+* Static Analysis
+* Formatting Validation
+* Linting
+* Unit Tests
+* Integration Tests
+* Security Scanning
+* Build Verification
+* Artifact Generation
+
+A pull request cannot be merged unless all required checks pass.
+
+---
+
+# Engineering Standards
+
+The repository follows internal engineering standards, including:
+
+* OGES – OneCall Git Engineering Standard
+* Repository Rules
+* Pull Request Standards
+* Architecture Decision Records (ADRs)
+* Documentation Standards
+* Security Standards
+* Release Management
+
+---
+
+# Security
+
+Security is part of the engineering process.
+
+The repository includes:
+
+* Dependabot
+* Secret Scanning
+* Push Protection
+* Code Scanning
+* Branch Protection Rules
+* Mandatory Pull Requests
+
+Please report security vulnerabilities privately through the repository's security reporting process.
+
+---
+
+# Documentation
+
+Project documentation is organized under:
+
+```text
+docs/
+engineering/
+```
+
+These directories contain:
+
+* Product Requirements
+* Architecture
+* API Documentation
+* Engineering Standards
+* Design Decisions
+* Development Guides
+* Operational Runbooks
+
+---
+
+# Contributing
+
+Please read **CONTRIBUTING.md** before opening an issue or submitting a pull request.
+
+All contributions must:
+
+* Follow repository standards
+* Pass automated checks
+* Include appropriate documentation
+* Reference related issues
+* Receive required approvals before merging
+
+---
+
+# License
+
+This project is licensed under the terms specified in the **LICENSE** file.
+
+---
+
+# Status
+
+**Current Stage:** Engineering Foundation
+
+The platform is under active development, with core architecture, engineering standards, and foundational services being established.
+
+---
+
+## OneCall
+
+**Everything You Need, One Call Away.**
+

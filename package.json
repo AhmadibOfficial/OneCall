@@ -1,0 +1,15 @@
+{
+  "name": "onecall",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@11.10.0",
+  "scripts": {
+    "backend": "pnpm --dir apps/backend start:dev",
+    "backend:dev": "pnpm --dir apps/backend start:dev",
+    "backend:build": "pnpm --dir apps/backend build",
+    "mobile": "cd apps/mobile && flutter run",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  }
+}
+

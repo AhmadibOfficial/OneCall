@@ -1,8 +1,5 @@
-<<<<<<< HEAD
+
 # onecall
-
-A new Flutter project.
-
 ## Getting Started
 
 This project is a starting point for a Flutter application.
@@ -16,7 +13,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
-=======
+
 # OneCall
 
 > **Everything You Need, One Call Away.**
@@ -336,11 +333,11 @@ The platform is under active development, with core architecture, engineering st
 
 **Everything You Need, One Call Away.**
 
-<<<<<<< HEAD
-=======
+
+
 MIT License
-<<<<<<< HEAD
-=======
+
+
 # onecall
 
 A new Flutter project.
@@ -358,8 +355,8 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
->>>>>>> 85552d0 (Initial project setup for OneCall Super App)
+>>>>>> 85552d0 (Initial project setup for OneCall Super App)
 >>>>>>> 9838f8e (Initial project setup for OneCall Super App)
-=======
+
 >>>>>>> 8cf351bda566ca81de2aa7af350b74149fc9e819
 >>>>>>> 0142318 (refactor(monorepo): migrate project to Turborepo structure)

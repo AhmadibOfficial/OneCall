@@ -1,0 +1,31 @@
+{
+  "started": "2026-10-13T17:22:38.331Z",
+  "finished": "2026-10-13T17:22:58.795Z",
+  "success": true,
+  "database": "Disposable PGlite, one Prisma connection",
+  "redis": "native Redis",
+  "vendorCalls": "mocked",
+  "checks": [
+    {
+      "label": "Prisma migrations",
+      "code": 0
+    },
+    {
+      "label": "Social authentication and RSA verification",
+      "code": 0
+    },
+    {
+      "label": "Authentication security regression",
+      "code": 0
+    }
+  ],
+  "featureTests": 36,
+  "authRegressionTests": 12,
+  "legalPublicTests": 4,
+  "migrationCount": 17,
+  "migrationPreservation": "existing user credentials, provider approval and booking rows unchanged through four additive migrations",
+  "installerTests": "four scenarios passed; native commands and database backup tools stubbed",
+  "flutter": "SDK unavailable remotely; syntax formatting only; analyzer/widgets/APK/iOS acceptance pending",
+  "providerConsent": "mocked; real Google/Apple credentials and HTTPS callbacks unconfigured",
+  "production": "social sign-in gated; payments ads Amboy deferred"
+}

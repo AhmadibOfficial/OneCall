@@ -1,0 +1,82 @@
+name: Kaduna pilot verification
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: onecall_test
+          POSTGRES_PASSWORD: onecall_test_only
+          POSTGRES_DB: onecall_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U onecall_test -d onecall_test"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+    env:
+      NODE_ENV: test
+      APP_NAME: OneCall
+      APP_VERSION: 0.1.0
+      API_PREFIX: api/v1
+      DATABASE_URL: postgresql://onecall_test:onecall_test_only@127.0.0.1:5432/onecall_test
+      DATABASE_POOL_SIZE: 10
+      REDIS_URL: redis://127.0.0.1:6379/0
+      REDIS_TEST_URL: redis://127.0.0.1:6379/0
+      JWT_SECRET: onecall-disposable-ci-access-secret-2026
+      JWT_REFRESH_SECRET: onecall-disposable-ci-refresh-secret-2026
+      PAYMENT_WEBHOOK_SECRET: onecall-disposable-ci-webhook-secret-2026
+      ONECALL_ALLOW_TEST_DATABASE: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: node apps/backend/scripts/verify-native-services.cjs
+      - run: pnpm --filter backend prisma:validate
+      - run: pnpm --filter backend prisma:deploy
+      - run: python3 scripts/generate-legal-pages.py --check
+      - run: pnpm --filter backend build
+      - run: pnpm --filter backend test:legal
+      - run: pnpm --filter backend exec tsc --project test/tsconfig.json --noEmit
+      - run: pnpm --filter backend lint:pilot
+      - run: pnpm --filter backend lint:delivery
+      - run: pnpm --filter backend test --runInBand --silent
+      - run: pnpm --filter backend test:pilot
+      - run: pnpm --filter backend test:delivery
+  flutter:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'
+          channel: stable
+          cache: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build web --release --dart-define=ONECALL_API_URL=https://api.example.com/api/v1
+      - run: flutter build apk --debug --dart-define=ONECALL_API_URL=https://api.example.com/api/v1

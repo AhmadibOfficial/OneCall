@@ -1,0 +1,43 @@
+{
+  "started": "2026-10-13T21:20:36.055Z",
+  "finished": "2026-10-13T21:20:52.324Z",
+  "success": true,
+  "database": "Disposable PGlite, one Prisma connection",
+  "redis": "native Redis",
+  "vendorCalls": "mocked",
+  "checks": [
+    {
+      "label": "Prisma migrations",
+      "code": 0
+    },
+    {
+      "label": "Provider approval and complete booking HTTP operations",
+      "code": 0
+    },
+    {
+      "label": "Production delivery adapter and verification/reset journey",
+      "code": 0
+    },
+    {
+      "label": "Social/photo/privacy HTTP regression and RSA",
+      "code": 0
+    },
+    {
+      "label": "Persistent storage gates",
+      "code": 0
+    }
+  ],
+  "adminBookingTests": 12,
+  "verificationDeliveryTests": 17,
+  "socialPhotoPrivacyRegressionTests": 36,
+  "storageGateTests": 3,
+  "readinessTests": 3,
+  "legalTests": 4,
+  "blueprints": "free and opt-in paid draft pass official Render JSON Schema 2020-12; Render CLI not run",
+  "docker": "Docker unavailable: image not built",
+  "flutter": "Official Flutter 3.44.4 SHA256 verified; Dart VM BUS_ADRERR before project execution; analyzer/widgets/APK/iOS not run",
+  "realProviders": "mocked; no real messages sent",
+  "deployment": "not provisioned; current source not yet merged to GitHub",
+  "signedRelease": "owned application ID and private key required; AAB not built",
+  "installer": "four scenarios passed with native commands and backup programs stubbed"
+}

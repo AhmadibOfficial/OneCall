@@ -1,0 +1,32 @@
+# Local services only; ports are bound to loopback. Do not use these credentials in production.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: onecall_local
+      POSTGRES_PASSWORD: onecall_local_only
+      POSTGRES_DB: onecall_pilot
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - pilot_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onecall_local -d onecall_pilot"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:63799:6379"
+    volumes:
+      - pilot_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+volumes:
+  pilot_postgres:
+  pilot_redis:

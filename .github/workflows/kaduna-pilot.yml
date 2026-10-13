@@ -59,6 +59,11 @@ jobs:
       - run: pnpm --filter backend test --runInBand --silent
       - run: pnpm --filter backend test:pilot
       - run: pnpm --filter backend test:delivery
+      - run: pnpm --filter backend test:nigeria
+      - run: pnpm --filter backend test:admin
+      - run: pnpm --filter backend test:social
+      - run: pnpm --filter backend test:operations
+      - run: pnpm --filter backend exec node --test test/release-readiness.test.cjs
   flutter:
     runs-on: ubuntu-latest
     defaults:
@@ -80,3 +85,10 @@ jobs:
       - run: flutter test
       - run: flutter build web --release --dart-define=ONECALL_API_URL=https://api.example.com/api/v1
       - run: flutter build apk --debug --dart-define=ONECALL_API_URL=https://api.example.com/api/v1
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build staging API and delivery image
+        run: docker build --file deploy/Dockerfile --tag onecall-staging:ci .

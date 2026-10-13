@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../core/api.dart';
 import 'common.dart';
+import 'resource_widgets.dart';
 
 class BookingPhotos extends StatefulWidget {
   const BookingPhotos({
@@ -36,15 +37,17 @@ class _BookingPhotosState extends State<BookingPhotos> {
         imageQuality: 80,
       );
       if (file == null) return;
-      if (await file.length() > 5 * 1024 * 1024)
+      if (await file.length() > 5 * 1024 * 1024) {
         throw const ApiFailure('Choose a photo smaller than 5 MB.');
+      }
       final bytes = await file.readAsBytes();
       await widget.api.uploadBookingPhoto(widget.orderId, bytes);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _photos = _load();
           _error = null;
         });
+      }
     } catch (e) {
       if (mounted) setState(() => _error = errorMessage(e));
     } finally {
@@ -101,11 +104,12 @@ class _BookingPhotosState extends State<BookingPhotos> {
           FutureBuilder<List<dynamic>>(
             future: _photos,
             builder: (context, snapshot) {
-              if (snapshot.hasError)
+              if (snapshot.hasError) {
                 return TextButton(
                   onPressed: () => setState(() => _photos = _load()),
                   child: const Text('Retry loading photos'),
                 );
+              }
               if (!snapshot.hasData) return const LinearProgressIndicator();
               final values = snapshot.data!;
               return Wrap(

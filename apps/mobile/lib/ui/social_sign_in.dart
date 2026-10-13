@@ -1,3 +1,4 @@
+import 'input_dialogs.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -55,10 +56,11 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
             TargetPlatform.iOS,
           ].contains(defaultTargetPlatform) ||
           (provider == 'apple' && defaultTargetPlatform != TargetPlatform.iOS);
-      if (config[browser ? '${provider}Browser' : provider] != true)
+      if (config[browser ? '${provider}Browser' : provider] != true) {
         throw const ApiFailure(
           'This sign-in option is not configured yet. You can use email and password.',
         );
+      }
       final attempt = Map<String, dynamic>.from(
         await widget.api.request(
               'POST',
@@ -73,12 +75,14 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
       if (browser) {
         final uri = Uri.parse(attempt['authorizationUrl'] as String);
         if (uri.scheme != 'https' ||
-            !['accounts.google.com', 'appleid.apple.com'].contains(uri.host))
+            !['accounts.google.com', 'appleid.apple.com'].contains(uri.host)) {
           throw const ApiFailure('Sign-in configuration is invalid.');
-        if (!await launchUrl(uri, mode: LaunchMode.externalApplication))
+        }
+        if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
           throw const ApiFailure(
             'Allow the sign-in browser window and try again.',
           );
+        }
         final deadline = DateTime.now().add(const Duration(minutes: 5));
         while (mounted && DateTime.now().isBefore(deadline)) {
           await Future<void>.delayed(const Duration(seconds: 2));
@@ -93,13 +97,15 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
                 as Map,
           );
           if (result['pending'] == true) continue;
-          if (result['error'] is String)
+          if (result['error'] is String) {
             throw ApiFailure(result['error'] as String);
+          }
           await _finish(result);
           return;
         }
-        if (mounted)
+        if (mounted) {
           throw const ApiFailure('Sign-in attempt expired. Try again.');
+        }
         return;
       }
       String? token, code;
@@ -108,19 +114,21 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
           'ONECALL_GOOGLE_SERVER_CLIENT_ID',
         );
         const iosId = String.fromEnvironment('ONECALL_GOOGLE_IOS_CLIENT_ID');
-        if (serverId.isEmpty)
+        if (serverId.isEmpty) {
           throw const ApiFailure(
             'Google sign-in needs the OneCall OAuth client configuration. Use email and password.',
           );
+        }
         _googleInitialization ??= GoogleSignIn.instance.initialize(
           serverClientId: serverId,
           clientId: iosId.isEmpty ? null : iosId,
         );
         await _googleInitialization;
-        if (!GoogleSignIn.instance.supportsAuthenticate())
+        if (!GoogleSignIn.instance.supportsAuthenticate()) {
           throw const ApiFailure(
             'Google sign-in is unavailable on this device.',
           );
+        }
         final account = await GoogleSignIn.instance.authenticate();
         token = account.authentication.idToken;
       } else {
@@ -134,10 +142,11 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
         token = credential.identityToken;
         code = credential.authorizationCode;
       }
-      if (token == null || token.isEmpty)
+      if (token == null || token.isEmpty) {
         throw const ApiFailure(
           'No sign-in credential was returned. Try again.',
         );
+      }
       final response = Map<String, dynamic>.from(
         await widget.api.request(
               'POST',
@@ -147,26 +156,28 @@ class _SocialSignInButtonsState extends State<SocialSignInButtons> {
                 'provider': provider,
                 'challenge': attempt['challenge'],
                 'idToken': token,
-                if (code != null) 'authorizationCode': code,
+                'authorizationCode': ?code,
               },
             )
             as Map,
       );
       await _finish(response);
     } on GoogleSignInException catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => _message = e.code == GoogleSignInExceptionCode.canceled
               ? 'Google sign-in cancelled.'
               : 'Google sign-in could not complete. Check the app configuration or use email.',
         );
+      }
     } on SignInWithAppleAuthorizationException catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => _message = e.code == AuthorizationErrorCode.canceled
               ? 'Apple sign-in cancelled.'
               : 'Apple sign-in could not complete. Use email or try again.',
         );
+      }
     } catch (e) {
       if (mounted) setState(() => _message = errorMessage(e));
     } finally {
@@ -257,40 +268,12 @@ class _LinkedSignInPageState extends State<LinkedSignInPage> {
   int _revision = 0;
   bool _busy = false;
   Future<void> _unlink(String provider) async {
-    final password = TextEditingController();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Unlink $provider?'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Confirm your OneCall password to keep another way to sign in. This signs you out of all OneCall devices.',
-            ),
-            TextField(
-              controller: password,
-              obscureText: true,
-              maxLength: 128,
-              decoration: const InputDecoration(labelText: 'OneCall password'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Unlink'),
-          ),
-        ],
-      ),
+    final proof = await confirmPassword(
+      context,
+      title: 'Unlink $provider',
+      action: 'Unlink',
     );
-    final proof = password.text;
-    password.dispose();
-    if (!mounted || confirmed != true) return;
+    if (!mounted || proof == null) return;
     setState(() => _busy = true);
     try {
       await widget.api.request(

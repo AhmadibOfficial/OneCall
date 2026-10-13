@@ -76,10 +76,7 @@ class _TrackingPageState extends State<TrackingPage>
         return;
       }
       final result =
-          await widget.api.request(
-                'GET',
-                '/orders/' + widget.orderId + '/tracking',
-              )
+          await widget.api.request('GET', '/orders/${widget.orderId}/tracking')
               as Map;
       if (mounted) {
         setState(() {
@@ -202,7 +199,7 @@ class _TrackingPageState extends State<TrackingPage>
     try {
       await widget.api.request(
         'POST',
-        '/orders/' + widget.orderId + '/location',
+        '/orders/${widget.orderId}/location',
         body: {
           'latitude': p.latitude,
           'longitude': p.longitude,
@@ -323,9 +320,7 @@ class _TrackingPageState extends State<TrackingPage>
                   const Icon(Icons.location_on, color: teal, size: 54),
                   const SizedBox(height: 16),
                   Text(
-                    _coordinates.latitude.toStringAsFixed(5) +
-                        ', ' +
-                        _coordinates.longitude.toStringAsFixed(5),
+                    '${_coordinates.latitude.toStringAsFixed(5)}, ${_coordinates.longitude.toStringAsFixed(5)}',
                     style: const TextStyle(fontSize: 22, color: navy),
                   ),
                   const Text('Provider reported position'),
@@ -337,23 +332,17 @@ class _TrackingPageState extends State<TrackingPage>
             Text(
               stale
                   ? 'This position is older than two minutes. Refresh for an update.'
-                  : 'Last update: ' +
-                        lastUpdate!.toLocal().toString().split('.').first,
+                  : 'Last update: ${lastUpdate!.toLocal().toString().split('.').first}',
             ),
             Text(
-              'Accuracy: ' +
-                  (_location!['accuracy'] as num).toStringAsFixed(0) +
-                  ' metres',
+              'Accuracy: ${(_location!['accuracy'] as num).toStringAsFixed(0)} metres',
             ),
             OutlinedButton.icon(
               onPressed: () => openExternal(
                 context,
                 Uri.https('www.google.com', '/maps/search/', {
                   'api': '1',
-                  'query':
-                      _coordinates.latitude.toString() +
-                      ',' +
-                      _coordinates.longitude.toString(),
+                  'query': '${_coordinates.latitude},${_coordinates.longitude}',
                 }),
               ),
               icon: const Icon(Icons.map_outlined),

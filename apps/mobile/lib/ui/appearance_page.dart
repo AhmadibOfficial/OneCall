@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'common.dart';
+import 'resource_widgets.dart';
 
 class AppearancePreferences extends ChangeNotifier {
   static final instance = AppearancePreferences();
   double textSize = 1;
   bool reducedMotion = false;
   Future<void> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getDouble('onecall.appearance.textSize');
-    textSize = [1.0, 1.15, 1.3].contains(saved) ? saved! : 1;
-    reducedMotion = prefs.getBool('onecall.appearance.reducedMotion') ?? false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getDouble('onecall.appearance.textSize');
+      textSize = [1.0, 1.15, 1.3].contains(saved) ? saved! : 1;
+      reducedMotion =
+          prefs.getBool('onecall.appearance.reducedMotion') ?? false;
+    } catch (_) {
+      // A stale or unavailable preference store must not prevent app startup.
+      textSize = 1;
+      reducedMotion = false;
+    }
     notifyListeners();
   }
 
@@ -85,11 +92,12 @@ class AppearancePage extends StatelessWidget {
                 try {
                   await AppearancePreferences.instance.setTextSize(option.$1);
                 } catch (e) {
-                  if (context.mounted)
+                  if (context.mounted) {
                     notice(
                       context,
                       'Could not save appearance preference. Try again.',
                     );
+                  }
                 }
               },
             ),
@@ -103,11 +111,12 @@ class AppearancePage extends StatelessWidget {
               try {
                 await AppearancePreferences.instance.setReducedMotion(value);
               } catch (e) {
-                if (context.mounted)
+                if (context.mounted) {
                   notice(
                     context,
                     'Could not save appearance preference. Try again.',
                   );
+                }
               }
             },
           ),

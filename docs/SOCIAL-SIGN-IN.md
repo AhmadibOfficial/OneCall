@@ -36,7 +36,7 @@ If an existing password account uses the provider email, sign in with that passw
 
 ## Safe source installation
 
-The installer requires the existing local pilot configuration, checks changed files, preserves unrelated edits, and backs up affected source and the running onecall-kaduna-local PostgreSQL database before applying the additive migration. It does not change .env or enable social login. Stop the backend and close the emulator first. It runs backend generation/build, RSA verification tests, public legal HTTP checks and native Flutter analysis/tests. SDK checks and APK building must happen on Kali; they have not run in this remote workspace.
+The installer requires the existing local pilot configuration, checks changed files, preserves unrelated edits, and backs up affected source and the running onecall-kaduna-local PostgreSQL database before applying the additive migration. It does not change .env or enable social login. Stop the backend and close the emulator first. It runs backend generation/build, RSA verification tests, public legal HTTP checks and native Flutter analysis/tests. Flutter 3.44.4 analysis and all 24 tests now pass remotely; Android/iOS builds, real provider consent and emulator acceptance still need your device configuration.
 
 SocialIdentity and SocialAuthChallenge are new tables. No existing account/order columns are rewritten. Native PostgreSQL concurrency and actual Google/Apple consent were not verified remotely. Backend evidence uses disposable PGlite (one connection), native Redis, real HTTP/RSA and mocked provider HTTPS calls.
 

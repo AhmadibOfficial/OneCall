@@ -342,7 +342,12 @@ class OneCallClient extends OneCallApi {
         await _clear();
       }
     } catch (_) {
-      await _clear();
+      try {
+        await _clear();
+      } catch (_) {
+        // Local credentials were cleared before persistence. A locked or
+        // unavailable secure store must not crash signed-out startup.
+      }
     } finally {
       _restoring = false;
       notifyListeners();
@@ -422,8 +427,9 @@ class OneCallClient extends OneCallApi {
 
   @override
   Future<void> uploadBookingPhoto(String orderId, List<int> bytes) async {
-    if (bytes.isEmpty || bytes.length > 5 * 1024 * 1024)
+    if (bytes.isEmpty || bytes.length > 5 * 1024 * 1024) {
       throw const ApiFailure('Choose a photo smaller than 5 MB.');
+    }
     await _send(
       'POST',
       '/orders/$orderId/photos',
@@ -533,7 +539,7 @@ class OneCallClient extends OneCallApi {
             'destinationAddress': destinationAddress.trim(),
           if (scheduledAt != null)
             'scheduledAt': scheduledAt.toUtc().toIso8601String(),
-          if (vehicleType != null) 'vehicleType': vehicleType,
+          'vehicleType': ?vehicleType,
         },
       ),
     ),

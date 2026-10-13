@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../core/api.dart';
 import 'common.dart';
 import 'resource_widgets.dart';
+import 'input_dialogs.dart';
 
 class PrivacyRequestsPage extends StatefulWidget {
   const PrivacyRequestsPage({super.key, required this.api});
@@ -16,70 +17,14 @@ class _PrivacyRequestsPageState extends State<PrivacyRequestsPage> {
   int _revision = 0;
   bool _busy = false;
   Future<void> _request() async {
-    final text = TextEditingController();
-    String kind = 'ACCESS';
-    final sent = await showDialog<bool>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialog) => AlertDialog(
-          title: const Text('Privacy request'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButton<String>(
-                value: kind,
-                items: const [
-                  DropdownMenuItem(
-                    value: 'ACCESS',
-                    child: Text('Access my data'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'CORRECTION',
-                    child: Text('Correct my data'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'DELETION',
-                    child: Text('Delete my account/data'),
-                  ),
-                ],
-                onChanged: (v) => setDialog(() => kind = v!),
-              ),
-              TextField(
-                controller: text,
-                maxLength: 2000,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Explain your request',
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Send request'),
-            ),
-          ],
-        ),
-      ),
-    );
-    final message = text.text.trim();
-    text.dispose();
-    if (!mounted || sent != true) return;
-    if (message.length < 5) {
-      notice(context, 'Add a short explanation.');
-      return;
-    }
+    final draft = await composePrivacyRequest(context);
+    if (!mounted || draft == null) return;
     setState(() => _busy = true);
     try {
       await widget.api.request(
         'POST',
         '/account/privacy/requests',
-        body: {'kind': kind, 'message': message},
+        body: {'kind': draft.kind, 'message': draft.message},
       );
       if (mounted) setState(() => _revision++);
     } catch (e) {
@@ -90,34 +35,12 @@ class _PrivacyRequestsPageState extends State<PrivacyRequestsPage> {
   }
 
   Future<void> _snapshot() async {
-    final password = TextEditingController();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Account data snapshot'),
-        content: TextField(
-          controller: password,
-          obscureText: true,
-          maxLength: 128,
-          decoration: const InputDecoration(
-            labelText: 'Confirm OneCall password',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('View data'),
-          ),
-        ],
-      ),
+    final proof = await confirmPassword(
+      context,
+      title: 'Account data snapshot',
+      action: 'View data',
     );
-    final proof = password.text;
-    password.dispose();
-    if (!mounted || confirmed != true) return;
+    if (!mounted || proof == null) return;
     setState(() => _busy = true);
     try {
       final data = await widget.api.request(

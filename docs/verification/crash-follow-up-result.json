@@ -1,0 +1,28 @@
+{
+  "started": "2026-10-13T21:53:15.812Z",
+  "finished": "2026-10-13T21:53:28.611Z",
+  "success": true,
+  "database": "Disposable PGlite, one Prisma connection",
+  "redis": "native Redis",
+  "vendorCalls": "mocked",
+  "checks": [
+    {
+      "label": "Prisma migrations",
+      "code": 0
+    },
+    {
+      "label": "Full backend security regression",
+      "code": 0
+    }
+  ],
+  "flutterVersion": "3.44.4",
+  "dartVersion": "3.12.2",
+  "flutterAnalyzer": "No issues found",
+  "flutterTests": 24,
+  "backendSecurityTests": 138,
+  "sdkCrash": "repaired extracted Dart snapshots and rebuilt Flutter tool cache; no laptop SDK changed",
+  "metadataSafety": "built-in CI mode short-circuits metadata bot detection; telemetry suppressed",
+  "android": "APK build and emulator acceptance not yet performed",
+  "providers": "identity/email/SMS calls mocked; live credentials unconfigured",
+  "webReleaseBuild": "passed with compile-only placeholder HTTPS API URL; backend not deployed"
+}

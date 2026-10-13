@@ -233,20 +233,24 @@ class _HomePageState extends State<HomePage> {
         ? null
         : AppBar(
             title: Text(
-              [
-                'Home',
-                'Bookings',
-                'Chat',
-                'Notifications',
-                'Profile',
-              ][_tab],
+              ['Home', 'Bookings', 'Chat', 'Notifications', 'Profile'][_tab],
             ),
             actions: _tab == 2 && widget.api.user != null
-                ? [IconButton(
-                    tooltip: 'Favorites',
-                    icon: const Icon(Icons.favorite_border),
-                    onPressed: () => Navigator.push<void>(context, MaterialPageRoute<void>(builder: (_) => Scaffold(appBar: AppBar(title: const Text('Favorites')), body: _favoriteList()))),
-                  )]
+                ? [
+                    IconButton(
+                      tooltip: 'Favorites',
+                      icon: const Icon(Icons.favorite_border),
+                      onPressed: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => Scaffold(
+                            appBar: AppBar(title: const Text('Favorites')),
+                            body: _favoriteList(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ]
                 : _tab == 3 && widget.api.user != null
                 ? [
                     TextButton(
@@ -281,7 +285,10 @@ class _HomePageState extends State<HomePage> {
         verified: true,
         child: BookingsPanel(api: widget.api),
       ),
-      2 => PrivateGate(api: widget.api, child: ChatInboxPanel(api: widget.api)),
+      2 => PrivateGate(
+        api: widget.api,
+        child: ChatInboxPanel(api: widget.api),
+      ),
       3 => PrivateGate(
         api: widget.api,
         child: ResourceList(
@@ -304,38 +311,38 @@ class _HomePageState extends State<HomePage> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(36),
         child: NavigationBar(
-      height: 72,
-      backgroundColor: Colors.white,
-      indicatorColor: const Color(0xFFE7F0FF),
-      selectedIndex: _tab,
-      onDestinationSelected: (index) => setState(() => _tab = index),
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.receipt_long_outlined),
-          selectedIcon: Icon(Icons.receipt_long),
-          label: 'Bookings',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.chat_bubble_outline),
-          selectedIcon: Icon(Icons.chat_bubble),
-          label: 'Chat',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.notifications_none),
-          selectedIcon: Icon(Icons.notifications),
-          label: 'Updates',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
+          height: 72,
+          backgroundColor: Colors.white,
+          indicatorColor: const Color(0xFFE7F0FF),
+          selectedIndex: _tab,
+          onDestinationSelected: (index) => setState(() => _tab = index),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.receipt_long_outlined),
+              selectedIcon: Icon(Icons.receipt_long),
+              label: 'Bookings',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.chat_bubble_outline),
+              selectedIcon: Icon(Icons.chat_bubble),
+              label: 'Chat',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.notifications_none),
+              selectedIcon: Icon(Icons.notifications),
+              label: 'Updates',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ],
         ),
       ),
     ),
@@ -343,7 +350,7 @@ class _HomePageState extends State<HomePage> {
   Widget _home() {
     final filtered = _services
         .where(
-          (s) => (s.name + ' ' + s.description).toLowerCase().contains(
+          (s) => ('${s.name} ${s.description}').toLowerCase().contains(
             _search.toLowerCase(),
           ),
         )
@@ -684,7 +691,7 @@ class _HomePageState extends State<HomePage> {
         try {
           await widget.api.request(
             'POST',
-            '/notifications/' + item['id'].toString() + '/read',
+            '/notifications/${item['id']}/read',
             body: {},
           );
           if (!mounted) {
@@ -742,7 +749,7 @@ class _AllServicesPageState extends State<AllServicesPage> {
   Widget build(BuildContext context) {
     final matches = widget.services
         .where(
-          (s) => (s.name + ' ' + s.description).toLowerCase().contains(
+          (s) => ('${s.name} ${s.description}').toLowerCase().contains(
             _search.toLowerCase(),
           ),
         )
@@ -776,10 +783,13 @@ class _AllServicesPageState extends State<AllServicesPage> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: matches.length,
               gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: MediaQuery.textScalerOf(context).scale(14) > 18
+                maxCrossAxisExtent:
+                    MediaQuery.textScalerOf(context).scale(14) > 18
                     ? constraints.maxWidth + 1
                     : 320,
-                mainAxisExtent: 310 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 16,
+                mainAxisExtent:
+                    310 +
+                    (MediaQuery.textScalerOf(context).scale(14) - 14) * 16,
                 crossAxisSpacing: 14,
                 mainAxisSpacing: 14,
               ),
@@ -803,32 +813,65 @@ class _AllServicesPageState extends State<AllServicesPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(children: [
-                              Expanded(child: Icon(serviceIcon(service.icon), size: 40, color: Colors.white)),
-                              IconButton(
-                                tooltip: 'Save favourite',
-                                onPressed: () async {
-                                  await widget.onFavorite(service);
-                                  if (mounted) setState(() {});
-                                },
-                                icon: Icon(
-                                  widget.favorites.contains(service.name) ? Icons.favorite : Icons.favorite_border,
-                                  color: Colors.white,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Icon(
+                                    serviceIcon(service.icon),
+                                    size: 40,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ]),
+                                IconButton(
+                                  tooltip: 'Save favourite',
+                                  onPressed: () async {
+                                    await widget.onFavorite(service);
+                                    if (mounted) setState(() {});
+                                  },
+                                  icon: Icon(
+                                    widget.favorites.contains(service.name)
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
                             const Spacer(),
-                            Text(service.name,
-                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                            Text(
+                              service.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 8),
-                            Text(service.description, maxLines: 3, overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Color(0xFFD9E7FA), fontSize: 13)),
+                            Text(
+                              service.description,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFFD9E7FA),
+                                fontSize: 13,
+                              ),
+                            ),
                             const SizedBox(height: 12),
-                            Text('${service.availableProviders} approved providers in this area',
-                                style: const TextStyle(color: Colors.white, fontSize: 11)),
+                            Text(
+                              '${service.availableProviders} approved providers in this area',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
+                            ),
                             const SizedBox(height: 10),
-                            const Text('Request service →',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                            const Text(
+                              'Request service →',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
                         ),
                       ),

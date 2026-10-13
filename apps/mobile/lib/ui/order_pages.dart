@@ -697,15 +697,7 @@ class _RequestPageState extends State<RequestPage> {
 
 String localDate(DateTime date) {
   final d = date.toLocal();
-  return d.day.toString().padLeft(2, '0') +
-      '/' +
-      d.month.toString().padLeft(2, '0') +
-      '/' +
-      d.year.toString() +
-      ' ' +
-      d.hour.toString().padLeft(2, '0') +
-      ':' +
-      d.minute.toString().padLeft(2, '0');
+  return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 }
 
 class BookingsPanel extends StatefulWidget {
@@ -801,7 +793,7 @@ Widget bookingTile(
             ),
           ),
           const SizedBox(height: 8),
-          Text(order.city + ', ' + order.state),
+          Text('${order.city}, ${order.state}'),
           const SizedBox(height: 8),
           Text(localDate(order.scheduledAt ?? order.createdAt)),
           const SizedBox(height: 12),
@@ -815,7 +807,7 @@ Widget bookingTile(
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Text(
-                '₦' + order.amount!,
+                '₦${order.amount!}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -920,7 +912,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
     try {
       await widget.api.request(
         'POST',
-        '/orders/' + _order.id + '/' + action,
+        '/orders/${_order.id}/$action',
         body: body ?? {},
       );
     } catch (e) {
@@ -993,7 +985,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
         final data =
             await widget.api.request(
                   'GET',
-                  '/orders/' + _order.id + '/customer-contact',
+                  '/orders/${_order.id}/customer-contact',
                 )
                 as Map;
         phone = data['phone'] as String?;
@@ -1060,7 +1052,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Service area: ' + _order.city + ', ' + _order.state),
+                  Text('Service area: ${_order.city}, ${_order.state}'),
                   const Divider(height: 24),
                   Text(
                     _order.pickupAddress ??
@@ -1068,9 +1060,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
                         'Address not provided',
                   ),
                   if (_order.destinationAddress != null)
-                    Text('To: ' + _order.destinationAddress!),
+                    Text('To: ${_order.destinationAddress!}'),
                   if (_order.scheduledAt != null)
-                    Text('Requested time: ' + localDate(_order.scheduledAt!)),
+                    Text('Requested time: ${localDate(_order.scheduledAt!)}'),
                   if ((_order.description ?? '').isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1078,7 +1070,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
                     ),
                   const Divider(height: 24),
                   SelectableText(
-                    'Request ID: ' + _order.id,
+                    'Request ID: ${_order.id}',
                     style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],
@@ -1150,7 +1142,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
                   Text(
                     _order.quote == null
                         ? 'Price: awaiting a quote'
-                        : 'Quote: ₦' + _order.quote!['amount'].toString(),
+                        : 'Quote: ₦${_order.quote!['amount']}',
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
@@ -1163,7 +1155,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
                           : 'Awaiting customer approval',
                     ),
                   if (_order.paymentStatus != null)
-                    Text('Payment: ' + _order.paymentStatus!),
+                    Text('Payment: ${_order.paymentStatus!}'),
                   if (!_provider &&
                       _order.status == 'ACCEPTED' &&
                       _order.quote != null &&
@@ -1392,10 +1384,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     _loading = true;
     try {
       final data =
-          await widget.api.request(
-                'GET',
-                '/orders/' + widget.orderId + '/messages',
-              )
+          await widget.api.request('GET', '/orders/${widget.orderId}/messages')
               as List;
       if (mounted) {
         setState(() {
@@ -1420,7 +1409,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     try {
       await widget.api.request(
         'POST',
-        '/orders/' + widget.orderId + '/messages',
+        '/orders/${widget.orderId}/messages',
         body: {'text': _text.text.trim()},
       );
       if (mounted) {

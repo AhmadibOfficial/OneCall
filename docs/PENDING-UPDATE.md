@@ -38,8 +38,12 @@ Then start your existing backend and emulator and run scripts/run-android.sh emu
 
 ## Validation limits
 
-Backend build, targeted lint, disposable-database HTTP tests, RSA/crypto tests, authentication regression and additive migration preservation are checked remotely. Vendor HTTPS calls are mocked. PGlite uses one connection and is not production PostgreSQL concurrency proof. Flutter/Dart SDKs are unavailable remotely: source formatting parses syntax, but analyzer, widgets, Android/iOS builds and real provider consent remain required on your laptop. The installer runs Flutter analysis and tests before reporting success. This is a pilot source update, not a Play Store or cloud release.
+Backend build, targeted lint, disposable-database HTTP tests, RSA/crypto tests, authentication regression and additive migration preservation are checked remotely. Vendor HTTPS calls are mocked. PGlite uses one connection and is not production PostgreSQL concurrency proof. Flutter 3.44.4 analysis and all 24 tests now pass remotely after SDK snapshot repair. Android/iOS builds and real provider consent remain required on your laptop. The installer runs Flutter analysis and tests before reporting success. This is a pilot source update, not a Play Store or cloud release.
 
 ## Staging and signing preparation increment
 
 The cumulative update now also includes Render hosting drafts, private persistent upload paths, verification-delivery readiness checks, a complete booking HTTP test and Android upload-key signing guards. Read STAGING-AND-RELEASE.md before using them. Hosting, real provider credentials, native acceptance and public launch are still not completed by installing source.
+
+## Crash follow-up
+
+This version adds startup and dialog safety fixes, corrects native analyzer findings and includes an Android diagnostic collector. The temporary SDK crash was repaired; Flutter 3.44.4 analysis, all 24 tests and the web release build now pass. Android APK/device acceptance, real provider credentials and cloud provisioning remain separate live steps.

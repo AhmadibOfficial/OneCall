@@ -53,6 +53,14 @@ The script validates the URL/application ID, runs Flutter analysis and tests, an
 
 ## Validation evidence
 
-See docs/verification/release-preparation-result.json. Docker/Gradle are unavailable. The official Flutter 3.44.4 archive was downloaded and its SHA256 verified, but the Dart VM crashes with BUS_ADRERR before project execution, including on a minimal Dart smoke test. Native analysis/widgets remain blocked in this environment. The image has not been built and the Render CLI has not run; validation uses Render's published JSON schema plus backend execution on disposable PGlite and native Redis. PGlite is one connection and is not a production PostgreSQL concurrency proof.
+See docs/verification/crash-follow-up-result.json for the current checks and release-preparation-result.json for the earlier staging checks. Flutter 3.44.4 analysis and all 24 tests now pass after SDK snapshot repair. Docker and Android/Gradle builds remain unverified. Render validation uses the published JSON schema; the Render CLI has not run. Backend security checks use disposable PGlite and native Redis with mocked external providers. PGlite is one connection and is not production PostgreSQL concurrency proof.
 
 References: https://render.com/docs/blueprint-spec, https://render.com/docs/free, https://render.com/docs/disks, https://docs.flutter.dev/deployment/android.
+
+## Crash and native verification follow-up
+
+The temporary Flutter SDK crash was traced to extracted Dart snapshots that differed from the verified 3.44.4 archive. Those snapshots were restored and the Flutter tool cache rebuilt. Flutter's built-in CI mode was then used to skip its instance-metadata bot-detection probe and suppress telemetry. The SDK now starts. This repairs the remote verification SDK, not your laptop installation.
+
+The app now handles invalid appearance preferences and unavailable secure storage during startup, and password/privacy dialogs own their controllers until their routes close. Missing UI imports and analyzer findings were fixed. Native Flutter analysis and all 24 tests passed. The workflow now matches Flutter 3.44.4 and Java 21; the old backend test expectation includes the server's token-version context.
+
+If OneCall closes on your emulator, run `python3 scripts/collect-android-crash.py --device emulator-5554` from the workspace root. It reads device boot/package state and writes only matching OneCall crash entries and current-process logs into a private `.pilot-verification` folder. Review logs locally before sharing; no data is uploaded and no app/database is reset.

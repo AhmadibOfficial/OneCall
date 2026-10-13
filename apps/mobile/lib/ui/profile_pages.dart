@@ -416,7 +416,7 @@ class _AddressesPageState extends State<AddressesPage> {
       return;
     }
     try {
-      await widget.api.request('DELETE', '/addresses/' + id);
+      await widget.api.request('DELETE', '/addresses/$id');
       if (mounted) {
         setState(() => _version++);
       }
@@ -450,11 +450,7 @@ class _AddressesPageState extends State<AddressesPage> {
             ),
             title: Text(address['label'] as String),
             subtitle: Text(
-              address['addressLine1'].toString() +
-                  '\n' +
-                  address['city'].toString() +
-                  ', ' +
-                  address['state'].toString(),
+              '${address['addressLine1']}\n${address['city']}, ${address['state']}',
             ),
             isThreeLine: true,
             onTap: () => _edit(address),
@@ -510,7 +506,7 @@ class _AddressEditPageState extends State<AddressEditPage> {
       final id = widget.address?['id'] as String?;
       await widget.api.request(
         id == null ? 'POST' : 'PUT',
-        id == null ? '/addresses' : '/addresses/' + id,
+        id == null ? '/addresses' : '/addresses/$id',
         body: {
           'label': _label.text.trim(),
           'addressLine1': _line.text.trim(),
@@ -564,7 +560,7 @@ class _AddressEditPageState extends State<AddressEditPage> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.location_on),
-            title: Text(_city + ', ' + _state),
+            title: Text('$_city, $_state'),
             trailing: const Icon(Icons.chevron_right),
             onTap: _busy
                 ? null
@@ -799,9 +795,7 @@ class _ProviderPageState extends State<ProviderPage> {
                   final c = v as Map;
                   return ListTile(
                     title: Text(c['serviceName'] as String),
-                    subtitle: Text(
-                      c['cityKey'].toString() + ', ' + c['state'].toString(),
-                    ),
+                    subtitle: Text('${c['cityKey']}, ${c['state']}'),
                   );
                 }),
               ],
@@ -872,7 +866,7 @@ class _ProviderPageState extends State<ProviderPage> {
                         return Card(
                           child: ListTile(
                             title: Text(o.serviceName),
-                            subtitle: Text(o.city + ', ' + o.state),
+                            subtitle: Text('${o.city}, ${o.state}'),
                             trailing: FilledButton(
                               onPressed: () => _accept(o, reload),
                               child: const Text('Accept job'),
@@ -902,7 +896,7 @@ class _ProviderPageState extends State<ProviderPage> {
         Map<String, dynamic>.from(
           await widget.api.request(
                 'POST',
-                '/orders/' + order.id + '/accept',
+                '/orders/${order.id}/accept',
                 body: {},
               )
               as Map,
@@ -1018,7 +1012,7 @@ class _ProviderApplyPageState extends State<ProviderApplyPage> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.location_on),
-            title: Text(_city + ', ' + _state),
+            title: Text('$_city, $_state'),
             subtitle: const Text('Area you can cover'),
             onTap: _busy
                 ? null
@@ -1166,12 +1160,12 @@ class _SupportPageState extends State<SupportPage> {
                 const SizedBox(height: 8),
                 Text(t['message'] as String),
                 const Divider(),
-                Text('Status: ' + t['status'].toString()),
+                Text('Status: ${t['status']}'),
                 if (t['response'] != null)
-                  Text('Support response: ' + t['response'].toString()),
+                  Text('Support response: ${t['response']}'),
                 const SizedBox(height: 8),
                 SelectableText(
-                  'Ticket ID: ' + t['id'].toString(),
+                  'Ticket ID: ${t['id']}',
                   style: const TextStyle(fontSize: 11),
                 ),
               ],
@@ -1300,10 +1294,7 @@ class InvitePage extends StatelessWidget {
             await Clipboard.setData(
               ClipboardData(
                 text:
-                    'Try OneCall for local services across Nigeria.' +
-                    (appUrl.startsWith('https://') ? '\n' + appUrl : '') +
-                    '\nInvited by OneCall user ' +
-                    uid,
+                    'Try OneCall for local services across Nigeria.${appUrl.startsWith('https://') ? '\n$appUrl' : ''}\nInvited by OneCall user $uid',
               ),
             );
             if (context.mounted) {
@@ -1331,7 +1322,7 @@ class InformationPage extends StatelessWidget {
         const OneCallLogo(size: 72),
         const SizedBox(height: 26),
         Text(
-          'Selected location: ' + city + ', ' + state,
+          'Selected location: $city, $state',
           style: const TextStyle(color: Color(0xFF68768A)),
         ),
         const SizedBox(height: 20),

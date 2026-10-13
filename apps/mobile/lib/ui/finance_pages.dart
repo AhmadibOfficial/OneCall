@@ -7,12 +7,7 @@ import 'resource_widgets.dart';
 
 String clientKey(String prefix) {
   final r = Random.secure();
-  return prefix +
-      '.' +
-      List.generate(
-        16,
-        (_) => r.nextInt(256).toRadixString(16).padLeft(2, '0'),
-      ).join();
+  return '$prefix.${List.generate(16, (_) => r.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
 }
 
 Future<String?> amountDialog(BuildContext context, String title) async {
@@ -97,7 +92,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       final result = Map<String, dynamic>.from(
         await widget.api.request(
               'POST',
-              '/checkouts/' + _intent['id'].toString() + '/verify',
+              '/checkouts/${_intent['id']}/verify',
               body: {},
             )
             as Map,
@@ -131,7 +126,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         const SizedBox(height: 20),
         Text(
-          '₦' + _intent['amount'].toString(),
+          '₦${_intent['amount']}',
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 35,
@@ -148,7 +143,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         const SizedBox(height: 20),
         SelectableText(
-          'Checkout ID: ' + _intent['id'].toString(),
+          'Checkout ID: ${_intent['id']}',
           style: const TextStyle(fontSize: 12),
         ),
         if (_error != null) ErrorNotice(_error!),
@@ -230,7 +225,7 @@ class _PaymentPageState extends State<PaymentPage> {
       if (_method == 'wallet') {
         await widget.api.request(
           'POST',
-          '/orders/' + widget.order.id + '/pay-wallet',
+          '/orders/${widget.order.id}/pay-wallet',
           body: {'idempotencyKey': _walletKey},
         );
         if (mounted) {
@@ -279,7 +274,7 @@ class _PaymentPageState extends State<PaymentPage> {
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          'Pay ₦' + (widget.order.amount ?? '0.00'),
+          'Pay ₦${widget.order.amount ?? '0.00'}',
           style: const TextStyle(
             fontSize: 28,
             color: navy,
@@ -314,7 +309,7 @@ class _PaymentPageState extends State<PaymentPage> {
             child: ListTile(
               leading: const Icon(Icons.account_balance_wallet, color: teal),
               title: const Text('OneCall Wallet'),
-              subtitle: Text('Balance: ₦' + _wallet!['balance'].toString()),
+              subtitle: Text('Balance: ₦${_wallet!['balance']}'),
               onTap: _busy ? null : () => setState(() => _method = 'wallet'),
               trailing: Icon(
                 _method == 'wallet'
@@ -451,7 +446,7 @@ class _WalletPageState extends State<WalletPage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '₦' + _wallet!['balance'].toString(),
+                    '₦${_wallet!['balance']}',
                     style: const TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.w700,
@@ -520,7 +515,7 @@ class _WalletPageState extends State<WalletPage> {
                     tx['createdAt'] as String,
                   ).toLocal().toString().split('.').first,
                 ),
-                trailing: Text('₦' + tx['amount'].toString()),
+                trailing: Text('₦${tx['amount']}'),
               );
             }),
           ],
@@ -544,7 +539,7 @@ class CheckoutsPage extends StatelessWidget {
         return Card(
           child: ListTile(
             leading: const Icon(Icons.receipt_long, color: teal),
-            title: Text('₦' + c['amount'].toString()),
+            title: Text('₦${c['amount']}'),
             subtitle: Text(c['status'].toString()),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {

@@ -139,8 +139,9 @@ class FakeApi extends OneCallApi {
       );
       return {'accepted': true};
     }
-    if (path == '/auth/social/configuration')
+    if (path == '/auth/social/configuration') {
       return {'google': false, 'apple': false};
+    }
     if (path == '/favorites' ||
         path == '/notifications' ||
         path == '/addresses') {

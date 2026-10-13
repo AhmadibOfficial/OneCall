@@ -106,6 +106,7 @@ describe('ONE-BUSINESS — account-state authorization invariants', () => {
 
     expect(result).toEqual({
       id: 'user-1',
+      tokenVersion: 0,
       uid: 'REALUSER01',
       email: 'real@example.com',
       status: 'ACTIVE',

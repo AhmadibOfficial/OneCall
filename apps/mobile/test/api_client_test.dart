@@ -33,6 +33,16 @@ class MemoryStore implements SessionStore {
   }
 }
 
+class UnavailableStore implements SessionStore {
+  @override
+  Future<String?> read() async => throw StateError('Secure store unavailable');
+  @override
+  Future<void> write(String value) async =>
+      throw StateError('Secure store unavailable');
+  @override
+  Future<void> clear() async => throw StateError('Secure store unavailable');
+}
+
 class FakeAdapter implements HttpClientAdapter {
   FakeAdapter(this.respond);
   final Future<ResponseBody> Function(RequestOptions) respond;
@@ -73,6 +83,27 @@ OneCallClient client(
 }
 
 void main() {
+  test(
+    'unavailable secure storage starts signed out without an unhandled failure',
+    () async {
+      var requests = 0;
+      final client = OneCallClient(
+        baseUrl: 'https://onecall.example/api/v1',
+        store: UnavailableStore(),
+        dio: Dio()
+          ..httpClientAdapter = FakeAdapter((options) async {
+            requests++;
+            return ResponseBody.fromString('{}', 500);
+          }),
+      );
+      addTearDown(client.dispose);
+      await client.restore();
+      expect(client.user, isNull);
+      expect(client.restoring, isFalse);
+      expect(requests, 0);
+    },
+  );
+
   test(
     'nationwide ride requests send route and location without a client price',
     () async {

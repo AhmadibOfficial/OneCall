@@ -4,7 +4,11 @@ import 'common.dart';
 const oneCallMist = Color(0xFFF0F3F7);
 
 class OneCallSection extends StatelessWidget {
-  const OneCallSection({super.key, required this.title, required this.children});
+  const OneCallSection({
+    super.key,
+    required this.title,
+    required this.children,
+  });
   final String title;
   final List<Widget> children;
 
@@ -94,7 +98,9 @@ class OneCallSteps extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                        fontWeight: selected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         color: selected ? navy : const Color(0xFF68768A),
                       ),
                     ),

@@ -6,11 +6,7 @@ import 'resource_widgets.dart';
 import 'brand.dart';
 
 class LegalPage extends StatefulWidget {
-  const LegalPage({
-    super.key,
-    this.documentId,
-    this.onRequestSupport,
-  });
+  const LegalPage({super.key, this.documentId, this.onRequestSupport});
   final String? documentId;
   final ValueChanged<String>? onRequestSupport;
 

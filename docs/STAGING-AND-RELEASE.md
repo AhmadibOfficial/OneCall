@@ -49,11 +49,11 @@ export ONECALL_API_URL=https://YOUR_DEPLOYED_API_HOST/api/v1
 bash scripts/build-android-release.sh
 ```
 
-The script validates the URL/application ID, runs Flutter analysis and tests, and builds a signed AAB. Real signing and native builds remain unverified remotely. Before Play publication complete device testing, real message/recovery delivery, provider consent acceptance, final operator identity/retention/deletion policies, listing assets and the console's current requirements. Automated account erasure and payment protection are not claimed.
+The script validates the URL/application ID, runs Flutter analysis and tests, and builds a signed AAB. The debug APK has passed the GitHub build; real signing, the release AAB and iOS builds remain unverified. Before Play publication complete device testing, real message/recovery delivery, provider consent acceptance, final operator identity/retention/deletion policies, listing assets and the console's current requirements. Automated account erasure and payment protection are not claimed.
 
 ## Validation evidence
 
-See docs/verification/crash-follow-up-result.json for the current checks and release-preparation-result.json for the earlier staging checks. Flutter 3.44.4 analysis and all 24 tests now pass after SDK snapshot repair. Docker and Android/Gradle builds remain unverified. Render validation uses the published JSON schema; the Render CLI has not run. Backend security checks use disposable PGlite and native Redis with mocked external providers. PGlite is one connection and is not production PostgreSQL concurrency proof.
+See docs/verification/crash-follow-up-result.json for the current checks and release-preparation-result.json for the earlier staging checks. GitHub run 38509950317 passed Flutter 3.44.4 analysis, all 24 Flutter tests, the web release build and the debug Android APK build. The same run passed the Docker image build and the backend checks using native PostgreSQL and Redis, including all 138 backend security tests. Both app builds used a compile-only placeholder HTTPS API URL; no backend was deployed. Render validation uses the published JSON schema; the Render CLI has not run. Local backend security checks used disposable PGlite and native Redis with mocked external providers. PGlite is one connection and is not production PostgreSQL concurrency proof.
 
 References: https://render.com/docs/blueprint-spec, https://render.com/docs/free, https://render.com/docs/disks, https://docs.flutter.dev/deployment/android.
 
@@ -64,3 +64,7 @@ The temporary Flutter SDK crash was traced to extracted Dart snapshots that diff
 The app now handles invalid appearance preferences and unavailable secure storage during startup, and password/privacy dialogs own their controllers until their routes close. Missing UI imports and analyzer findings were fixed. Native Flutter analysis and all 24 tests passed. The workflow now matches Flutter 3.44.4 and Java 21; the old backend test expectation includes the server's token-version context.
 
 If OneCall closes on your emulator, run `python3 scripts/collect-android-crash.py --device emulator-5554` from the workspace root. It reads device boot/package state and writes only matching OneCall crash entries and current-process logs into a private `.pilot-verification` folder. Review logs locally before sharing; no data is uploaded and no app/database is reset.
+
+Android builds now use a 1.5 GB Gradle heap, one worker and no parallel Gradle tasks, replacing the template's 8 GB heap. Keep the emulator closed while building on your 4 GB laptop. This reduces build memory demand; it does not establish the cause of the previous emulator shutdown.
+
+The CI runner installs NDK 28.2.13676358 from Google's archive only after checking the Android NDK team's published checksum, archive size and ZIP integrity. `scripts/prepare-android-ci.sh` is limited to disposable CI runners and is not the laptop installer. Reference: https://github.com/android/ndk/releases/tag/r28c.

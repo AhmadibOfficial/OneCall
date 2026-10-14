@@ -2,6 +2,17 @@
 
 This cumulative update includes the preceding Google/Apple sign-in and Chat inbox source. Payments, advertising rewards and Amboy remain deferred.
 
+## Four-item completion status
+
+| Work item | Source status | Included behavior |
+| --- | --- | --- |
+| Linked-account controls and social safeguards | Complete | Explicit linking, password-confirmed unlinking, session revocation, Apple HTTPS callback, encrypted refresh credentials and signed revocation notices |
+| Secure booking photos and appearance preferences | Complete | Participant-only photo upload/read, six photos per booking, 20 uploads per user per day, 5 MB/file and dimension limits; saved text-size/reduced-motion preferences |
+| Privacy request tracking and account export | Complete | Owner-only access/correction/deletion requests, support status, password-confirmed basic JSON snapshot with Copy JSON |
+| Verification, package and activation documentation | Complete | Passing native PostgreSQL/Redis, Flutter/web/APK and Docker checks; cumulative backup installer and current activation guide |
+
+This marks implementation and automated verification complete. Live Google/Apple activation still needs developer credentials, HTTPS callbacks and native/device acceptance. Privacy requests require operator handling; a support response is not proof of completed deletion. The JSON snapshot covers basic account records, with additional retained records requested through support.
+
 ## Implemented
 
 - Profile lists linked Google/Apple accounts. Unlink requires the current working OneCall password, removes only that link and revokes OneCall sessions. Social-only users must set a password through verified recovery first. Unlinking OneCall is not a promise to delete a Google/Apple account or revoke every provider-side consent.

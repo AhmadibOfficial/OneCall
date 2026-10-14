@@ -18,6 +18,14 @@ New identities complete name and Nigerian phone onboarding. Provider identifiers
 
 If an existing password account uses the provider email, sign in with that password first, open Profile → Linked sign-in accounts, and explicitly link Google or Apple. Existing account names, email, phone, passwords, bookings, roles, verification and provider approval stay unchanged. A provider identity already attached to another account cannot be linked. Duplicate completion tickets and challenges are rejected. OneCall refresh/logout rules continue to apply. New social accounts can use the existing verified email password-reset flow to set a password; real mail delivery must be configured for recovery.
 
+## Linked accounts and Apple lifecycle
+
+Profile → Linked sign-in accounts lists only the signed-in user's Google/Apple links. Unlinking requires the current OneCall password, removes only the selected link, increments the account's token version and revokes existing OneCall sessions. A social-only user must first set a working password through verified recovery. This does not claim to revoke consent inside the provider's account settings.
+
+Apple refresh credentials use authenticated encryption with a dedicated 32-byte server key. Signed Apple notifications are verified for issuer, audience, signature and event structure. Duplicate notices are ignored, and an older notice cannot remove a newer authorization. Consent revocation and Apple account-deletion notices remove the Apple link and revoke OneCall sessions; they do not automatically erase OneCall booking records.
+
+Refresh checks run at most once per day for an active Apple-linked account. An admin-only `POST /api/v1/auth/social/apple/check-due` call checks up to 100 due accounts. A production scheduler is not deployed. Provider outages do not revoke accounts. Apple token revocation when OneCall itself deletes an account, encryption-key rotation/recovery and real-device acceptance remain launch work.
+
 ## Google local pilot configuration
 
 1. In Google Cloud create a web OAuth client for server ID tokens and an Android client for the exact installed package (currently com.example.onecall) and its signing SHA-1. Configure the consent screen and pilot test users. Choose the final owned application ID separately before Play release.
@@ -32,13 +40,27 @@ If an existing password account uses the provider email, sign in with that passw
 2. Server `ONECALL_APPLE_CLIENT_ID` must be the exact native bundle ID. Generate a valid Apple client-secret JWT using your Team ID, Key ID and downloaded private key, following Apple's documentation. Set it privately as `ONECALL_APPLE_CLIENT_SECRET`. Never put the private key or client secret in Flutter defines, GitHub, this ZIP or chat.
 3. Apple authorization codes are exchanged at Apple's token endpoint; the server validates the returned ID token's signature, issuer, audience, expiry and attempt nonce. The app cannot supply the trusted account subject/email.
 4. Apple private-relay email needs the registered sending domains/SPF configuration for OneCall recovery mail. Test account cancellation, first/subsequent consent, relay email and code replay on an actual signed iPhone build.
-5. Android Apple callback, Service ID and hosted HTTPS callback are not implemented in this increment. Do not add a browser relay that bypasses server validation.
+5. Android/web Apple sign-in uses the implemented browser callback. Configure an Apple Services ID as `ONECALL_APPLE_WEB_CLIENT_ID` and its corresponding client-secret JWT as `ONECALL_APPLE_WEB_CLIENT_SECRET`. Register the exact public HTTPS callback described below.
+6. Set `ONECALL_APPLE_TOKEN_KEY` privately to 32 random bytes encoded as base64. Back up this key securely: changing it without migrating stored credentials makes existing encrypted Apple refresh tokens unreadable. Keep it out of Flutter builds, GitHub and this archive.
+7. Register the server-to-server notification URL on the primary Sign in with Apple App ID. Test signed consent-revocation/account-deletion notifications and duplicate delivery before live activation.
+
+## Browser callback configuration
+
+Set backend `ONECALL_SOCIAL_PUBLIC_API_URL` to the reachable public HTTPS API base including `/api/v1`. OneCall requires HTTPS for browser callbacks, so the emulator-only or HTTP localhost API is insufficient for this flow. Register these exact addresses in the provider developer consoles:
+
+| Purpose | Address relative to that API base |
+| --- | --- |
+| Google authorization callback | `/auth/social/callback/google` (GET) |
+| Apple authorization callback | `/auth/social/callback/apple` (POST, form data) |
+| Apple server notifications | `/auth/social/apple/notifications` (POST) |
+
+Google browser sign-in also needs backend `ONECALL_GOOGLE_CLIENT_SECRET`; Apple browser sign-in needs the Services ID/client secret above in addition to the native Apple configuration. Server credentials never belong in Flutter defines or callback URLs. The browser flow validates the attempt state and server-verified identity, uses Google PKCE, encrypts the result and requires the original one-use proof to retrieve it. The callback response exposes no OneCall session tokens.
 
 ## Safe source installation
 
-The installer requires the existing local pilot configuration, checks changed files, preserves unrelated edits, and backs up affected source and the running onecall-kaduna-local PostgreSQL database before applying the additive migration. It does not change .env or enable social login. Stop the backend and close the emulator first. It runs backend generation/build, RSA verification tests, public legal HTTP checks and native Flutter analysis/tests. Flutter 3.44.4 analysis and all 24 tests now pass remotely; Android/iOS builds, real provider consent and emulator acceptance still need your device configuration.
+The installer requires the existing local pilot configuration, checks changed files, preserves unrelated edits, and backs up affected source and the running onecall-kaduna-local PostgreSQL database before applying additive migrations. It does not change .env or enable social login. Stop the backend and close the emulator first. It runs backend generation/build, RSA verification tests, public legal HTTP checks and native Flutter analysis/tests.
 
-SocialIdentity and SocialAuthChallenge are new tables. No existing account/order columns are rewritten. Native PostgreSQL concurrency and actual Google/Apple consent were not verified remotely. Backend evidence uses disposable PGlite (one connection), native Redis, real HTTP/RSA and mocked provider HTTPS calls.
+Migrations preserve existing accounts, credentials, provider approvals and bookings. GitHub run [38510938564](https://github.com/AhmadibOfficial/OneCall/actions/runs/38510938564) passed backend checks on native PostgreSQL/Redis, all 138 backend security tests, 36 social/photo/privacy tests, Flutter analysis, all 24 Flutter tests, web and Android debug APK builds, and the Docker build. Provider HTTPS calls are mocked. iOS builds, actual Google/Apple consent and emulator/device acceptance still need your configuration. These checks do not claim complete production concurrency or recovery testing.
 
 ## Sources
 
@@ -48,7 +70,9 @@ SocialIdentity and SocialAuthChallenge are new tables. No existing account/order
 - [Flutter Google SDK API](https://pub.dev/documentation/google_sign_in/latest/)
 - [Apple user verification](https://developer.apple.com/documentation/signinwithapple/verifying-a-user)
 - [Flutter Sign in with Apple setup](https://pub.dev/packages/sign_in_with_apple)
+- [Apple server notification setup](https://developer.apple.com/help/account/capabilities/enabling-server-to-server-notifications)
+- [Apple account deletion and token revocation](https://developer.apple.com/documentation/technotes/tn3194-handling-account-deletions-and-revoking-tokens-for-sign-in-with-apple)
 
-## Remaining-feature update
+## Activation status
 
-The newer implementation supersedes the platform table and lifecycle/unlink gaps above: browser flows, Apple encrypted refresh/notification handling and password-confirmed unlink are now in source. See PENDING-UPDATE.md for configuration and remaining launch requirements. Production remains gated; no real provider acceptance is claimed.
+The linked-account, callback, encrypted credential and notification features are implemented in source. Social sign-in remains disabled until configured, and production activation remains gated. Complete provider registration, owned native identifiers/signing certificates, a reachable HTTPS backend, email/SMS recovery delivery, approved branding and device acceptance before enabling it for real users. Payments, ads and Amboy remain deferred.

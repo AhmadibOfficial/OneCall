@@ -25,7 +25,58 @@
   "migrationCount": 17,
   "migrationPreservation": "existing user credentials, provider approval and booking rows unchanged through four additive migrations",
   "installerTests": "four scenarios passed; native commands and database backup tools stubbed",
-  "flutter": "SDK unavailable remotely; syntax formatting only; analyzer/widgets/APK/iOS acceptance pending",
+  "flutter": "Current verification: Flutter 3.44.4 analysis, 24 tests, web release and Android debug APK builds passed in GitHub CI; iOS/native consent and device acceptance pending.",
   "providerConsent": "mocked; real Google/Apple credentials and HTTPS callbacks unconfigured",
-  "production": "social sign-in gated; payments ads Amboy deferred"
+  "production": "social sign-in gated; payments ads Amboy deferred",
+  "completion": {
+    "scope": "source implementation and automated checks; live activation is separate",
+    "tasks": [
+      {
+        "id": 1,
+        "name": "Linked-account controls and social safeguards",
+        "status": "completed"
+      },
+      {
+        "id": 2,
+        "name": "Secure booking photos and appearance preferences",
+        "status": "completed"
+      },
+      {
+        "id": 3,
+        "name": "Owner-controlled privacy requests and basic JSON snapshot",
+        "status": "completed"
+      },
+      {
+        "id": 4,
+        "name": "Backend verification, cumulative package and activation guide",
+        "status": "completed"
+      }
+    ],
+    "currentVerification": {
+      "commit": "691498cf94904a15d394f80d060a064192ea9757",
+      "run": 38510938564,
+      "backendDatabase": "native PostgreSQL and Redis",
+      "backendSecurityTests": 138,
+      "socialPhotoPrivacyTests": 36,
+      "flutterTests": 24,
+      "analyzer": "passed",
+      "webBuild": "passed",
+      "androidDebugApk": "passed",
+      "dockerBuild": "passed",
+      "providerCalls": "mocked"
+    },
+    "liveActivation": "not configured; developer credentials, reachable HTTPS callbacks, recovery delivery and native acceptance required",
+    "privacyExport": "password-confirmed basic JSON snapshot; additional retained records through support",
+    "accountDeletion": "operator handling required; no automatic erasure claimed",
+    "deferred": [
+      "payments",
+      "ads",
+      "Amboy"
+    ],
+    "installerSafetyScenarios": {
+      "count": 5,
+      "includes": "upgrade from the preceding package, preserved custom edits, rejected symbolic links and database-backup failure",
+      "limits": "native commands and pg_dump/pg_restore are stubbed"
+    }
+  }
 }

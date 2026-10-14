@@ -77,7 +77,7 @@ def main():
     records=payload['files']; writes={}; unknown=[]
     for name,record in records.items():
         path=PurePosixPath(name)
-        if path.is_absolute() or '..' in path.parts or '\\' in name or not isinstance(record.get('after'),str) or len(record.get('before',[]))!=9: raise SystemExit('Invalid source target.')
+        if path.is_absolute() or '..' in path.parts or '\\' in name or not isinstance(record.get('after'),str) or len(record.get('before',[]))!=10: raise SystemExit('Invalid source target.')
         target=root/name
         for part in (target,*target.parents):
             if part==root: break

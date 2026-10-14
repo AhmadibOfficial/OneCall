@@ -1,0 +1,30 @@
+{
+  "started": "2026-10-11T05:01:20.341Z",
+  "finished": "2026-10-11T05:01:52.110Z",
+  "success": true,
+  "database": "Disposable PGlite, one Prisma connection",
+  "redis": "native Redis",
+  "vendorCalls": "mocked",
+  "checks": [
+    {
+      "label": "Prisma migrations",
+      "code": 0
+    },
+    {
+      "label": "Nigeria integration",
+      "code": 0
+    },
+    {
+      "label": "Order and legacy payment regression",
+      "code": 0
+    },
+    {
+      "label": "Operator contracts",
+      "code": 0
+    },
+    {
+      "label": "Gateway contracts",
+      "code": 0
+    }
+  ]
+}

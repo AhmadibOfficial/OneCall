@@ -1,0 +1,30 @@
+{
+  "started": "2026-10-11T04:46:27.067Z",
+  "finished": "2026-10-11T04:47:36.425Z",
+  "success": true,
+  "database": "Disposable PGlite, one Prisma connection",
+  "redis": "native Redis",
+  "vendorCalls": "mocked",
+  "checks": [
+    {
+      "label": "Prisma migrations",
+      "code": 0
+    },
+    {
+      "label": "Nigeria integration",
+      "code": 0
+    },
+    {
+      "label": "Kaduna regression",
+      "code": 0
+    },
+    {
+      "label": "Security regression",
+      "code": 0
+    },
+    {
+      "label": "Delivery regression",
+      "code": 0
+    }
+  ]
+}

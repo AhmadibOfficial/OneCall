@@ -9,6 +9,7 @@
 # Logs
 # ===========================
 logs/
+.pilot-verification/
 *.log
 firebase-debug.log
 
@@ -79,3 +80,4 @@ docker-data/
 # ===========================
 *.pem
 *.key
+/generated/prisma

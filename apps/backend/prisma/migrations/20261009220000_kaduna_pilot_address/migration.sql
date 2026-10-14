@@ -1,0 +1,3 @@
+ALTER TABLE "Order"
+  ADD COLUMN "city" VARCHAR(60) NOT NULL DEFAULT 'Kaduna',
+  ADD COLUMN "address" VARCHAR(300);

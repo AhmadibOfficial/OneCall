@@ -84,6 +84,8 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build web --release --dart-define=ONECALL_API_URL=https://api.example.com/api/v1
+      - name: Install checksum-verified Android NDK
+        run: bash ../../scripts/prepare-android-ci.sh
       - run: flutter build apk --debug --dart-define=ONECALL_API_URL=https://api.example.com/api/v1
 
   docker:

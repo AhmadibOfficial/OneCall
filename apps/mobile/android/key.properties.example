@@ -1,5 +1,0 @@
-# Copy to key.properties, populate privately and restrict permissions.
-storePassword=
-keyPassword=
-keyAlias=upload
-storeFile=/absolute/private/path/onecall-upload.jks

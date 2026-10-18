@@ -1,8 +1,0 @@
-{
-  "passed": true,
-  "database": "PGlite",
-  "legacyProviderApproval": true,
-  "legacyCoverage": "eight Kaduna services only",
-  "pendingProviderApproval": false,
-  "legacyOrderPreserved": true
-}

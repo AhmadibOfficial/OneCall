@@ -1,6 +1,0 @@
-{
- "rootDir":"..", "testMatch":["<rootDir>/src/modules/upload/storage-path.spec.ts"],
- "moduleFileExtensions":["js","json","ts"],
- "transform":{"^.+\\.ts$":["ts-jest",{"tsconfig":"<rootDir>/test/tsconfig.json"}]},
- "moduleNameMapper":{"^@/(.*)$":"<rootDir>/src/$1"},"testEnvironment":"node"
-}

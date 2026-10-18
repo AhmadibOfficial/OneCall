@@ -514,6 +514,7 @@ class _HomePageState extends State<HomePage> {
                   Semantics(
                     key: const ValueKey('home-service-search'),
                     container: true,
+                    label: 'Search services',
                     child: TextField(
                       controller: _searchController,
                       textInputAction: TextInputAction.search,
@@ -521,7 +522,9 @@ class _HomePageState extends State<HomePage> {
                           FocusManager.instance.primaryFocus?.unfocus(),
                       onChanged: (value) => setState(() => _search = value),
                       decoration: InputDecoration(
-                        labelText: 'Search services',
+                        label: const ExcludeSemantics(
+                          child: Text('Search services'),
+                        ),
                         floatingLabelBehavior: FloatingLabelBehavior.never,
                         prefixIcon: const Icon(Icons.search_rounded),
                         suffixIcon: _search.isEmpty
@@ -903,13 +906,16 @@ class _AllServicesPageState extends State<AllServicesPage> {
           const SizedBox(height: 22),
           Semantics(
             container: true,
+            label: 'Search all services',
             child: TextField(
               controller: _search,
               textInputAction: TextInputAction.search,
               onTapOutside: (_) =>
                   FocusManager.instance.primaryFocus?.unfocus(),
               decoration: InputDecoration(
-                labelText: 'Search all services',
+                label: const ExcludeSemantics(
+                  child: Text('Search all services'),
+                ),
                 floatingLabelBehavior: FloatingLabelBehavior.never,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _search.text.isEmpty

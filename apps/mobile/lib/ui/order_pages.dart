@@ -299,7 +299,7 @@ class _RequestPageState extends State<RequestPage> {
             color: navy,
           ),
         ),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: const Icon(Icons.edit_outlined, size: 20),
         onTap: _busy ? null : () => _go(step),
       );
 
@@ -476,7 +476,7 @@ class _RequestPageState extends State<RequestPage> {
           ),
           const SizedBox(height: 14),
           SizedBox(
-            height: 86,
+            height: 90 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 4,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: 7,
@@ -646,48 +646,73 @@ class _RequestPageState extends State<RequestPage> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: OneCallSteps(current: _step, onEdit: _busy ? null : _go),
-          ),
-          Expanded(
-            child: Form(
-              key: _form,
-              child: ListView(
-                controller: _scroll,
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                children: [
-                  ..._content(),
-                  if (_error != null) ErrorNotice(_error!),
-                ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: OneCallSteps(current: _step, onEdit: _busy ? null : _go),
               ),
-            ),
+              Expanded(
+                child: Form(
+                  key: _form,
+                  child: ListView(
+                    controller: _scroll,
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                    children: [
+                      ..._content(),
+                      if (_error != null) ErrorNotice(_error!),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
       bottomNavigationBar: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              BusyButton(
-                label: _step == 4 ? 'Send request' : 'Continue',
-                busy: _busy,
-                onPressed: _step == 4 ? _submit : _next,
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      if (_step > 0) ...[
+                        TextButton.icon(
+                          onPressed: _busy ? null : _back,
+                          icon: const Icon(Icons.arrow_back, size: 18),
+                          label: const Text('Back'),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: BusyButton(
+                          label: _step == 4 ? 'Send request' : 'Continue',
+                          busy: _busy,
+                          onPressed: _step == 4 ? _submit : _next,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_step == 4 &&
+                      MediaQuery.viewInsetsOf(context).bottom == 0) ...[
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Review your quote before agreeing to work.',
+                      style: TextStyle(color: Color(0xFF68768A), fontSize: 12),
+                    ),
+                  ],
+                ],
               ),
-              if (_step == 4 &&
-                  MediaQuery.viewInsetsOf(context).bottom == 0) ...[
-                const SizedBox(height: 10),
-                const Text(
-                  'Review your quote before agreeing to work.',
-                  style: TextStyle(color: Color(0xFF68768A), fontSize: 12),
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),

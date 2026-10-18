@@ -54,203 +54,218 @@ class ProfilePanel extends StatelessWidget {
       onRequestSupport: (subject) =>
           _open(context, SupportFormPage(api: api, initialSubject: subject)),
     );
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 840),
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: navy,
-                      child: Text(
-                        user.firstName.isEmpty
-                            ? 'O'
-                            : user.firstName.substring(0, 1).toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${user.firstName} ${user.lastName}'.trim(),
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: navy,
+                          child: Text(
+                            user.firstName.isEmpty
+                                ? 'O'
+                                : user.firstName.substring(0, 1).toUpperCase(),
                             style: const TextStyle(
-                              fontSize: 23,
+                              color: Colors.white,
+                              fontSize: 26,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(user.email),
-                          Text(user.phone),
-                        ],
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${user.firstName} ${user.lastName}'.trim(),
+                                style: const TextStyle(
+                                  fontSize: 23,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(user.email),
+                              Text(user.phone),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          user.canBook
+                              ? Icons.check_circle_outline
+                              : Icons.shield_outlined,
+                          size: 20,
+                          color: teal,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            user.canBook
+                                ? 'Email & phone verified'
+                                : 'Contact verification needed',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SelectableText(
+                      'OneCall ID: ${user.uid}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF68768A),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
-                Chip(
-                  avatar: Icon(
-                    user.canBook ? Icons.check_circle : Icons.shield_outlined,
-                    size: 18,
-                    color: teal,
-                  ),
-                  label: Text(
-                    user.canBook
-                        ? 'Email & phone verified'
-                        : 'Contact verification needed',
-                  ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            OneCallSection(
+              title: 'Your details',
+              children: [
+                tile(
+                  Icons.text_fields,
+                  'Appearance & accessibility',
+                  'Text size and page motion',
+                  const AppearancePage(),
                 ),
-                SelectableText(
-                  'OneCall ID: ${user.uid}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF68768A),
-                  ),
+                tile(
+                  Icons.privacy_tip_outlined,
+                  'Privacy requests & account data',
+                  'Track requests and access your account snapshot',
+                  PrivacyRequestsPage(api: api),
+                ),
+                tile(
+                  Icons.link_outlined,
+                  'Linked sign-in accounts',
+                  'Connect Google or Apple to this account',
+                  LinkedSignInPage(api: api),
+                ),
+                tile(
+                  Icons.person_outline,
+                  'Personal Information',
+                  'Update your name and account details',
+                  ProfileEditPage(api: api),
+                ),
+                tile(
+                  Icons.verified_user_outlined,
+                  user.canBook ? 'Account verified' : 'Verify email and phone',
+                  'Verify your contact details; this is not a face or identity scan',
+                  VerificationPage(api: api),
+                ),
+                tile(
+                  Icons.location_on_outlined,
+                  'Saved Addresses',
+                  '$city, $state',
+                  AddressesPage(api: api, state: state, city: city),
+                ),
+                tile(
+                  Icons.favorite_border,
+                  'Favorites',
+                  'Your saved services',
+                  FavoriteServicesPage(api: api, state: state, city: city),
                 ),
               ],
             ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        OneCallSection(
-          title: 'Your details',
-          children: [
-            tile(
-              Icons.text_fields,
-              'Appearance & accessibility',
-              'Text size and page motion',
-              const AppearancePage(),
-            ),
-            tile(
-              Icons.privacy_tip_outlined,
-              'Privacy requests & account data',
-              'Track requests and access your account snapshot',
-              PrivacyRequestsPage(api: api),
-            ),
-            tile(
-              Icons.link_outlined,
-              'Linked sign-in accounts',
-              'Connect Google or Apple to this account',
-              LinkedSignInPage(api: api),
-            ),
-            tile(
-              Icons.person_outline,
-              'Personal Information',
-              'Update your name and account details',
-              ProfileEditPage(api: api),
-            ),
-            tile(
-              Icons.verified_user_outlined,
-              user.canBook ? 'Account verified' : 'Verify email and phone',
-              'Verify your contact details; this is not a face or identity scan',
-              VerificationPage(api: api),
-            ),
-            tile(
-              Icons.location_on_outlined,
-              'Saved Addresses',
-              '$city, $state',
-              AddressesPage(api: api, state: state, city: city),
-            ),
-            tile(
-              Icons.favorite_border,
-              'Favorites',
-              'Your saved services',
-              FavoriteServicesPage(api: api, state: state, city: city),
-            ),
-          ],
-        ),
-        OneCallSection(
-          title: 'Work & support',
-          children: [
-            tile(
-              Icons.work_outline,
-              'Provider Workspace',
-              'Apply, review quotes and manage your assigned jobs',
-              PrivateFeaturePage(
-                title: 'Provider Workspace',
-                api: api,
-                child: ProviderPage(api: api, state: state, city: city),
-              ),
-            ),
-            tile(
-              Icons.support_agent,
-              'Support',
-              'Booking questions, complaints and account help',
-              SupportPage(api: api),
-            ),
-            tile(
-              Icons.share_outlined,
-              'Invite a friend',
-              'Share OneCall; referral rewards are not active',
-              InvitePage(uid: user.uid),
-            ),
-          ],
-        ),
-        OneCallSection(
-          title: 'Information',
-          children: [
-            tile(
-              Icons.description_outlined,
-              'Legal & privacy',
-              'Privacy notice, terms and consumer rights',
-              legal(),
-            ),
-            tile(
-              Icons.credit_card_outlined,
-              'Payment availability',
-              'Online payments are not offered in this pilot',
-              legal(documentId: 'payments'),
-            ),
-            tile(
-              Icons.settings_outlined,
-              'Settings & Information',
-              'Safety, notifications and service information',
-              InformationPage(city: city, state: state),
-            ),
-          ],
-        ),
-        OneCallSection(
-          title: 'Account',
-          children: [
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text(
-                'Logout',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
+            OneCallSection(
+              title: 'Work & support',
+              children: [
+                tile(
+                  Icons.work_outline,
+                  'Provider Workspace',
+                  'Apply, review quotes and manage your assigned jobs',
+                  PrivateFeaturePage(
+                    title: 'Provider Workspace',
+                    api: api,
+                    child: ProviderPage(api: api, state: state, city: city),
+                  ),
                 ),
-              ),
-              subtitle: const Text('Sign out of this device'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () async {
-                try {
-                  await api.logout();
-                } catch (e) {
-                  if (context.mounted) notice(context, errorMessage(e));
-                }
-              },
+                tile(
+                  Icons.support_agent,
+                  'Support',
+                  'Booking questions, complaints and account help',
+                  SupportPage(api: api),
+                ),
+                tile(
+                  Icons.share_outlined,
+                  'Invite a friend',
+                  'Share OneCall; referral rewards are not active',
+                  InvitePage(uid: user.uid),
+                ),
+              ],
             ),
-            tile(
-              Icons.manage_accounts_outlined,
-              'Request account deletion',
-              'Submit a request; identity verification and manual handling apply',
-              legal(documentId: 'account-deletion'),
+            OneCallSection(
+              title: 'Information',
+              children: [
+                tile(
+                  Icons.description_outlined,
+                  'Legal & privacy',
+                  'Privacy notice, terms and consumer rights',
+                  legal(),
+                ),
+                tile(
+                  Icons.credit_card_outlined,
+                  'Payment availability',
+                  'Online payments are not offered in this pilot',
+                  legal(documentId: 'payments'),
+                ),
+                tile(
+                  Icons.settings_outlined,
+                  'Settings & Information',
+                  'Safety, notifications and service information',
+                  InformationPage(city: city, state: state),
+                ),
+              ],
+            ),
+            OneCallSection(
+              title: 'Account',
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'Logout',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: const Text('Sign out of this device'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    try {
+                      await api.logout();
+                    } catch (e) {
+                      if (context.mounted) notice(context, errorMessage(e));
+                    }
+                  },
+                ),
+                tile(
+                  Icons.manage_accounts_outlined,
+                  'Request account deletion',
+                  'Submit a request; identity verification and manual handling apply',
+                  legal(documentId: 'account-deletion'),
+                ),
+              ],
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }

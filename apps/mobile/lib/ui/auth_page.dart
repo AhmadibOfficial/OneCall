@@ -95,229 +95,267 @@ class _AuthPageState extends State<AuthPage> {
     super.dispose();
   }
 
+  void _switchMode() {
+    if (_busy) return;
+    final email = _email.text;
+    _form.currentState?.reset();
+    _email.text = email;
+    _password.clear();
+    setState(() {
+      _register = !_register;
+      _error = null;
+      _showPassword = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: navy,
     appBar: AppBar(title: Text(_register ? 'Create account' : 'Sign in')),
     body: SafeArea(
       child: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: AutofillGroup(
-                child: Form(
-                  key: _form,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Center(child: OneCallLogo(size: 76)),
-                      const SizedBox(height: 18),
-                      Text(
-                        _register ? 'Create your account' : 'Welcome back',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: navy,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Everything you need, one call away.',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 12),
-                      const Chip(
-                        avatar: Icon(Icons.location_on_outlined, size: 18),
-                        label: Text('Across Nigeria'),
-                      ),
-                      const SizedBox(height: 24),
-                      SegmentedButton<bool>(
-                        segments: const [
-                          ButtonSegment(value: false, label: Text('Sign in')),
-                          ButtonSegment(
-                            value: true,
-                            label: Text('Create account'),
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: AutofillGroup(
+                  child: Form(
+                    key: _form,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const OneCallLogo(size: 44),
+                        const SizedBox(height: 24),
+                        Text(
+                          _register
+                              ? 'Make room for an easier day.'
+                              : 'Good to have you back.',
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: navy,
+                            height: 1.2,
+                            letterSpacing: -.5,
                           ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          _register
+                              ? 'Create an account to request services and keep track of every booking.'
+                              : 'Sign in to see your bookings, messages and saved services.',
+                          style: const TextStyle(color: Color(0xFF536581)),
+                        ),
+                        const SizedBox(height: 24),
+                        SocialSignInButtons(
+                          api: widget.api,
+                          disabled: _busy,
+                          onBusy: (value) {
+                            if (mounted) setState(() => _busy = value);
+                          },
+                          onAuthenticated: widget.onAuthenticated,
+                        ),
+                        const SizedBox(height: 16),
+                        const Row(
+                          children: [
+                            Expanded(child: Divider()),
+                            Flexible(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 14),
+                                child: Text(
+                                  'or with email',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Color(0xFF536581),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(child: Divider()),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        if (_register) ...[
+                          TextFormField(
+                            controller: _first,
+                            enabled: !_busy,
+                            maxLength: 100,
+                            autofillHints: const [AutofillHints.givenName],
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              labelText: 'First name',
+                              counterText: '',
+                            ),
+                            validator: _required,
+                            textCapitalization: TextCapitalization.words,
+                          ),
+                          const SizedBox(height: 14),
+                          TextFormField(
+                            controller: _last,
+                            enabled: !_busy,
+                            maxLength: 100,
+                            autofillHints: const [AutofillHints.familyName],
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              labelText: 'Last name',
+                              counterText: '',
+                            ),
+                            validator: _required,
+                            textCapitalization: TextCapitalization.words,
+                          ),
+                          const SizedBox(height: 14),
+                          TextFormField(
+                            controller: _phone,
+                            enabled: !_busy,
+                            maxLength: 16,
+                            autofillHints: const [
+                              AutofillHints.telephoneNumber,
+                            ],
+                            textInputAction: TextInputAction.next,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              labelText: 'Phone number',
+                              hintText: '+2348012345678',
+                              counterText: '',
+                            ),
+                            validator: (v) =>
+                                RegExp(
+                                  r'^(?:\+?[1-9]\d{7,14}|0[789]\d{9})$',
+                                ).hasMatch((v ?? '').trim())
+                                ? null
+                                : 'Enter a valid phone number',
+                          ),
+                          const SizedBox(height: 14),
                         ],
-                        selected: {_register},
-                        onSelectionChanged: _busy
-                            ? null
-                            : (value) => setState(() {
-                                _register = value.first;
-                                _error = null;
-                                _form.currentState?.reset();
-                              }),
-                      ),
-                      const SizedBox(height: 20),
-                      SocialSignInButtons(
-                        api: widget.api,
-                        disabled: _busy,
-                        onBusy: (value) {
-                          if (mounted) setState(() => _busy = value);
-                        },
-                        onAuthenticated: widget.onAuthenticated,
-                      ),
-                      const SizedBox(height: 20),
-                      const Row(
-                        children: [
-                          Expanded(child: Divider()),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Text('or with email'),
-                          ),
-                          Expanded(child: Divider()),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      if (_register) ...[
                         TextFormField(
-                          controller: _first,
+                          controller: _email,
                           enabled: !_busy,
-                          maxLength: 100,
+                          keyboardType: TextInputType.emailAddress,
+                          maxLength: 254,
+                          autofillHints: const [AutofillHints.email],
+                          textInputAction: TextInputAction.next,
+                          autocorrect: false,
                           decoration: const InputDecoration(
-                            labelText: 'First name',
+                            labelText: 'Email address',
                             counterText: '',
-                          ),
-                          validator: _required,
-                          textCapitalization: TextCapitalization.words,
-                        ),
-                        const SizedBox(height: 14),
-                        TextFormField(
-                          controller: _last,
-                          enabled: !_busy,
-                          maxLength: 100,
-                          decoration: const InputDecoration(
-                            labelText: 'Last name',
-                            counterText: '',
-                          ),
-                          validator: _required,
-                          textCapitalization: TextCapitalization.words,
-                        ),
-                        const SizedBox(height: 14),
-                        TextFormField(
-                          controller: _phone,
-                          enabled: !_busy,
-                          maxLength: 16,
-                          keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(
-                            labelText: 'Phone number',
-                            hintText: '+2348012345678',
-                            counterText: '',
+                            prefixIcon: Icon(Icons.mail_outline),
                           ),
                           validator: (v) =>
                               RegExp(
-                                r'^(?:\+?[1-9]\d{7,14}|0[789]\d{9})$',
+                                r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
                               ).hasMatch((v ?? '').trim())
                               ? null
-                              : 'Enter a valid phone number',
+                              : 'Enter a valid email address',
                         ),
                         const SizedBox(height: 14),
-                      ],
-                      TextFormField(
-                        controller: _email,
-                        enabled: !_busy,
-                        keyboardType: TextInputType.emailAddress,
-                        maxLength: 254,
-                        autofillHints: const [AutofillHints.email],
-                        autocorrect: false,
-                        decoration: const InputDecoration(
-                          labelText: 'Email address',
-                          counterText: '',
-                        ),
-                        validator: (v) =>
-                            RegExp(
-                              r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
-                            ).hasMatch((v ?? '').trim())
-                            ? null
-                            : 'Enter a valid email address',
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _password,
-                        enabled: !_busy,
-                        obscureText: !_showPassword,
-                        maxLength: 128,
-                        autofillHints: [
-                          _register
-                              ? AutofillHints.newPassword
-                              : AutofillHints.password,
-                        ],
-                        autocorrect: false,
-                        enableSuggestions: false,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          counterText: '',
-                          helperText: _register
-                              ? 'At least 8 characters, with a letter and a number'
-                              : null,
-                          suffixIcon: IconButton(
-                            tooltip: _showPassword
-                                ? 'Hide password'
-                                : 'Show password',
-                            onPressed: () => setState(() {
-                              _showPassword = !_showPassword;
-                            }),
-                            icon: Icon(
-                              _showPassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
+                        TextFormField(
+                          controller: _password,
+                          enabled: !_busy,
+                          obscureText: !_showPassword,
+                          maxLength: 128,
+                          autofillHints: [
+                            _register
+                                ? AutofillHints.newPassword
+                                : AutofillHints.password,
+                          ],
+                          textInputAction: TextInputAction.done,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            counterText: '',
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            helperText: _register
+                                ? '8+ characters, with a letter and a number'
+                                : null,
+                            helperMaxLines: 3,
+                            suffixIcon: IconButton(
+                              tooltip: _showPassword
+                                  ? 'Hide password'
+                                  : 'Show password',
+                              onPressed: () => setState(
+                                () => _showPassword = !_showPassword,
+                              ),
+                              icon: Icon(
+                                _showPassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                              ),
                             ),
                           ),
+                          validator: _validatePassword,
+                          onFieldSubmitted: (_) {
+                            if (!_busy) _submit();
+                          },
                         ),
-                        validator: _validatePassword,
-                        onFieldSubmitted: (_) {
-                          if (!_busy) {
-                            _submit();
-                          }
-                        },
-                      ),
-                      if (_error != null) ErrorNotice(_error!),
-                      const SizedBox(height: 20),
-                      if (!_register)
-                        TextButton(
-                          onPressed: _busy
-                              ? null
-                              : () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder: (_) =>
-                                        PasswordResetPage(api: widget.api),
-                                  ),
+                        if (!_register)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _busy
+                                  ? null
+                                  : () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute<void>(
+                                        builder: (_) =>
+                                            PasswordResetPage(api: widget.api),
+                                      ),
+                                    ),
+                              child: const Text('Forgot password?'),
+                            ),
+                          ),
+                        if (_error != null) ErrorNotice(_error!),
+                        const SizedBox(height: 16),
+                        BusyButton(
+                          label: _register ? 'Create account' : 'Sign in',
+                          busy: _busy,
+                          onPressed: _submit,
+                        ),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                _register
+                                    ? 'Already have an account?'
+                                    : 'New to OneCall?',
+                              ),
+                              TextButton(
+                                onPressed: _busy ? null : _switchMode,
+                                child: Text(
+                                  _register ? 'Sign in' : 'Create account',
                                 ),
-                          child: const Text('Forgot password?'),
-                        ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'OneCall is intended for adults aged 18 or above. Read the terms and privacy notice before creating an account. Optional permissions are requested separately.',
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => const LegalPage(),
+                              ),
+                            ],
                           ),
                         ),
-                        child: const Text('Legal & privacy'),
-                      ),
-                      BusyButton(
-                        label: _register ? 'Create account' : 'Sign in',
-                        busy: _busy,
-                        onPressed: _submit,
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Find local services, send a request, and follow its progress.',
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    ],
+                        const Divider(height: 28),
+                        if (_register)
+                          const Text(
+                            'For adults aged 18 or above. Read the terms and privacy notice before creating an account. Optional permissions are requested separately.',
+                            style: TextStyle(
+                              color: Color(0xFF536581),
+                              fontSize: 12,
+                            ),
+                          ),
+                        Center(
+                          child: TextButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) => const LegalPage(),
+                              ),
+                            ),
+                            child: const Text('Legal & privacy'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

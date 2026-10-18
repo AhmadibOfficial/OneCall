@@ -21,12 +21,11 @@ class OneCallSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 6, bottom: 12),
           child: Text(
-            title.toUpperCase(),
+            title,
             style: const TextStyle(
               color: Color(0xFF59667A),
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
-              letterSpacing: 1.4,
             ),
           ),
         ),
@@ -55,62 +54,73 @@ class OneCallSteps extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 16),
-    child: Row(
-      children: List.generate(labels.length, (index) {
-        final complete = index < current;
-        final selected = index == current;
-        return Expanded(
-          child: Semantics(
-            label: 'Step ${index + 1}: ${labels[index]}',
-            selected: selected,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: index < current && onEdit != null
-                  ? () => onEdit!(index)
-                  : null,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 7),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 17,
-                      backgroundColor: selected
-                          ? navy
-                          : complete
-                          ? const Color(0xFFE0ECFF)
-                          : Colors.white,
-                      foregroundColor: navy,
-                      child: complete
-                          ? const Icon(Icons.check, size: 18)
-                          : Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                color: selected ? Colors.white : navy,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      labels[index],
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: selected
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                        color: selected ? navy : const Color(0xFF68768A),
+    padding: const EdgeInsets.symmetric(vertical: 14),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          liveRegion: true,
+          child: Text(
+            'Step ${current + 1} of ${labels.length} · ${labels[current]}',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: (current + 1) / labels.length,
+            minHeight: 4,
+            backgroundColor: const Color(0xFFDCE5F1),
+            semanticsLabel: 'Booking progress',
+          ),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: List.generate(labels.length, (index) {
+            final complete = index < current;
+            final selected = index == current;
+            return Expanded(
+              child: Semantics(
+                label: 'Step ${index + 1}: ${labels[index]}',
+                selected: selected,
+                child: Tooltip(
+                  message: complete ? 'Edit ${labels[index]}' : labels[index],
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: complete && onEdit != null
+                        ? () => onEdit!(index)
+                        : null,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 48),
+                      child: Center(
+                        child: CircleAvatar(
+                          radius: 15,
+                          backgroundColor: selected
+                              ? navy
+                              : complete
+                              ? const Color(0xFFE0ECFF)
+                              : Colors.white,
+                          child: complete
+                              ? const Icon(Icons.check, color: navy, size: 18)
+                              : Text(
+                                  '${index + 1}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: selected ? Colors.white : navy,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-        );
-      }),
+            );
+          }),
+        ),
+      ],
     ),
   );
 }

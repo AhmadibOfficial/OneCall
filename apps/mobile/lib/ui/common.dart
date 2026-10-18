@@ -132,12 +132,13 @@ class BusyButton extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: busy
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: Colors.white,
+                  semanticsLabel: '$label in progress',
                 ),
               )
             : Text(label),

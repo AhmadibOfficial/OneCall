@@ -1,0 +1,26 @@
+{
+  "completedAt": "2026-10-13T12:16:22.921775+00:00",
+  "sourceBaseline": "6eab4c0",
+  "policyVersion": "2026-10-13-pilot-draft-1",
+  "backendBuild": "passed",
+  "applicationAndTestTypeScript": "passed",
+  "focusedEslint": "passed",
+  "generatedDocuments": "passed",
+  "workflowYaml": "parsed",
+  "httpChecksPassed": 4,
+  "httpTestEnvironment": "Compiled Nest application bootstrap middleware; local HTTP; no database required",
+  "databaseMigrations": "none",
+  "githubReview": {
+    "url": "https://github.com/AhmadibOfficial/OneCall/pull/1",
+    "draft": true,
+    "scope": "Documents and generator only; develop is older than the audited pilot"
+  },
+  "notExecuted": [
+    "Flutter analyze/test/build: SDK unavailable in this environment",
+    "Browser and native device acceptance",
+    "Live support-email receipt and deletion/export fulfilment",
+    "Cloud publication",
+    "Qualified Nigerian legal/privacy approval"
+  ],
+  "installerChecks": "See update README; verification uses disposable source and stub pnpm build commands"
+}

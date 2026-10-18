@@ -522,6 +522,7 @@ class _HomePageState extends State<HomePage> {
                       onChanged: (value) => setState(() => _search = value),
                       decoration: InputDecoration(
                         labelText: 'Search services',
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
                         prefixIcon: const Icon(Icons.search_rounded),
                         suffixIcon: _search.isEmpty
                             ? null
@@ -909,6 +910,7 @@ class _AllServicesPageState extends State<AllServicesPage> {
                   FocusManager.instance.primaryFocus?.unfocus(),
               decoration: InputDecoration(
                 labelText: 'Search all services',
+                floatingLabelBehavior: FloatingLabelBehavior.never,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _search.text.isEmpty
                     ? null

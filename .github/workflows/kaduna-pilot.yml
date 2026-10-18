@@ -84,6 +84,14 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build web --release --dart-define=ONECALL_API_URL=https://api.example.com/api/v1
+      - name: Build sample-data UI preview
+        run: flutter build web --debug --no-pub --no-web-resources-cdn -t tool/ui_preview.dart
+      - name: Save UI preview for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: onecall-ui-preview
+          path: apps/mobile/build/web
+          retention-days: 7
       - name: Install checksum-verified Android NDK
         run: bash ../../scripts/prepare-android-ci.sh
       - run: flutter build apk --debug --dart-define=ONECALL_API_URL=https://api.example.com/api/v1

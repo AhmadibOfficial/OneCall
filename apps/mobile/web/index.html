@@ -33,16 +33,45 @@
 
   <title>OneCall · Nigeria</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    #app-loading { position: fixed; inset: 0; display: grid; place-items: center;
+      padding: 24px; box-sizing: border-box; font: 16px/1.5 system-ui, sans-serif;
+      color: #d2e1f6; text-align: center; background: #031b46; }
+    #app-loading strong { display: block; color: white; font-size: 32px; letter-spacing: -1px; }
+    .loading-ring { width: 28px; height: 28px; margin: 24px auto; border-radius: 50%;
+      border: 3px solid #284775; border-top-color: #9ac4ff; animation: turn 1s linear infinite; }
+    #app-loading button { min-height: 48px; margin-top: 16px; padding: 10px 24px;
+      border: 1px solid #9ac4ff; border-radius: 14px; background: transparent;
+      color: white; font: inherit; cursor: pointer; }
+    #app-loading button:focus-visible { outline: 3px solid white; outline-offset: 4px; }
+    @keyframes turn { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .loading-ring { animation: none; } }
+  </style>
 </head>
 <body style="margin:0;background:#031B46;">
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async></script>
+  <div id="app-loading">
+    <div>
+      <strong>OneCall</strong>
+      <div class="loading-ring" aria-hidden="true"></div>
+      <p id="loading-status" role="status">Opening OneCall…</p>
+      <button id="reload-app" type="button" hidden>Reload OneCall</button>
+      <noscript><p>Enable JavaScript in your browser to open OneCall.</p></noscript>
+    </div>
+  </div>
+  <script>
+    const slowLoad = setTimeout(showLoadHelp, 20000);
+    function showLoadHelp() {
+      const status = document.getElementById('loading-status');
+      if (!status) return;
+      status.textContent = 'Taking longer than expected. Check your connection and try reloading.';
+      document.getElementById('reload-app').hidden = false;
+    }
+    document.getElementById('reload-app').addEventListener('click', () => location.reload());
+    window.addEventListener('flutter-first-frame', () => {
+      clearTimeout(slowLoad);
+      document.getElementById('app-loading')?.remove();
+    }, { once: true });
+  </script>
+  <script src="flutter_bootstrap.js" async onerror="showLoadHelp()"></script>
 </body>
 </html>

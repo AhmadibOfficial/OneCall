@@ -11,6 +11,7 @@ import 'order_pages.dart';
 import 'profile_pages.dart';
 import 'resource_widgets.dart';
 import 'verification_page.dart';
+import 'service_catalogue.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.api});
@@ -21,6 +22,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _tab = 0;
+  ServiceCategory _category = ServiceCategory.all;
   String _state = 'Kaduna', _city = 'Kaduna', _search = '';
   List<PilotService> _services = [];
   final Set<String> _favorites = {}, _saving = {};
@@ -218,6 +220,8 @@ class _HomePageState extends State<HomePage> {
         onBook: _book,
         favorites: _favorites,
         onFavorite: _favorite,
+        initialQuery: _search,
+        initialCategory: _category,
       ),
     ),
   );
@@ -227,147 +231,226 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: _tab == 0
-        ? null
-        : AppBar(
-            title: Text(
-              ['Home', 'Bookings', 'Chat', 'Notifications', 'Profile'][_tab],
-            ),
-            actions: _tab == 2 && widget.api.user != null
-                ? [
-                    IconButton(
-                      tooltip: 'Favorites',
-                      icon: const Icon(Icons.favorite_border),
-                      onPressed: () => Navigator.push<void>(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) => Scaffold(
-                            appBar: AppBar(title: const Text('Favorites')),
-                            body: _favoriteList(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]
-                : _tab == 3 && widget.api.user != null
-                ? [
-                    TextButton(
-                      onPressed: () async {
-                        try {
-                          await widget.api.request(
-                            'POST',
-                            '/notifications/read-all',
-                            body: {},
-                          );
-                          if (mounted) {
-                            setState(() => _notificationsRevision++);
-                          }
-                        } catch (e) {
-                          if (mounted && context.mounted) {
-                            notice(context, errorMessage(e));
-                          }
-                        }
-                      },
-                      child: const Text(
-                        'Mark all as read',
-                        style: TextStyle(color: Colors.white, fontSize: 11),
-                      ),
-                    ),
-                  ]
-                : null,
-          ),
-    body: switch (_tab) {
-      0 => _home(),
-      1 => PrivateGate(
-        api: widget.api,
-        verified: true,
-        child: BookingsPanel(api: widget.api),
-      ),
-      2 => PrivateGate(
-        api: widget.api,
-        child: ChatInboxPanel(api: widget.api),
-      ),
-      3 => PrivateGate(
-        api: widget.api,
-        child: ResourceList(
-          key: ValueKey('notifications-$_notificationsRevision'),
-          load: () async =>
-              await widget.api.request('GET', '/notifications') as List,
-          emptyText: 'Your booking and payment updates will appear here.',
-          itemBuilder: (context, item, reload) =>
-              _notification(Map<String, dynamic>.from(item as Map), reload),
-        ),
-      ),
-      _ => PrivateGate(
-        api: widget.api,
-        child: ProfilePanel(api: widget.api, state: _state, city: _city),
-      ),
-    },
-    bottomNavigationBar: SafeArea(
-      top: false,
-      minimum: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(36),
-        child: NavigationBar(
-          height: 72,
-          backgroundColor: Colors.white,
-          indicatorColor: const Color(0xFFE7F0FF),
-          selectedIndex: _tab,
-          onDestinationSelected: (index) => setState(() => _tab = index),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.receipt_long_outlined),
-              selectedIcon: Icon(Icons.receipt_long),
-              label: 'Bookings',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.chat_bubble_outline),
-              selectedIcon: Icon(Icons.chat_bubble),
-              label: 'Chat',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.notifications_none),
-              selectedIcon: Icon(Icons.notifications),
-              label: 'Updates',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-          ],
-        ),
+  static const _labels = ['Home', 'Bookings', 'Chat', 'Updates', 'Profile'];
+  static const _icons = [
+    Icons.home_outlined,
+    Icons.receipt_long_outlined,
+    Icons.chat_bubble_outline,
+    Icons.notifications_none,
+    Icons.person_outline,
+  ];
+  static const _selectedIcons = [
+    Icons.home,
+    Icons.receipt_long,
+    Icons.chat_bubble,
+    Icons.notifications,
+    Icons.person,
+  ];
+
+  void _selectTab(int index) => setState(() => _tab = index);
+
+  void _showFavorites() => Navigator.push<void>(
+    context,
+    MaterialPageRoute<void>(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text('Favorites')),
+        body: PrivateGate(api: widget.api, child: _favoriteList()),
       ),
     ),
   );
-  Widget _home() {
-    final filtered = _services
-        .where(
-          (s) => ('${s.name} ${s.description}').toLowerCase().contains(
-            _search.toLowerCase(),
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final wide = constraints.maxWidth >= 1000;
+      final content = Scaffold(
+        appBar: _tab == 0
+            ? null
+            : AppBar(
+                title: Text(_tab == 3 ? 'Notifications' : _labels[_tab]),
+                actions: _tab == 2 && widget.api.user != null
+                    ? [
+                        IconButton(
+                          tooltip: 'Favorites',
+                          icon: const Icon(Icons.favorite_border),
+                          onPressed: _showFavorites,
+                        ),
+                      ]
+                    : _tab == 3 && widget.api.user != null
+                    ? [
+                        IconButton(
+                          tooltip: 'Mark all as read',
+                          onPressed: () async {
+                            try {
+                              await widget.api.request(
+                                'POST',
+                                '/notifications/read-all',
+                                body: {},
+                              );
+                              if (mounted) {
+                                setState(() => _notificationsRevision++);
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                notice(context, errorMessage(e));
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.done_all),
+                        ),
+                      ]
+                    : null,
+              ),
+        body: switch (_tab) {
+          0 => _home(),
+          1 => PrivateGate(
+            api: widget.api,
+            verified: true,
+            child: BookingsPanel(api: widget.api),
           ),
-        )
-        .toList();
-    final shown = _search.isEmpty ? filtered.take(13).toList() : filtered;
+          2 => PrivateGate(
+            api: widget.api,
+            child: ChatInboxPanel(api: widget.api),
+          ),
+          3 => PrivateGate(
+            api: widget.api,
+            child: ResourceList(
+              key: ValueKey('notifications-$_notificationsRevision'),
+              load: () async =>
+                  await widget.api.request('GET', '/notifications') as List,
+              emptyText: 'Your booking and account updates will appear here.',
+              itemBuilder: (context, item, reload) =>
+                  _notification(Map<String, dynamic>.from(item as Map), reload),
+            ),
+          ),
+          _ => PrivateGate(
+            api: widget.api,
+            child: ProfilePanel(api: widget.api, state: _state, city: _city),
+          ),
+        },
+        bottomNavigationBar: wide
+            ? null
+            : DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(top: BorderSide(color: Color(0xFFE5EAF2))),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: NavigationBar(
+                    selectedIndex: _tab,
+                    labelBehavior:
+                        NavigationDestinationLabelBehavior.alwaysShow,
+                    onDestinationSelected: _selectTab,
+                    destinations: [
+                      for (var i = 0; i < _labels.length; i++)
+                        NavigationDestination(
+                          icon: Icon(_icons[i]),
+                          selectedIcon: Icon(_selectedIcons[i]),
+                          label: _labels[i],
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+      );
+      return Row(
+        children: [
+          if (wide)
+            Material(
+              child: Container(
+                width: 220,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(right: BorderSide(color: Color(0xFFE5EAF2))),
+                ),
+                child: SafeArea(
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 32),
+                        child: OneCallLogo(size: 48),
+                      ),
+                      Expanded(
+                        child: NavigationRail(
+                          extended: true,
+                          scrollable: true,
+                          minExtendedWidth: 218,
+                          selectedIndex: _tab,
+                          onDestinationSelected: _selectTab,
+                          backgroundColor: Colors.white,
+                          indicatorColor: const Color(0xFFEAF2FF),
+                          selectedIconTheme: const IconThemeData(
+                            color: Color(0xFF075ECB),
+                          ),
+                          selectedLabelTextStyle: const TextStyle(
+                            color: navy,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          destinations: [
+                            for (var i = 0; i < _labels.length; i++)
+                              NavigationRailDestination(
+                                icon: Icon(_icons[i]),
+                                selectedIcon: Icon(_selectedIcons[i]),
+                                label: Text(_labels[i]),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text(
+                          'Local help.\nOneCall away.',
+                          style: TextStyle(
+                            color: Color(0xFF536581),
+                            height: 1.7,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          Expanded(child: content),
+        ],
+      );
+    },
+  );
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _search = '';
+      _category = ServiceCategory.all;
+    });
+  }
+
+  Widget _home() {
+    final filtered = matchingServices(_services, _search, _category);
+    final hasFilters =
+        _search.trim().isNotEmpty || _category != ServiceCategory.all;
+    final shown = hasFilters ? filtered : filtered.take(8).toList();
     final name = widget.api.user?.firstName.isNotEmpty == true
         ? widget.api.user!.firstName
         : 'there';
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
+        key: const PageStorageKey('home-scroll'),
         padding: EdgeInsets.zero,
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           Container(
-            color: navy,
-            padding: const EdgeInsets.fromLTRB(22, 12, 22, 24),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [navy, Color(0xFF12396B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
             child: SafeArea(
               bottom: false,
               child: Column(
@@ -377,78 +460,84 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Hello, $name 👋',
+                          'Hello, $name',
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 23,
-                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFD2E1F6),
+                            fontSize: 16,
                           ),
                         ),
                       ),
                       IconButton(
                         tooltip: 'Notifications',
-                        onPressed: () => setState(() => _tab = 3),
+                        onPressed: () => _selectTab(3),
+                        style: IconButton.styleFrom(
+                          backgroundColor: const Color(0xFF284775),
+                        ),
                         icon: const Icon(
-                          Icons.notifications_none,
+                          Icons.notifications_none_rounded,
                           color: Colors.white,
                         ),
                       ),
                     ],
                   ),
-                  InkWell(
-                    onTap: _location,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on,
-                            size: 16,
-                            color: Color(0xFF81BDFF),
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              '$_city, $_state · Nigeria',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                          const Icon(
-                            Icons.keyboard_arrow_down,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ],
-                      ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Your day, made easier.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      height: 1.15,
+                      letterSpacing: -.7,
                     ),
                   ),
-                  const SizedBox(height: 13),
+                  const SizedBox(height: 10),
                   const Text(
-                    'What service do you need today?',
-                    style: TextStyle(color: Colors.white),
+                    'Find local help for your home and everyday tasks.',
+                    style: TextStyle(color: Color(0xFFD2E1F6), fontSize: 15),
                   ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: _searchController,
-                    onChanged: (value) => setState(() => _search = value),
-                    decoration: InputDecoration(
-                      hintText: 'Search services...',
-                      prefixIcon: const Icon(Icons.search, size: 21),
-                      suffixIcon: _search.isEmpty
-                          ? null
-                          : IconButton(
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _search = '');
-                              },
-                              icon: const Icon(Icons.close),
-                            ),
-                      contentPadding: const EdgeInsets.symmetric(
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    onPressed: _location,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFF284775),
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 12,
+                      ),
+                    ),
+                    icon: const Icon(Icons.location_on_outlined, size: 20),
+                    label: Text('$_city, $_state', softWrap: true),
+                  ),
+                  const SizedBox(height: 20),
+                  Semantics(
+                    key: const ValueKey('home-service-search'),
+                    container: true,
+                    label: 'Search services',
+                    child: TextField(
+                      controller: _searchController,
+                      textInputAction: TextInputAction.search,
+                      onTapOutside: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                      onChanged: (value) => setState(() => _search = value),
+                      decoration: InputDecoration(
+                        label: const ExcludeSemantics(
+                          child: Text('Search services'),
+                        ),
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        suffixIcon: _search.isEmpty
+                            ? null
+                            : IconButton(
+                                tooltip: 'Clear search',
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _search = '');
+                                },
+                                icon: const Icon(Icons.close),
+                              ),
+                        fillColor: Colors.white,
                       ),
                     ),
                   ),
@@ -457,161 +546,172 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(18, 22, 18, 14),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.api.user != null && !widget.api.user!.canBook)
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () => _selectTab(1),
+                      icon: const Icon(Icons.receipt_long_outlined, size: 20),
+                      label: const Text('My bookings'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _showFavorites,
+                      icon: const Icon(Icons.favorite_border, size: 20),
+                      label: const Text('Saved services'),
+                    ),
+                  ],
+                ),
+                if (widget.api.user != null && !widget.api.user!.canBook) ...[
+                  const SizedBox(height: 18),
                   Card(
-                    color: const Color(0xFFF0F6FF),
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.verified_user_outlined,
-                        color: teal,
-                      ),
-                      title: const Text('Verify your email and phone'),
-                      trailing: TextButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => VerificationPage(api: widget.api),
+                    color: const Color(0xFFEAF2FF),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Verify your email and phone',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 17,
+                            ),
                           ),
-                        ),
-                        child: const Text('Verify account'),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Complete contact verification before sending your first request.',
+                          ),
+                          TextButton.icon(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) =>
+                                    VerificationPage(api: widget.api),
+                              ),
+                            ),
+                            icon: const Icon(Icons.arrow_forward, size: 18),
+                            label: const Text('Verify account'),
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                ],
+                const SizedBox(height: 26),
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Explore services',
+                        style: TextStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -.4,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _loading || _error != null
+                          ? null
+                          : _allServices,
+                      child: const Text('View all'),
+                    ),
+                  ],
+                ),
+                Text(
+                  'Availability for $_city',
+                  style: const TextStyle(color: Color(0xFF536581)),
+                ),
+                const SizedBox(height: 16),
+                ServiceFilters(
+                  selected: _category,
+                  onChanged: (value) => setState(() => _category = value),
+                ),
+                const SizedBox(height: 18),
                 if (_loading)
                   const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: CircularProgressIndicator(),
+                    padding: EdgeInsets.all(32),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        semanticsLabel: 'Loading services',
+                      ),
+                    ),
                   ),
                 if (_error != null) ErrorNotice(_error!, onRetry: _load),
-                if (!_loading && _error == null)
-                  LayoutBuilder(
-                    builder: (context, constraints) => GridView(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: constraints.maxWidth < 330 ? 3 : 4,
-                        mainAxisExtent:
-                            112 +
-                            (MediaQuery.textScalerOf(context).scale(11) - 11) *
-                                3,
-                        mainAxisSpacing: 9,
-                        crossAxisSpacing: 5,
-                      ),
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        ...shown.map(
-                          (s) => InkWell(
-                            onTap: () => _book(s),
-                            borderRadius: BorderRadius.circular(14),
-                            child: Column(
-                              children: [
-                                ServiceGlyph(s.icon, size: 49),
-                                const SizedBox(height: 8),
-                                Text(
-                                  s.shortName,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: navy,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                if (!_loading && _error == null) ...[
+                  if (hasFilters)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          '${filtered.length} ${filtered.length == 1 ? 'service' : 'services'} found',
+                          style: const TextStyle(color: Color(0xFF536581)),
                         ),
-                        if (_search.isEmpty)
-                          InkWell(
-                            onTap: _allServices,
-                            child: const Column(
-                              children: [
-                                ServiceGlyph('more', size: 49),
-                                SizedBox(height: 8),
-                                Text(
-                                  'More Services',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: navy,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
-                  ),
-                if (!_loading && shown.isEmpty && _error == null)
-                  const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text('No services match your search.'),
-                  ),
-                const SizedBox(height: 18),
+                  if (shown.isEmpty)
+                    CatalogueEmptyState(
+                      hasFilters: hasFilters,
+                      onReset: hasFilters ? _clearSearch : _load,
+                    )
+                  else
+                    ServiceGrid(
+                      services: shown,
+                      onBook: _book,
+                      favorites: _favorites,
+                      saving: _saving,
+                      onFavorite: _favorite,
+                      compact: true,
+                    ),
+                  if (!hasFilters && filtered.length > shown.length) ...[
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _allServices,
+                        icon: const Icon(Icons.grid_view_rounded, size: 18),
+                        label: Text('Browse all ${filtered.length} services'),
+                      ),
+                    ),
+                  ],
+                ],
+                const SizedBox(height: 24),
                 Container(
-                  padding: const EdgeInsets.all(18),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    gradient: const LinearGradient(
-                      colors: [navy, Color(0xFF043270)],
-                    ),
+                    color: const Color(0xFFEAF0F8),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'ONE CALL. EVERY SERVICE.',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 7),
-                            const Text(
-                              'Find the help you need across Nigeria.',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              height: 48,
-                              child: FilledButton(
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: navy,
-                                ),
-                                onPressed: _loading ? null : _allServices,
-                                child: const Text(
-                                  'Book Now',
-                                  style: TextStyle(fontSize: 11),
-                                ),
-                              ),
-                            ),
-                          ],
+                      const Icon(
+                        Icons.fact_check_outlined,
+                        color: Color(0xFF075ECB),
+                        size: 28,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Request first. Agree a quote.',
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const Icon(
-                        Icons.card_giftcard,
-                        color: Color(0xFF5B9EFF),
-                        size: 76,
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Tell us what you need. Once assigned, your provider sends a quote for you to review before work starts.',
+                        style: TextStyle(color: Color(0xFF536581)),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Availability is shown for $_city. Prices are confirmed by your provider.',
-                  style: const TextStyle(color: Colors.grey, fontSize: 11),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
@@ -734,9 +834,12 @@ class AllServicesPage extends StatefulWidget {
     required this.onBook,
     required this.favorites,
     required this.onFavorite,
+    this.initialQuery = '',
+    this.initialCategory = ServiceCategory.all,
   });
   final List<PilotService> services;
-  final String location;
+  final String location, initialQuery;
+  final ServiceCategory initialCategory;
   final Future<void> Function(PilotService) onBook, onFavorite;
   final Set<String> favorites;
   @override
@@ -744,143 +847,116 @@ class AllServicesPage extends StatefulWidget {
 }
 
 class _AllServicesPageState extends State<AllServicesPage> {
-  String _search = '';
+  late final _search = TextEditingController(text: widget.initialQuery);
+  late ServiceCategory _category = widget.initialCategory;
+  final Set<String> _saving = {};
+
+  Future<void> _favorite(PilotService service) async {
+    if (_saving.contains(service.name)) return;
+    setState(() => _saving.add(service.name));
+    try {
+      await widget.onFavorite(service);
+    } catch (error) {
+      if (mounted) notice(context, errorMessage(error));
+    } finally {
+      if (mounted) setState(() => _saving.remove(service.name));
+    }
+  }
+
+  void _reset() {
+    _search.clear();
+    setState(() => _category = ServiceCategory.all);
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final matches = widget.services
-        .where(
-          (s) => ('${s.name} ${s.description}').toLowerCase().contains(
-            _search.toLowerCase(),
-          ),
-        )
-        .toList();
+    final matches = matchingServices(widget.services, _search.text, _category);
     return Scaffold(
       appBar: AppBar(title: const Text('All Services')),
       body: ListView(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(24),
         children: [
-          Text(
-            widget.location,
-            style: const TextStyle(color: navy, fontWeight: FontWeight.w600),
+          const Text(
+            'A hand with the everyday.',
+            style: TextStyle(fontSize: 27, fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 14),
-          TextField(
-            decoration: const InputDecoration(
-              hintText: 'Search all services',
-              prefixIcon: Icon(Icons.search),
-            ),
-            onChanged: (s) => setState(() => _search = s),
-          ),
-          const SizedBox(height: 14),
-          if (matches.isEmpty)
-            const EmptyNotice(
-              'No services match your search.',
-              icon: Icons.search_off,
-            ),
-          LayoutBuilder(
-            builder: (context, constraints) => GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: matches.length,
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent:
-                    MediaQuery.textScalerOf(context).scale(14) > 18
-                    ? constraints.maxWidth + 1
-                    : 320,
-                mainAxisExtent:
-                    310 +
-                    (MediaQuery.textScalerOf(context).scale(14) - 14) * 16,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(
+                Icons.location_on_outlined,
+                size: 18,
+                color: Color(0xFF536581),
               ),
-              itemBuilder: (context, index) {
-                final service = matches[index];
-                return Card(
-                  clipBehavior: Clip.antiAlias,
-                  margin: EdgeInsets.zero,
-                  child: InkWell(
-                    onTap: () => widget.onBook(service),
-                    child: Ink(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF123969), navy],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  widget.location,
+                  style: const TextStyle(color: Color(0xFF536581)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Semantics(
+            container: true,
+            label: 'Search all services',
+            child: TextField(
+              controller: _search,
+              textInputAction: TextInputAction.search,
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
+              decoration: InputDecoration(
+                label: const ExcludeSemantics(
+                  child: Text('Search all services'),
+                ),
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _search.text.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Clear search',
+                        onPressed: () {
+                          _search.clear();
+                          setState(() {});
+                        },
+                        icon: const Icon(Icons.close),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Icon(
-                                    serviceIcon(service.icon),
-                                    size: 40,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                IconButton(
-                                  tooltip: 'Save favourite',
-                                  onPressed: () async {
-                                    await widget.onFavorite(service);
-                                    if (mounted) setState(() {});
-                                  },
-                                  icon: Icon(
-                                    widget.favorites.contains(service.name)
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Spacer(),
-                            Text(
-                              service.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              service.description,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0xFFD9E7FA),
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              '${service.availableProviders} approved providers in this area',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text(
-                              'Request service →',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
+              ),
+              onChanged: (_) => setState(() {}),
             ),
           ),
+
+          const SizedBox(height: 14),
+          ServiceFilters(
+            selected: _category,
+            onChanged: (value) => setState(() => _category = value),
+          ),
+          const SizedBox(height: 16),
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              '${matches.length} ${matches.length == 1 ? 'service' : 'services'} found',
+              style: const TextStyle(color: Color(0xFF536581)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (matches.isEmpty)
+            CatalogueEmptyState(onReset: _reset)
+          else
+            ServiceGrid(
+              services: matches,
+              onBook: widget.onBook,
+              favorites: widget.favorites,
+              saving: _saving,
+              onFavorite: _favorite,
+            ),
         ],
       ),
     );

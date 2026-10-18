@@ -18,6 +18,7 @@ class AppLoading extends StatelessWidget {
           child: CircularProgressIndicator(
             strokeWidth: 2,
             color: splash ? Colors.white : teal,
+            semanticsLabel: 'Loading OneCall',
           ),
         ),
         if (splash) ...[

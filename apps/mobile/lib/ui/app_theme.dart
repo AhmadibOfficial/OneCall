@@ -5,7 +5,7 @@ import 'common.dart';
 // One theme owns the appearance of customer, provider and account screens.
 ThemeData oneCallTheme() {
   const borderColor = Color(0xFFDCE5F1);
-  const rounded = BorderRadius.all(Radius.circular(22));
+  const rounded = BorderRadius.all(Radius.circular(18));
   return ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
@@ -15,9 +15,19 @@ ThemeData oneCallTheme() {
       secondary: teal,
       surface: Colors.white,
     ),
-    scaffoldBackgroundColor: const Color(0xFFF0F3F7),
+    scaffoldBackgroundColor: const Color(0xFFF5F7FB),
     canvasColor: Colors.white,
     dividerColor: borderColor,
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(fontSize: 16, height: 1.5, color: navy),
+      bodyMedium: TextStyle(fontSize: 14, height: 1.5, color: navy),
+      bodySmall: TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF536581)),
+      titleMedium: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
+        color: navy,
+      ),
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: navy,
       foregroundColor: Colors.white,
@@ -45,7 +55,7 @@ ThemeData oneCallTheme() {
       suffixIconColor: navy,
       labelStyle: TextStyle(color: Color(0xFF536581)),
       floatingLabelStyle: TextStyle(color: navy),
-      hintStyle: TextStyle(color: Color(0xFF71809A), fontSize: 14),
+      hintStyle: TextStyle(color: Color(0xFF596C86), fontSize: 14),
       border: OutlineInputBorder(
         borderRadius: rounded,
         borderSide: BorderSide(color: borderColor),
@@ -75,7 +85,7 @@ ThemeData oneCallTheme() {
         foregroundColor: Colors.white,
         minimumSize: const Size(0, 54),
         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        shape: const StadiumBorder(),
+        shape: const RoundedRectangleBorder(borderRadius: rounded),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -87,7 +97,7 @@ ThemeData oneCallTheme() {
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(foregroundColor: teal),
+      style: TextButton.styleFrom(foregroundColor: const Color(0xFF075ECB)),
     ),
     snackBarTheme: const SnackBarThemeData(
       backgroundColor: navy,
@@ -117,6 +127,9 @@ ThemeData oneCallTheme() {
       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     ),
     iconTheme: const IconThemeData(color: navy),
+    tooltipTheme: const TooltipThemeData(
+      waitDuration: Duration(milliseconds: 400),
+    ),
   );
 }
 
@@ -136,7 +149,7 @@ class OneCallViewport extends StatelessWidget {
       color: const Color(0xFFF1F5FC),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
+          constraints: const BoxConstraints(maxWidth: 1360),
           child: SizedBox.expand(child: child),
         ),
       ),

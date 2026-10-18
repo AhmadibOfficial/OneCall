@@ -78,19 +78,22 @@ void main() {
     final api = CatalogueApi();
     addTearDown(api.dispose);
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-    await display(tester, HomePage(api: api));
-    final search = find.byKey(const ValueKey('home-service-search'));
-    expect(
-      tester.getSemantics(search).getSemanticsData().label,
-      'Search services',
-    );
-    await tester.enterText(find.byType(TextField), 'leaks');
-    await tester.pumpAndSettle();
-    expect(
-      tester.getSemantics(search).getSemanticsData().label,
-      'Search services',
-    );
+    try {
+      await display(tester, HomePage(api: api));
+      final search = find.byKey(const ValueKey('home-service-search'));
+      expect(
+        tester.getSemantics(search).getSemanticsData().label,
+        'Search services',
+      );
+      await tester.enterText(find.byType(TextField), 'leaks');
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(search).getSemanticsData().label,
+        'Search services',
+      );
+    } finally {
+      semantics.dispose();
+    }
   });
 
   test('service search combines words, aliases and the selected category', () {

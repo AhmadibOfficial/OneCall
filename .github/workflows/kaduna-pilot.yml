@@ -64,6 +64,7 @@ jobs:
       - run: pnpm --filter backend test:social
       - run: pnpm --filter backend test:operations
       - run: pnpm --filter backend exec node --test test/release-readiness.test.cjs
+      - run: python3 -m unittest discover -s scripts/tests -p 'test_client_distribution.py'
   flutter:
     runs-on: ubuntu-latest
     defaults:

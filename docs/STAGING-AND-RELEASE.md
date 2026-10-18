@@ -1,14 +1,14 @@
 # OneCall staging and Android release preparation
 
-This update prepares deployment and signing. No cloud resources were created, no real messages were sent, and no release bundle was built remotely.
+This guide describes staging and signing preparation. Current cloud setup and downloadable APK publication instructions are in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Hosting draft
 
-The root render.yaml is a free preview: API, signed delivery adapter, PostgreSQL and Redis-compatible Key Value. Photo uploads are disabled explicitly because free web services have ephemeral filesystems. Free services can sleep and free databases have lifecycle limits; use the current Render dashboard to review capacity and cost.
+The root render.yaml is a free pilot in the OneCall project: API, signed delivery adapter, static web client, PostgreSQL and Redis-compatible Key Value. Photo uploads are disabled explicitly because free web services have ephemeral filesystems. Free services can sleep and free databases have lifecycle limits; use the current Render dashboard to review capacity and cost.
 
 The separate deploy/render-paid-staging.example.yaml is an opt-in staging draft with a private API disk and paid services. It was generated with scripts/prepare-render.py --paid-staging. It is not applied automatically. Review the plans and region in Render before provisioning. Choose a region and update the privacy notice to reflect actual hosting and data transfers before public launch.
 
-Both drafts have automatic deployment disabled, no public database/cache access and social login/payments disabled. HTTPS is supplied by Render. AUTH_DELIVERY_URL must be the delivery service's public HTTPS /challenges endpoint; the backend uses a shared generated HMAC secret. Fill Resend/Termii credentials, a verified sending domain and an approved SMS sender in Render. Private keys belong in runtime settings, never in Flutter defines or source files. Mocked adapter acceptance does not establish that messages reach real phones or inboxes.
+Both drafts have automatic deployment disabled, no public database/cache access and social login/payments disabled. HTTPS is supplied by Render. AUTH_DELIVERY_ORIGIN references the delivery service's real public HTTPS origin; startup derives its /challenges endpoint. An explicit AUTH_DELIVERY_URL still takes precedence. The backend uses a shared generated HMAC secret. Fill Resend/Termii credentials, a verified sending domain and an approved SMS sender in Render. Private keys belong in runtime settings, never in Flutter defines or source files. Mocked adapter acceptance does not establish that messages reach real phones or inboxes.
 
 The Docker build includes Prisma generation, backend compilation, public admin/legal assets and migration tooling. It runs as the node user. The paid draft runs migrations before deploy; the single-instance free preview migrates on startup. Migration history must be compatible with the destination database. Start with an empty staging database; preserve the laptop pilot database and do not import customer records casually.
 

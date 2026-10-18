@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { checks, probe } = require('../scripts/release-readiness.cjs');
+const { checks, probe, deliveryUrl } = require('../scripts/release-readiness.cjs');
 function configured() {
   return {
     NODE_ENV: 'production',
@@ -78,4 +78,29 @@ test('public probe reads health and public legal pages and sends no messages', a
   } finally {
     global.fetch = previous;
   }
+});
+test('Render delivery origin resolves to the signed challenge endpoint without exposing secrets', () => {
+  const env = configured();
+  delete env.AUTH_DELIVERY_URL;
+  env.AUTH_DELIVERY_ORIGIN = 'https://onecall-delivery.onrender.com';
+  assert.equal(deliveryUrl(env), 'https://onecall-delivery.onrender.com/challenges');
+  assert.equal(checks(env).ready, true);
+  assert.ok(!JSON.stringify(checks(env)).includes(env.AUTH_DELIVERY_SECRET));
+  env.AUTH_DELIVERY_URL = 'https://custom.domain.test/challenges';
+  assert.equal(deliveryUrl(env), env.AUTH_DELIVERY_URL);
+});
+test('invalid delivery origins stay blocked instead of being converted into usable configuration', () => {
+  for (const origin of [
+    '', 'http://onecall-delivery.onrender.com',
+    'https://account:secret@onecall-delivery.onrender.com',
+    'https://onecall-delivery.onrender.com/another-path',
+    'https://onecall-delivery.onrender.com?token=secret',
+    'https://onecall-delivery.onrender.com#fragment',
+  ]) {
+    const env = configured();
+    delete env.AUTH_DELIVERY_URL;
+    env.AUTH_DELIVERY_ORIGIN = origin;
+    assert.equal(checks(env).ready, false);
+  }
+  assert.equal(checks({ ...configured(), AUTH_DELIVERY_URL: 'http://unsafe.test', AUTH_DELIVERY_ORIGIN: 'https://safe.test' }).ready, false);
 });

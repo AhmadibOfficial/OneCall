@@ -23,6 +23,11 @@ function freshSecret(value) {
     !/replace|example|placeholder|disposable|local.only/i.test(value)
   );
 }
+function deliveryUrl(env = process.env) {
+  if (env.AUTH_DELIVERY_URL) return env.AUTH_DELIVERY_URL;
+  if (!secureUrl(env.AUTH_DELIVERY_ORIGIN, true)) return '';
+  return new URL('/challenges', env.AUTH_DELIVERY_ORIGIN).href;
+}
 function checks(env = process.env, component = 'api') {
   const results = [];
   const add = (name, ok) =>
@@ -52,7 +57,7 @@ function checks(env = process.env, component = 'api') {
       /^postgres(?:ql)?:\/\//.test(env.DATABASE_URL || ''),
     );
     add('redis_configured', /^rediss?:\/\//.test(env.REDIS_URL || ''));
-    add('verification_adapter_https', secureUrl(env.AUTH_DELIVERY_URL));
+    add('verification_adapter_https', secureUrl(deliveryUrl(env)));
     add(
       'persistent_uploads_or_preview_disabled',
       env.ONECALL_UPLOADS_ENABLED === 'false' ||
@@ -103,7 +108,7 @@ async function probe(base) {
   }
   return { ready: output.every((x) => x.reachable), checks: output };
 }
-module.exports = { checks, secureUrl, freshSecret, probe };
+module.exports = { checks, secureUrl, freshSecret, probe, deliveryUrl };
 if (require.main === module) {
   require('dotenv').config({
     path: process.env.ONECALL_RELEASE_ENV_FILE || '.env.production',

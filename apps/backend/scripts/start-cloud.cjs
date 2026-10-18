@@ -1,6 +1,7 @@
 'use strict';
 require('dotenv').config({ path: '.env.production', quiet: true });
-const { checks } = require('./release-readiness.cjs');
+const { checks, deliveryUrl } = require('./release-readiness.cjs');
+process.env.AUTH_DELIVERY_URL = deliveryUrl(process.env);
 const result = checks();
 if (!result.ready) {
   console.error(

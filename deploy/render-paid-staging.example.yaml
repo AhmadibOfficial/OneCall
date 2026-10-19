@@ -1,0 +1,154 @@
+# OneCall pilot. Enter provider credentials privately in Render.
+previews:
+  generation: 'off'
+projects:
+- name: OneCall
+  environments:
+  - name: pilot
+    services:
+    - type: web
+      name: onecall-staging-api
+      runtime: docker
+      region: frankfurt
+      plan: starter
+      branch: main
+      dockerfilePath: ./deploy/Dockerfile
+      dockerContext: .
+      autoDeployTrigger: 'off'
+      healthCheckPath: /api/v1/health/ready
+      envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: '10000'
+      - key: APP_NAME
+        value: OneCall
+      - key: APP_VERSION
+        value: 0.1.0
+      - key: API_PREFIX
+        value: api/v1
+      - key: TRUST_PROXY
+        value: '1'
+      - key: DATABASE_POOL_SIZE
+        value: '5'
+      - key: DATABASE_URL
+        fromDatabase:
+          name: onecall-staging-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: onecall-staging-cache
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: PAYMENT_WEBHOOK_SECRET
+        generateValue: true
+      - key: AUTH_DELIVERY_SECRET
+        fromService:
+          type: web
+          name: onecall-staging-delivery
+          envVarKey: AUTH_DELIVERY_SECRET
+      - key: AUTH_DELIVERY_ORIGIN
+        fromService:
+          type: web
+          name: onecall-staging-delivery
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: onecall-web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: THROTTLE_KEY_PREFIX
+        value: 'onecall:staging:throttle:'
+      - key: ONECALL_UPLOADS_ENABLED
+        value: 'true'
+      - key: ONECALL_SOCIAL_LOGIN_ENABLED
+        value: 'false'
+      - key: ONECALL_WALLET_ENABLED
+        value: 'false'
+      - key: PAYSTACK_SECRET_KEY
+        value: ''
+      - key: ONECALL_MIGRATE_ON_START
+        value: 'false'
+      - key: ONECALL_STORAGE_PERSISTENT
+        value: 'true'
+      - key: ONECALL_UPLOAD_ROOT
+        value: /var/lib/onecall/private
+      disk:
+        name: onecall-private-photos
+        mountPath: /var/lib/onecall
+        sizeGB: 1
+      preDeployCommand: pnpm prisma:deploy
+    - type: web
+      name: onecall-staging-delivery
+      runtime: docker
+      region: frankfurt
+      plan: starter
+      branch: main
+      dockerfilePath: ./deploy/Dockerfile
+      dockerContext: .
+      dockerCommand: node scripts/start-auth-delivery.cjs
+      autoDeployTrigger: 'off'
+      healthCheckPath: /health
+      envVars:
+      - key: AUTH_DELIVERY_HOST
+        value: 0.0.0.0
+      - key: AUTH_DELIVERY_PORT
+        value: '10000'
+      - key: AUTH_DELIVERY_SECRET
+        generateValue: true
+      - key: AUTH_DELIVERY_REDIS_URL
+        fromService:
+          type: keyvalue
+          name: onecall-staging-cache
+          property: connectionString
+      - key: AUTH_DELIVERY_REDIS_PREFIX
+        value: 'onecall:staging:delivery:'
+      - key: RESEND_API_KEY
+        sync: false
+      - key: AUTH_EMAIL_FROM
+        sync: false
+      - key: TERMII_API_KEY
+        sync: false
+      - key: TERMII_BASE_URL
+        sync: false
+      - key: TERMII_SENDER_ID
+        sync: false
+    - type: web
+      name: onecall-web
+      runtime: static
+      repo: https://github.com/AhmadibOfficial/OneCall
+      branch: publication-onecall
+      buildCommand: echo 'OneCall verified client publication; no server build required'
+      staticPublishPath: .
+      autoDeployTrigger: 'off'
+      previews:
+        generation: 'off'
+      headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
+    - type: keyvalue
+      name: onecall-staging-cache
+      region: frankfurt
+      plan: starter
+      maxmemoryPolicy: noeviction
+      ipAllowList: []
+    databases:
+    - name: onecall-staging-db
+      region: frankfurt
+      plan: basic-256mb
+      databaseName: onecall_staging
+      user: onecall_staging
+      ipAllowList: []

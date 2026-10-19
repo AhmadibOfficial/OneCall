@@ -1,0 +1,29 @@
+{
+  "name": "onecall",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.10.0",
+  "scripts": {
+    "dev": "pnpm --filter backend start:dev",
+    "start:dev": "pnpm --filter backend start:dev",
+    "build": "pnpm --filter backend build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "format": "pnpm -r format",
+    "mobile": "cd apps/mobile && flutter run",
+    "prisma:generate": "pnpm --filter backend prisma:generate",
+    "prisma:migrate": "pnpm --filter backend prisma:migrate",
+    "prisma:deploy": "pnpm --filter backend prisma:deploy",
+    "prisma:reset": "pnpm --filter backend prisma:reset",
+    "prisma:studio": "pnpm --filter backend prisma:studio",
+    "prisma:validate": "pnpm --filter backend prisma:validate",
+    "prisma:push": "pnpm --filter backend prisma:push",
+    "prisma:pull": "pnpm --filter backend prisma:pull",
+    "test:pilot": "pnpm --filter backend test:pilot",
+    "verify:pilot": "bash scripts/verify-kaduna-pilot.sh",
+    "verify:nigeria": "bash scripts/verify-kaduna-pilot.sh",
+    "test:nigeria": "pnpm --filter backend test:nigeria",
+    "run:android": "bash scripts/run-android.sh",
+    "test:update": "python3 scripts/test-apply-update.py"
+  }
+}

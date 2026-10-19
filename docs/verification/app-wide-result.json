@@ -1,0 +1,39 @@
+{
+  "recordedAt": "2026-10-11T05:32:53.838548+00:00",
+  "scope": "App-wide shared design, platform branding, regional catalogue UI fixes and local update workflow",
+  "nativeAcceptancePassed": false,
+  "checks": {
+    "dartSyntaxAndFormatting": "Passed with @wasm-fmt/dart_fmt for all 19 Dart source/test files; not Flutter analysis",
+    "installerTests": {
+      "passed": 8,
+      "services": "Stub build commands and PostgreSQL dump/restore; disposable filesystem projects",
+      "actualPackagedSourceArchive": "Passed through the real installer"
+    },
+    "platformAssets": "XML/plist/JSON parsed; launcher dimensions and opaque Apple icons checked",
+    "shellSyntax": "apply-update.sh, run-android.sh and verification runner passed bash -n",
+    "diffWhitespace": "git diff --check passed"
+  },
+  "previousBackendEvidence": {
+    "record": "nigeria-result.json",
+    "uniqueTests": 152,
+    "unchangedBackendInThisRevision": true
+  },
+  "notExecuted": [
+    "Flutter dependency resolution",
+    "Flutter analyzer",
+    "15 supplied Flutter tests",
+    "Native Android/web/iOS/macOS/Windows builds",
+    "Emulator runtime and exact visual matching",
+    "Live rollout"
+  ],
+  "localInstaller": "Backs up source and validates database dump before overlay; preserves .env and runtime data; runs backend install/migrations/build and Flutter pub get/analyze/test/Android build on laptop",
+  "platformRelease": "Same application identity preserved; release signing and production operations still required",
+  "downloadAudit": {
+    "status": "Source packaging repaired and checked",
+    "repairs": [
+      "Exclude malformed legacy archive filename containing a backslash",
+      "Package canonical apps/backend and apps/mobile source; exclude obsolete root app copies and source backups"
+    ],
+    "pending": "Flutter pub get must resolve the changed dependencies and regenerate platform plugin files on the native laptop"
+  }
+}

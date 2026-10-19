@@ -1,39 +1,83 @@
+# ===========================
 # Environment
+# ===========================
 .env
+.env.*
+!.env.example
 
+# ===========================
 # Logs
+# ===========================
 logs/
+.pilot-verification/
 *.log
-
-# IDE
-.vscode/
-
-.idea/
-
-# macOS
-.DS_Store
-
-# Linux
-*.swp
-
-# Coverage
-coverage/
-
-# Docker
-docker-data/
-
-# Node
-node_modules/
-
-# PostgreSQL
-*.db
-
-# Generated
-build/
-
-# Firebase
 firebase-debug.log
 
+# ===========================
+# IDE
+# ===========================
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# ===========================
+# OS
+# ===========================
+.DS_Store
+*.swp
+
+# ===========================
+# Flutter
+# ===========================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+**/build/
+coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# ===========================
+# Android
+# ===========================
+**/local.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+
+# ===========================
+# iOS / macOS
+# ===========================
+**/Flutter/ephemeral/
+**/Flutter/Generated.xcconfig
+**/flutter_export_environment.sh
+
+# ===========================
+# Node / PNPM
+# ===========================
+node_modules/
+dist/
+.turbo/
+.pnpm-store/
+
+# ===========================
+# Docker
+# ===========================
+docker-data/
+
+# ===========================
+# Database
+# ===========================
+*.db
+
+# ===========================
 # Secrets
+# ===========================
 *.pem
 *.key
+/generated/prisma

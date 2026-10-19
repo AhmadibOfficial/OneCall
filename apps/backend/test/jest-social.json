@@ -1,0 +1,26 @@
+{
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": "..",
+  "testMatch": [
+    "<rootDir>/src/modules/auth/social/social-verifier.spec.ts",
+    "<rootDir>/test/social-auth.e2e-spec.ts",
+    "<rootDir>/src/modules/auth/social/social-crypto.spec.ts"
+  ],
+  "transform": {
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        "tsconfig": "<rootDir>/test/tsconfig.json"
+      }
+    ]
+  },
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  },
+  "testEnvironment": "node",
+  "testTimeout": 45000
+}

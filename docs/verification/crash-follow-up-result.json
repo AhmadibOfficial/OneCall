@@ -1,0 +1,48 @@
+{
+  "started": "2026-10-13T21:53:15.812Z",
+  "finished": "2026-10-13T21:53:28.611Z",
+  "success": true,
+  "database": "Disposable PGlite, one Prisma connection",
+  "redis": "native Redis",
+  "vendorCalls": "mocked",
+  "checks": [
+    {
+      "label": "Prisma migrations",
+      "code": 0
+    },
+    {
+      "label": "Full backend security regression",
+      "code": 0
+    }
+  ],
+  "flutterVersion": "3.44.4",
+  "dartVersion": "3.12.2",
+  "flutterAnalyzer": "No issues found",
+  "flutterTests": 24,
+  "backendSecurityTests": 138,
+  "sdkCrash": "repaired extracted Dart snapshots and rebuilt Flutter tool cache; no laptop SDK changed",
+  "metadataSafety": "built-in CI mode short-circuits metadata bot detection; telemetry suppressed",
+  "android": "Debug APK passed in GitHub CI; emulator acceptance and signed release/iOS builds pending",
+  "providers": "identity/email/SMS calls mocked; live credentials unconfigured",
+  "webReleaseBuild": "passed with compile-only placeholder HTTPS API URL; backend not deployed",
+  "githubChecks": {
+    "commit": "3e4d909c5e602462f546d86db39467f99d5d3dc6",
+    "workflowRun": 38509950317,
+    "backend": "passed with native PostgreSQL and Redis",
+    "backendSecuritySuites": 21,
+    "backendSecurityTests": 138,
+    "providerAndBookingOperations": "passed",
+    "socialPhotoPrivacyTests": 36,
+    "dockerImageBuild": "passed",
+    "flutterAnalyzer": "No issues found",
+    "flutterTests": 24,
+    "webReleaseBuild": "passed",
+    "androidDebugApk": "passed",
+    "ndk": "official r28c archive: checksum, size and ZIP integrity verified",
+    "ndkSource": "https://github.com/android/ndk/releases/tag/r28c",
+    "buildApiUrl": "compile-only placeholder HTTPS URL; not a deployed API"
+  },
+  "gradleBuildBudget": "1.5 GB heap, one worker, parallel tasks disabled",
+  "installer": "90 source targets; four safety scenarios passed with native commands and backup programs stubbed",
+  "productionReleaseReady": false
+}

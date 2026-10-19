@@ -1,0 +1,131 @@
+name: Publish OneCall cloud client
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: Verified Render HTTPS API URL ending /api/v1
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths: [deploy/client-target.json]
+permissions:
+  contents: read
+concurrency:
+  group: onecall-cloud-client
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      CI: 'true'
+      FLUTTER_SUPPRESS_ANALYTICS: 'true'
+      ONECALL_APPLICATION_ID: com.example.onecall.cloudpilot
+      ONECALL_REQUESTED_API_URL: ${{ inputs.api_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve the real cloud target
+        run: python3 scripts/client_distribution.py resolve >> "$GITHUB_ENV"
+      - name: Verify live API and public privacy pages
+        run: python3 scripts/client_distribution.py preflight
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.4'
+          channel: stable
+          cache: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Check Flutter source
+        working-directory: apps/mobile
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+      - name: Build cloud web app
+        working-directory: apps/mobile
+        run: flutter build web --release --no-web-resources-cdn --dart-define="ONECALL_API_URL=$ONECALL_API_URL"
+      - name: Label the separate testing installation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          p = Path('apps/mobile/android/app/src/main/AndroidManifest.xml')
+          ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
+          tree = ET.parse(p)
+          tree.getroot().find('application').set('{http://schemas.android.com/apk/res/android}label', 'OneCall Cloud Pilot')
+          tree.write(p, encoding='utf-8', xml_declaration=True)
+          PY
+      - name: Install checksum-verified Android NDK
+        run: bash scripts/prepare-android-ci.sh
+      - name: Build downloadable pilot APK
+        working-directory: apps/mobile
+        run: flutter build apk --debug --dart-define="ONECALL_API_URL=$ONECALL_API_URL"
+      - name: Package and verify the APK
+        run: |
+          python3 scripts/client_distribution.py package
+          onecall_apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          test -n "$onecall_apksigner"
+          "$onecall_apksigner" verify --print-certs distribution/OneCall-pilot.apk > distribution/SIGNING.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: onecall-cloud-apk
+          path: distribution
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: onecall-cloud-web
+          path: apps/mobile/build/web
+          retention-days: 7
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ONECALL_PILOT_TAG: pilot-${{ github.run_number }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: onecall-cloud-apk
+          path: distribution
+      - uses: actions/download-artifact@v4
+        with:
+          name: onecall-cloud-web
+          path: web-output
+      - name: Publish the Android testing release
+        run: |
+          cp distribution/build-info.json "$RUNNER_TEMP/onecall-release-notes.txt"
+          gh release create "$ONECALL_PILOT_TAG" distribution/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --title "OneCall cloud pilot $ONECALL_PILOT_TAG" --notes-file "$RUNNER_TEMP/onecall-release-notes.txt"
+      - name: Add the verified Android download page
+        run: |
+          python3 scripts/client_distribution.py page --destination web-output/download
+          printf 'User-agent: *\nDisallow: /\n' > web-output/robots.txt
+      - uses: actions/checkout@v4
+        with:
+          ref: publication-onecall
+          path: publication-repo
+      - name: Publish only the built web assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          dest = Path('publication-repo').resolve()
+          for p in dest.iterdir():
+              if p.name == '.git':
+                  continue
+              if p.is_dir() and not p.is_symlink():
+                  shutil.rmtree(p)
+              else:
+                  p.unlink()
+          shutil.copytree('web-output', dest, dirs_exist_ok=True)
+          PY
+          git -C publication-repo config user.name 'github-actions[bot]'
+          git -C publication-repo config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C publication-repo add --all
+          git -C publication-repo commit -m "Publish verified OneCall cloud client $GITHUB_SHA"
+          git -C publication-repo push origin HEAD:publication-onecall

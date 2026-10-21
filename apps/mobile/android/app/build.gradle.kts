@@ -54,6 +54,13 @@ android {
                 abiFilters.add("x86_64")
             }
         }
+        // The USB phone pilot contains both supported ARM architectures.
+        if (oneCallApplicationId == "com.example.onecall.localphone") {
+            ndk {
+                abiFilters.clear()
+                abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
+            }
+        }
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

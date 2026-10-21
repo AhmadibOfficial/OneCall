@@ -1,0 +1,106 @@
+name: Publish OneCall USB phone pilot
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/phone-pilot.yml
+      - scripts/phone_distribution.py
+      - scripts/tests/test_phone_distribution.py
+      - docs/PHONE-PILOT.md
+      - apps/mobile/android/app/build.gradle.kts
+  pull_request:
+    paths:
+      - .github/workflows/phone-pilot.yml
+      - scripts/phone_distribution.py
+      - scripts/tests/test_phone_distribution.py
+      - docs/PHONE-PILOT.md
+      - apps/mobile/android/app/build.gradle.kts
+permissions:
+  contents: read
+concurrency:
+  group: onecall-phone-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      FLUTTER_SUPPRESS_ANALYTICS: 'true'
+      ONECALL_APPLICATION_ID: com.example.onecall.localphone
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check cloud and local distribution boundaries
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*distribution.py'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.4'
+          channel: stable
+          cache: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Check Flutter source
+        working-directory: apps/mobile
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+      - name: Label the separate USB phone testing app
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          p = Path('apps/mobile/android/app/src/main/AndroidManifest.xml')
+          ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
+          tree = ET.parse(p)
+          tree.getroot().find('application').set('{http://schemas.android.com/apk/res/android}label', 'OneCall Phone Pilot')
+          tree.getroot().find('application/activity').set('{http://schemas.android.com/apk/res/android}name', 'com.example.onecall.MainActivity')
+          tree.write(p, encoding='utf-8', xml_declaration=True)
+          PY
+      - name: Install checksum-verified Android NDK
+        run: bash scripts/prepare-android-ci.sh
+      - name: Build the ARM phone APK for USB localhost forwarding
+        working-directory: apps/mobile
+        run: flutter build apk --debug --target-platform android-arm,android-arm64 --dart-define=ONECALL_API_URL=http://127.0.0.1:3000/api/v1
+      - name: Verify the actual APK and package its metadata
+        run: |
+          onecall_apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          test -n "$onecall_apksigner"
+          onecall_build_tools="$(dirname "$onecall_apksigner")"
+          "$onecall_build_tools/aapt2" dump badging apps/mobile/build/app/outputs/flutter-apk/app-debug.apk > "$RUNNER_TEMP/onecall-phone-badging.txt"
+          python3 scripts/phone_distribution.py --badging "$RUNNER_TEMP/onecall-phone-badging.txt"
+          "$onecall_apksigner" verify --print-certs phone-distribution/OneCall-phone-arm.apk > phone-distribution/SIGNING.txt
+      - name: Keep the APK inspection report for diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onecall-phone-inspection
+          path: ${{ runner.temp }}/onecall-phone-badging.txt
+          if-no-files-found: ignore
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: onecall-phone-pilot
+          path: phone-distribution
+          retention-days: 30
+  publish:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ONECALL_PHONE_TAG: phone-pilot-${{ github.run_number }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: onecall-phone-pilot
+          path: phone-distribution
+      - name: Publish the ARM phone testing download
+        run: |
+          gh release create "$ONECALL_PHONE_TAG" phone-distribution/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --title "OneCall USB phone pilot $ONECALL_PHONE_TAG" --notes-file phone-distribution/README.md

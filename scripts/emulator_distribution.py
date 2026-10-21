@@ -24,7 +24,14 @@ def verify_manifest(badging):
             or not activity or activity[1] != "com.example.onecall.MainActivity"
             or not native or re.findall(r"'([^']+)'", native[1]) != ["x86_64"]
             or not re.search(r"^application-debuggable\s*$", badging, re.M)):
-        raise ValueError("APK identity, debug mode or emulator ABI did not match the local pilot.")
+        observed = {
+            "package": package[1] if package else None,
+            "label": label[1] if label else None,
+            "launcher": activity[1] if activity else None,
+            "nativeCode": native[1].strip() if native else None,
+            "debuggable": bool(re.search(r"^application-debuggable\s*$", badging, re.M)),
+        }
+        raise ValueError("APK metadata did not match the local pilot: " + json.dumps(observed))
 
 
 def package(apk, destination, badging, notes, commit):

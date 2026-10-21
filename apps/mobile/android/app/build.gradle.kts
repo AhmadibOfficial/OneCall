@@ -46,6 +46,14 @@ android {
         manifestPlaceholders["onecallMapsKey"] = providers.environmentVariable("ONECALL_MAPS_API_KEY").orElse("").get()
         // Debug retains its existing ID unless an owned ID is supplied.
         applicationId = oneCallApplicationId
+        // Some plugin AARs contain other ABIs even when Flutter targets x64.
+        // Keep the separately installed emulator pilot small and x86_64-only.
+        if (oneCallApplicationId == "com.example.onecall.localpilot") {
+            ndk {
+                abiFilters.clear()
+                abiFilters.add("x86_64")
+            }
+        }
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

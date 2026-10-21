@@ -69,6 +69,7 @@ report the conflict before removing any local app data.
 The GitHub workflow **Publish OneCall emulator pilot** checks both cloud and
 emulator packaging rules, runs Flutter analysis/tests, builds the fixed local
 target, checks its actual application ID, label, launcher, debug flag and ABI,
+with Android ABI filtering scoped to the local-pilot application ID,
 and verifies the APK signature before publishing a prerelease. Publication runs
 only from `main`; pull requests build/test without publishing. Future builds can
 be requested through the workflow's **Run workflow** button on `main`.

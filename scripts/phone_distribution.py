@@ -22,7 +22,7 @@ def verify_manifest(badging):
         "label": r"^application-label:'([^']+)'",
         "launcher": r"^launchable-activity: name='([^']+)'",
         "nativeCode": r"^native-code:(.*)$",
-        "minAndroidApi": r"^sdkVersion:'(\d+)'",
+        "minAndroidApi": r"^(?:minSdkVersion|sdkVersion):'(\d+)'",
     }
     observed = {}
     for key, pattern in patterns.items():

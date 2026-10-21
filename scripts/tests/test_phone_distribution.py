@@ -10,7 +10,7 @@ SPEC = importlib.util.spec_from_file_location("phone_distribution", SCRIPT)
 PILOT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(PILOT)
 BADGING = """package: name='com.example.onecall.localphone' versionCode='1' versionName='0.1.0'
-sdkVersion:'24'
+minSdkVersion:'24'
 application-label:'OneCall Phone Pilot'
 launchable-activity: name='com.example.onecall.MainActivity' label='' icon=''
 application-debuggable
@@ -21,7 +21,10 @@ native-code: 'armeabi-v7a' 'arm64-v8a'
 class PhoneDistributionTest(unittest.TestCase):
     def test_records_actual_minimum_android_version(self):
         self.assertEqual(PILOT.verify_manifest(BADGING), 24)
-        self.assertEqual(PILOT.verify_manifest(BADGING.replace("sdkVersion:'24'", "sdkVersion:'26'")), 26)
+        self.assertEqual(PILOT.verify_manifest(BADGING.replace("minSdkVersion:'24'", "minSdkVersion:'26'")), 26)
+
+    def test_accepts_legacy_aapt_sdk_field_as_well_as_current_aapt2(self):
+        self.assertEqual(PILOT.verify_manifest(BADGING.replace("minSdkVersion:", "sdkVersion:")), 24)
 
     def test_rejects_existing_emulator_and_cloud_installations(self):
         for application_id in ["com.example.onecall", "com.example.onecall.localpilot", "com.example.onecall.cloudpilot"]:
@@ -37,8 +40,8 @@ class PhoneDistributionTest(unittest.TestCase):
         for badging in [BADGING.replace(PILOT.LABEL, "OneCall"),
                         BADGING.replace(PILOT.ACTIVITY, "com.example.other.MainActivity"),
                         BADGING.replace("application-debuggable\n", ""),
-                        BADGING.replace("sdkVersion:'24'\n", ""),
-                        BADGING.replace("sdkVersion:'24'", "sdkVersion:'0'")]:
+                        BADGING.replace("minSdkVersion:'24'\n", ""),
+                        BADGING.replace("minSdkVersion:'24'", "minSdkVersion:'0'")]:
             with self.subTest(badging=badging), self.assertRaises(ValueError):
                 PILOT.verify_manifest(badging)
 

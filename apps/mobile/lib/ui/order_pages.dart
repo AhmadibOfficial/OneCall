@@ -82,10 +82,12 @@ class _RequestPageState extends State<RequestPage> {
   }
 
   Future<void> _changeService() async {
+    if (_busy) return;
     setState(() => _busy = true);
     try {
       final services = await widget.api.servicesForLocation(_state, _city);
       if (!mounted) return;
+      setState(() => _busy = false);
       final chosen = await showModalBottomSheet<PilotService>(
         context: context,
         isScrollControlled: true,

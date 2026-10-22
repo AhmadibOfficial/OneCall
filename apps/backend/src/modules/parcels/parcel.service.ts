@@ -137,11 +137,7 @@ export class ParcelService {
         id: { in: [value.originAgentId, value.destinationAgentId] },
       },
     });
-    if (
-      value.senderId !== userId &&
-      normalizedParcelPhone(user.phone) !== value.recipientPhone &&
-      !agent
-    )
+    if (value.senderId !== userId && value.recipientId !== userId && !agent)
       throw new NotFoundException('Parcel not found');
     return { value, agent, user };
   }
@@ -155,6 +151,7 @@ export class ParcelService {
       codeIssues: _issues,
       codePurpose: _purpose,
       clientReference: _client,
+      recipientId: _recipient,
       ...rest
     } = value;
     void _hash;
@@ -164,6 +161,7 @@ export class ParcelService {
     void _issues;
     void _purpose;
     void _client;
+    void _recipient;
     return {
       ...rest,
       role:
@@ -401,9 +399,14 @@ export class ParcelService {
           })) >= 20
         )
           throw new ConflictException('Daily parcel request limit reached');
+        const recipient = await db.user.findFirst({
+          where: { phone: data.recipientPhone, ...activeUser },
+          select: { id: true },
+        });
         const row = await db.parcelShipment.create({
           data: {
             ...data,
+            recipientId: recipient?.id ?? null,
             senderId: userId,
             routeId: route.id,
             originAgentId: route.originAgentId,
@@ -439,7 +442,7 @@ export class ParcelService {
   }
   async list(userId: string, query: ParcelListQuery, agentOnly = false) {
     return this.tx(async (db) => {
-      const user = await this.verified(db, userId);
+      await this.verified(db, userId);
       const agent = await db.parcelAgent.findFirst({
         where: { userId, status: 'APPROVED' },
       });
@@ -447,10 +450,7 @@ export class ParcelService {
         throw new ForbiddenException('Parcel agent approval required');
       const mine: Prisma.ParcelShipmentWhereInput[] = agentOnly
         ? []
-        : [
-            { senderId: userId },
-            { recipientPhone: normalizedParcelPhone(user.phone) },
-          ];
+        : [{ senderId: userId }, { recipientId: userId }];
       if (agent)
         mine.push(
           { originAgentId: agent.id },

@@ -332,6 +332,38 @@ describe('Parcel network: permissions, custody and private collection codes', ()
       .send({})
       .expect(409);
   });
+  it('does not expose historic parcels when a phone number moves to another account', async () => {
+    const { id } = await create();
+    const previousPhone = stranger.phone;
+    const temporaryPhone = '+234900' + String(Date.now()).slice(-7);
+    await db.user.update({
+      where: { id: recipient.id },
+      data: { phone: temporaryPhone },
+    });
+    try {
+      await db.user.update({
+        where: { id: stranger.id },
+        data: { phone: recipient.phone },
+      });
+      await call(stranger, 'get', `/parcels/${id}`).expect(404);
+      await call(recipient, 'get', `/parcels/${id}`).expect(200);
+      const list = await call(stranger, 'get', '/parcels').expect(200);
+      expect(
+        (list.body as { items: { id: string }[] }).items.some(
+          (p) => p.id === id,
+        ),
+      ).toBe(false);
+    } finally {
+      await db.user.update({
+        where: { id: stranger.id },
+        data: { phone: previousPhone },
+      });
+      await db.user.update({
+        where: { id: recipient.id },
+        data: { phone: recipient.phone },
+      });
+    }
+  });
   it('restricts custody actions to the assigned side and disallows skipped/repeated stages', async () => {
     const { id } = await create();
     await move(sender, id, 'accept', 403);

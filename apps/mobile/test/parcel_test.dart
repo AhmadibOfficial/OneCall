@@ -56,11 +56,12 @@ class ParcelFake extends FakeApi {
     bool authenticated = true,
   }) async {
     if (path.startsWith('/parcels/routes')) return <Map>[];
-    if (path == '/parcels/agent')
+    if (path == '/parcels/agent') {
       return {
         'agent': {...shop, 'status': 'PENDING'},
         'routes': <Map>[],
       };
+    }
     if (method == 'POST' && path == '/parcels') {
       bookings.add(Map<String, dynamic>.from(body!));
       if (failOnce) {
@@ -69,13 +70,14 @@ class ParcelFake extends FakeApi {
       }
       return parcel;
     }
-    if (path == '/parcels/parcel-1/collection-code')
+    if (path == '/parcels/parcel-1/collection-code') {
       return {
         'code': '123456',
         'expiresAt': '2026-10-24T12:00:00Z',
         'purpose': 'DELIVERY',
         'instruction': 'Share only with your recipient.',
       };
+    }
     if (path == '/parcels/parcel-1') return parcel;
     return super.request(
       method,

@@ -146,6 +146,7 @@ model User {
   supportTickets SupportTicket[]
   parcelAgent ParcelAgent?
   parcels ParcelShipment[] @relation("ParcelSender")
+  receivedParcels ParcelShipment[] @relation("ParcelRecipient")
   parcelEvents ParcelEvent[] @relation("ParcelEventActor")
 
   @@index([status])
@@ -692,6 +693,8 @@ model ParcelShipment {
   destinationAgent ParcelAgent @relation("ParcelDestinationShipment", fields: [destinationAgentId], references: [id], onDelete: Restrict)
   recipientName String @db.VarChar(120)
   recipientPhone String @db.VarChar(20)
+  recipientId String? @db.Uuid
+  recipient User? @relation("ParcelRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
   description String @db.VarChar(1000)
   category String @db.VarChar(30)
   weightGrams Int
@@ -713,6 +716,7 @@ model ParcelShipment {
   @@unique([senderId, clientReference])
   @@index([senderId, createdAt])
   @@index([recipientPhone, createdAt])
+  @@index([recipientId, createdAt])
   @@index([originAgentId, status])
   @@index([destinationAgentId, status])
 }

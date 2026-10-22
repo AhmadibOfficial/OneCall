@@ -1,14 +1,17 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../core/api.dart';
-import '../core/models.dart';
+import 'location_picker.dart';
 import 'common.dart';
 import 'resource_widgets.dart';
 
 String parcelStatus(Object? value) =>
     (value ?? '').toString().replaceAll('_', ' ').toLowerCase();
-String parcelMoney(Object? value) =>
-    '₦${((value as num?) ?? 0) ~/ 100}.${(((value as num?) ?? 0) % 100).toInt().toString().padLeft(2, '0')}';
+String parcelMoney(Object? value) {
+  final kobo = (value as num?)?.toInt() ?? 0;
+  return '₦${kobo ~/ 100}.${(kobo % 100).toString().padLeft(2, '0')}';
+}
+
 String _shop(Map data) =>
     '${data['shopName']} · ${data['city']}, ${data['state']}';
 String _reference() {
@@ -361,11 +364,12 @@ class _ParcelBookingPageState extends State<ParcelBookingPage> {
         ),
       );
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error =
               '${errorMessage(e)} If the response was lost, check My parcels before starting a different request. Retry here keeps the same booking reference.',
         );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -826,8 +830,9 @@ class _ParcelInputState extends State<_ParcelInput> {
       ),
       FilledButton(
         onPressed: () {
-          if (_form.currentState!.validate())
+          if (_form.currentState!.validate()) {
             Navigator.pop(context, _controller.text.trim());
+          }
         },
         child: Text(widget.code ? 'Confirm handover' : 'Confirm'),
       ),
@@ -1080,13 +1085,14 @@ class _ParcelRouteProposalPageState extends State<ParcelRouteProposalPage> {
                 '/parcels/shops?state=${Uri.encodeQueryComponent(_destinationState)}',
               )
               as List;
-      if (mounted)
+      if (mounted) {
         setState(
           () => _shops = data
               .cast<Map>()
               .where((s) => s['id'] != widget.agentId)
               .toList(),
         );
+      }
     } catch (e) {
       if (mounted) setState(() => _error = errorMessage(e));
     } finally {

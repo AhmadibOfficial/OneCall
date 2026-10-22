@@ -54,6 +54,7 @@ CREATE TABLE "ParcelShipment" (
     "destinationAgentId" UUID NOT NULL,
     "recipientName" VARCHAR(120) NOT NULL,
     "recipientPhone" VARCHAR(20) NOT NULL,
+    "recipientId" UUID,
     "description" VARCHAR(1000) NOT NULL,
     "category" VARCHAR(30) NOT NULL,
     "weightGrams" INTEGER NOT NULL,
@@ -110,6 +111,9 @@ CREATE INDEX "ParcelShipment_senderId_createdAt_idx" ON "ParcelShipment"("sender
 CREATE INDEX "ParcelShipment_recipientPhone_createdAt_idx" ON "ParcelShipment"("recipientPhone", "createdAt");
 
 -- CreateIndex
+CREATE INDEX "ParcelShipment_recipientId_createdAt_idx" ON "ParcelShipment"("recipientId", "createdAt");
+
+-- CreateIndex
 CREATE INDEX "ParcelShipment_originAgentId_status_idx" ON "ParcelShipment"("originAgentId", "status");
 
 -- CreateIndex
@@ -143,11 +147,13 @@ ALTER TABLE "ParcelShipment" ADD CONSTRAINT "ParcelShipment_originAgentId_fkey" 
 ALTER TABLE "ParcelShipment" ADD CONSTRAINT "ParcelShipment_destinationAgentId_fkey" FOREIGN KEY ("destinationAgentId") REFERENCES "ParcelAgent"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ParcelShipment" ADD CONSTRAINT "ParcelShipment_recipientId_fkey" FOREIGN KEY ("recipientId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ParcelEvent" ADD CONSTRAINT "ParcelEvent_shipmentId_fkey" FOREIGN KEY ("shipmentId") REFERENCES "ParcelShipment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ParcelEvent" ADD CONSTRAINT "ParcelEvent_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
 -- Enforce money, capacity and identity invariants even outside HTTP DTO validation.
 ALTER TABLE "ParcelRoute" ADD CONSTRAINT "ParcelRoute_bounds" CHECK (
   "originAgentId" <> "destinationAgentId" AND

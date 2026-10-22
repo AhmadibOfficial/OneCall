@@ -71,8 +71,9 @@ class ParcelFake extends FakeApi {
     bool authenticated = true,
   }) async {
     if (path.startsWith('/parcels/routes')) return <Map>[];
-    if (method == 'GET' && path == '/parcels')
+    if (method == 'GET' && path == '/parcels') {
       return {'items': <Map>[], 'nextCursor': null};
+    }
     if (path == '/parcels/agent') {
       return {
         'agent': {...shop, 'status': 'PENDING'},

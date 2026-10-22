@@ -225,6 +225,17 @@ describe('Parcel network: permissions, custody and private collection codes', ()
     ).toBeGreaterThanOrEqual(1);
   });
   it('prevents self approval, role injection and unreviewed route publication', async () => {
+    await call(stranger, 'post', '/parcels/agent/apply')
+      .send({
+        shopName: '    ',
+        address: 'Synthetic address',
+        state: 'Kaduna',
+        city: 'Kaduna',
+      })
+      .expect(400);
+    await call(admin, 'post', `/admin/parcels/routes/${routeId}/review`)
+      .send({ active: true, reason: '             ' })
+      .expect(400);
     const result = await call(admin, 'post', '/parcels/agent/apply')
       .send({
         shopName: 'Admin Test Shop',

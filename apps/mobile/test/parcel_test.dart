@@ -164,6 +164,23 @@ void main() {
     expect(find.text('What do you need?'), findsNothing);
     await tester.pumpWidget(const SizedBox());
   });
+  testWidgets(
+    'service providers can track their parcels without parcel-agent approval',
+    (tester) async {
+      final api = ParcelFake();
+      addTearDown(api.dispose);
+      await api.login('provider@example.com', 'Password123!');
+      await display(
+        tester,
+        Scaffold(body: BookingsPanel(api: api, providerView: true)),
+      );
+      await tapVisible(tester, find.text('Parcel delivery & tracking'));
+      expect(find.text('My parcels'), findsOneWidget);
+      expect(find.text('Parcel shop jobs'), findsNothing);
+      expect(find.textContaining('No parcels yet.'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
   testWidgets('route search clearly reports areas with no approved routes', (
     tester,
   ) async {

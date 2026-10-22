@@ -764,8 +764,7 @@ class _BookingsPanelState extends State<BookingsPanel> {
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute<void>(
-            builder: (_) =>
-                ParcelListPage(api: widget.api, agentOnly: widget.providerView),
+            builder: (_) => ParcelListPage(api: widget.api),
           ),
         ),
       ),

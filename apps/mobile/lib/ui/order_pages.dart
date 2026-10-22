@@ -117,7 +117,18 @@ class _RequestPageState extends State<RequestPage> {
           ),
         ),
       );
-      if (mounted && chosen != null) setState(() => _service = chosen);
+      if (!mounted || chosen == null) return;
+      if (chosen.key == 'parcel-delivery') {
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) =>
+                ParcelListPage(api: widget.api, state: _state, city: _city),
+          ),
+        );
+      } else {
+        setState(() => _service = chosen);
+      }
     } catch (e) {
       if (mounted) setState(() => _error = errorMessage(e));
     } finally {

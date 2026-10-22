@@ -23,10 +23,18 @@ String _reference() {
   return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
 }
 
-Widget _pageBody(List<Widget> children) => Center(
+// Keep form fields mounted while scrolling so validation covers the whole form.
+Widget _pageBody(List<Widget> children) => Align(
+  alignment: Alignment.topCenter,
   child: ConstrainedBox(
     constraints: const BoxConstraints(maxWidth: 780),
-    child: ListView(padding: const EdgeInsets.all(20), children: children),
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
+    ),
   ),
 );
 Widget _stateField(String value, ValueChanged<String> changed) =>

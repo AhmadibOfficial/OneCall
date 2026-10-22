@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onecall/core/api.dart';
+import 'package:onecall/core/models.dart';
+import 'package:onecall/ui/order_pages.dart';
 import 'package:onecall/ui/parcel_pages.dart';
 import 'widget_test.dart' show FakeApi;
 
@@ -49,6 +51,19 @@ class ParcelFake extends FakeApi {
     'events': <Map>[],
   };
   @override
+  Future<List<PilotService>> servicesForLocation(
+    String state,
+    String city,
+  ) async => const [
+    PilotService(
+      key: 'parcel-delivery',
+      name: 'Parcel Delivery',
+      description: 'Approved parcel shops',
+      icon: 'delivery',
+      kind: 'delivery',
+    ),
+  ];
+  @override
   Future<dynamic> request(
     String method,
     String path, {
@@ -56,6 +71,8 @@ class ParcelFake extends FakeApi {
     bool authenticated = true,
   }) async {
     if (path.startsWith('/parcels/routes')) return <Map>[];
+    if (method == 'GET' && path == '/parcels')
+      return {'items': <Map>[], 'nextCursor': null};
     if (path == '/parcels/agent') {
       return {
         'agent': {...shop, 'status': 'PENDING'},
@@ -113,12 +130,39 @@ void main() {
   }
 
   Future<void> tapVisible(WidgetTester tester, Finder finder) async {
-    await tester.ensureVisible(finder);
+    await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
     await tester.pumpAndSettle();
     await tester.tap(finder.hitTestable());
     await tester.pumpAndSettle();
   }
 
+  testWidgets('switching to Parcel Delivery uses the shop flow', (
+    tester,
+  ) async {
+    final api = ParcelFake();
+    addTearDown(api.dispose);
+    await api.login('parcel@example.com', 'Password123!');
+    await display(
+      tester,
+      RequestPage(
+        api: api,
+        service: const PilotService(
+          key: 'tailoring',
+          name: 'Tailoring',
+          description: 'Clothes repairs',
+          icon: 'tailoring',
+        ),
+        state: 'Kaduna',
+        city: 'Kaduna',
+      ),
+    );
+    await tapVisible(tester, find.text('Choose another service'));
+    await tapVisible(tester, find.text('Parcel Delivery'));
+    expect(find.text('My parcels'), findsOneWidget);
+    expect(find.text('Send a parcel'), findsOneWidget);
+    expect(find.text('What do you need?'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+  });
   testWidgets('route search clearly reports areas with no approved routes', (
     tester,
   ) async {

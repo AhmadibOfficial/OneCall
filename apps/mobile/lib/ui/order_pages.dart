@@ -7,6 +7,7 @@ import 'common.dart';
 import 'finance_pages.dart';
 import 'resource_widgets.dart';
 import 'tracking_page.dart';
+import 'parcel_pages.dart';
 import 'location_picker.dart';
 import 'design_widgets.dart';
 import 'booking_photos.dart';
@@ -81,10 +82,12 @@ class _RequestPageState extends State<RequestPage> {
   }
 
   Future<void> _changeService() async {
+    if (_busy) return;
     setState(() => _busy = true);
     try {
       final services = await widget.api.servicesForLocation(_state, _city);
       if (!mounted) return;
+      setState(() => _busy = false);
       final chosen = await showModalBottomSheet<PilotService>(
         context: context,
         isScrollControlled: true,
@@ -116,7 +119,18 @@ class _RequestPageState extends State<RequestPage> {
           ),
         ),
       );
-      if (mounted && chosen != null) setState(() => _service = chosen);
+      if (!mounted || chosen == null) return;
+      if (chosen.key == 'parcel-delivery') {
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) =>
+                ParcelListPage(api: widget.api, state: _state, city: _city),
+          ),
+        );
+      } else {
+        setState(() => _service = chosen);
+      }
     } catch (e) {
       if (mounted) setState(() => _error = errorMessage(e));
     } finally {
@@ -742,6 +756,18 @@ class _BookingsPanelState extends State<BookingsPanel> {
   @override
   Widget build(BuildContext context) => Column(
     children: [
+      ListTile(
+        leading: const Icon(Icons.inventory_2_outlined),
+        title: const Text('Parcel delivery & tracking'),
+        subtitle: const Text('View incoming and outgoing shop-to-shop parcels'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) => ParcelListPage(api: widget.api),
+          ),
+        ),
+      ),
       Padding(
         padding: const EdgeInsets.all(16),
         child: SegmentedButton<bool>(

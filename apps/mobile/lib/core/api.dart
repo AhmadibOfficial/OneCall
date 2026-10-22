@@ -149,7 +149,13 @@ class OneCallClient extends OneCallApi {
     }
     return ApiFailure(
       status == null
-          ? 'Cannot reach OneCall. Check your connection and try again.'
+          ? ([
+                  '127.0.0.1',
+                  'localhost',
+                  '10.0.2.2',
+                ].contains(Uri.parse(_dio.options.baseUrl).host)
+                ? 'This local pilot connects to the backend on your computer. Keep the backend and test connection running. An online OneCall build is required for independent Wi-Fi or mobile data access.'
+                : 'Cannot reach the OneCall server. Check your connection and try again. If other apps work, the OneCall service may be unavailable.')
           : 'OneCall could not complete this request. Please try again.',
       status: status,
     );

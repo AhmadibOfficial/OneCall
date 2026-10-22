@@ -61,6 +61,8 @@ jobs:
       - run: pnpm --filter backend test:delivery
       - run: pnpm --filter backend test:nigeria
       - run: pnpm --filter backend test:admin
+      - run: pnpm --filter backend test:parcels
+      - run: pnpm --filter backend lint:parcels
       - run: pnpm --filter backend test:social
       - run: pnpm --filter backend test:operations
       - run: pnpm --filter backend exec node --test test/release-readiness.test.cjs

@@ -99,3 +99,5 @@ To remove the USB tunnel when finished:
 
 Android's official guides describe [USB device setup](https://developer.android.com/studio/run/device)
 and [ADB reverse port forwarding](https://developer.android.com/develop/ui/views/layout/webapps/access-local-server).
+
+For Wi-Fi/mobile-data deployment and the parcel network, see [PARCEL-NETWORK.md](PARCEL-NETWORK.md). The USB phone pilot remains a local build.

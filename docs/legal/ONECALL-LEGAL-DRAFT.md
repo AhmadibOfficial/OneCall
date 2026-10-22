@@ -2,9 +2,9 @@
 
 **Pilot draft for review**
 
-Updated: 13 October 2026
+Updated: 22 October 2026
 
-Version: 2026-10-13-pilot-draft-3
+Version: 2026-10-22-pilot-draft-4
 
 These documents describe the current OneCall pilot. The operator's registered legal name, business address and final retention schedule must be confirmed before public launch. Online payments, payment protection, advertising rewards and AI assistance are not enabled in this pilot.
 
@@ -35,6 +35,7 @@ The notice is prepared with reference to the Nigeria Data Protection Act 2023 an
 - Apple sign-in, when configured: encrypted refresh credentials are retained to check continued authorisation. Signed provider notices can remove a withdrawn link and revoke OneCall sessions. Browser sign-in results are encrypted and expire after five minutes; credentials never appear in callback URLs.
 - Appearance preferences: text size and reduced motion are saved locally on the device. Device accessibility text scaling remains respected.
 - Privacy requests: requests and support responses are recorded in your account. A password-protected basic account snapshot is available; it does not replace a full access request. A support response does not mean deletion has been completed. Deletion requires identity checks and review of lawful retention requirements.
+- Parcel network records: sender account, recipient name and phone, declared contents, weight, optional pickup address, selected shops and route, quoted price, custody events, support reports and collection-code issue/attempt records. Code hashes are stored; collection codes are shown only to the sender when created. Approved shops receive the details needed to handle their assigned parcels; an existing verified recipient account matching the phone at booking can view the parcel. A later change in phone ownership does not grant access to old parcels. Public shop addresses and active routes are visible to verified users. Operator access to private parcel details is audited.
 
 ### 3. Purposes and lawful bases
 
@@ -141,6 +142,17 @@ Nothing in these terms excludes rights, remedies or liability that Nigerian law 
 The applicable laws of the Federal Republic of Nigeria govern the relevant platform relationship. You can seek support first without losing a right to approach a regulator or court. Mediation is voluntary where agreed. Material term changes must be made available before they apply, with appropriate notice and any required acceptance; publication alone does not prove an individual accepted a version.
 
 
+### Parcel delivery through approved shops
+
+The parcel pilot connects senders with approved origin and destination shops using agreed motor-park transport routes. Availability depends on actual approved shops and routes; OneCall does not promise service in every location. Wait for origin-shop acceptance before drop-off or pickup. Route quotes and weight limits are shown before the request. Transit hours are estimates after dispatch, and custody history records agent updates rather than continuous GPS.
+
+Declare contents and weight accurately and pack securely. Do not send illegal goods, weapons, explosives, cash, live animals, hazardous materials or perishable goods. Shops must inspect the parcel and agree handling arrangements before taking custody. Ask Support about an item if unsure.
+
+The sender may cancel before shop custody or request a return after custody through the app. Return timing and any proposed charges must be discussed before agreement. Collection requires a private code created by the sender; share it only with the recipient and present it at the correct shop after checking the parcel. A return uses a separate collection stage. Report missing, damaged or delayed parcels through parcel Support promptly.
+
+Online parcel payments, protected payment holds, agent wallet payouts and parcel insurance are not offered in this pilot. A route quote or delivered status is not proof of payment or insurance. These operational terms do not remove rights provided by applicable law.
+
+
 ## Payment availability
 
 Online payments and payment protection are not active.
@@ -200,6 +212,13 @@ Give a clear written quote and confirm the scope, parts, materials and timing. S
 ### Customer privacy
 
 Use customer addresses, contact details and messages only for the assigned job and its legitimate follow-up. Do not sell them, share them for unrelated purposes or use them for unsolicited marketing. Keep any justified offline records secure and no longer than needed. Your legal responsibilities for independently retained information depend on how you use it. Report a suspected data leak to OneCall promptly. Optional location sharing is limited to the assigned in-progress job.
+
+
+### Parcel shop operators
+
+Parcel shop approval is separate from ordinary service-provider approval. Operations must check identity, physical shop and custody arrangements and record a review reference. Approval is not an automated NIN verification or a guarantee against loss. The app does not collect NIN documents in this flow.
+
+Origin shops propose route prices, capacity and transit estimates; an independent administrator must activate each route. Record only physical handovers you have verified. Do not release a parcel without the proper collection code. Keep recipient information and codes private, use them only for the shipment, and report custody incidents through Support. Suspended shops cannot receive new bookings or perform custody updates until Operations resolves the issue.
 
 
 ## Account deletion & data requests

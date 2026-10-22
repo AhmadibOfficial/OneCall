@@ -144,6 +144,10 @@ model User {
   checkouts CheckoutIntent[]
   messages OrderMessage[]
   supportTickets SupportTicket[]
+  parcelAgent ParcelAgent?
+  parcels ParcelShipment[] @relation("ParcelSender")
+  receivedParcels ParcelShipment[] @relation("ParcelRecipient")
+  parcelEvents ParcelEvent[] @relation("ParcelEventActor")
 
   @@index([status])
   @@index([uid])
@@ -606,4 +610,126 @@ model BookingPhoto {
 model AppleNoticeReceipt {
   id String @id @db.Char(64)
   createdAt DateTime @default(now())
+}
+
+enum ParcelAgentStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum ParcelRouteStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+}
+
+enum ParcelStatus {
+  REQUESTED
+  ACCEPTED
+  AT_ORIGIN
+  IN_TRANSIT
+  READY_FOR_COLLECTION
+  DELIVERED
+  CANCELLED
+  RETURN_REQUESTED
+  RETURN_IN_TRANSIT
+  READY_FOR_RETURN
+  RETURNED
+}
+
+model ParcelAgent {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  shopName String @db.VarChar(120)
+  address String @db.VarChar(300)
+  state String @db.VarChar(40)
+  city String @db.VarChar(60)
+  cityKey String @db.VarChar(60)
+  status ParcelAgentStatus @default(PENDING)
+  reviewReference String? @db.VarChar(120)
+  reviewedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  originRoutes ParcelRoute[] @relation("ParcelOriginRoute")
+  destinationRoutes ParcelRoute[] @relation("ParcelDestinationRoute")
+  outgoing ParcelShipment[] @relation("ParcelOriginShipment")
+  incoming ParcelShipment[] @relation("ParcelDestinationShipment")
+  @@index([status, state, cityKey])
+}
+
+model ParcelRoute {
+  id String @id @default(uuid()) @db.Uuid
+  originAgentId String @db.Uuid
+  destinationAgentId String @db.Uuid
+  originAgent ParcelAgent @relation("ParcelOriginRoute", fields: [originAgentId], references: [id], onDelete: Restrict)
+  destinationAgent ParcelAgent @relation("ParcelDestinationRoute", fields: [destinationAgentId], references: [id], onDelete: Restrict)
+  priceKobo Int
+  maxWeightGrams Int
+  estimatedHours Int
+  homePickup Boolean @default(false)
+  homePickupFeeKobo Int @default(0)
+  status ParcelRouteStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  shipments ParcelShipment[]
+  @@index([originAgentId, status])
+  @@index([destinationAgentId, status])
+}
+
+model ParcelShipment {
+  id String @id @default(uuid()) @db.Uuid
+  reference String @unique @db.VarChar(30)
+  senderId String @db.Uuid
+  sender User @relation("ParcelSender", fields: [senderId], references: [id], onDelete: Restrict)
+  clientReference String @db.Uuid
+  requestHash String @db.Char(64)
+  routeId String @db.Uuid
+  route ParcelRoute @relation(fields: [routeId], references: [id], onDelete: Restrict)
+  originAgentId String @db.Uuid
+  destinationAgentId String @db.Uuid
+  originAgent ParcelAgent @relation("ParcelOriginShipment", fields: [originAgentId], references: [id], onDelete: Restrict)
+  destinationAgent ParcelAgent @relation("ParcelDestinationShipment", fields: [destinationAgentId], references: [id], onDelete: Restrict)
+  recipientName String @db.VarChar(120)
+  recipientPhone String @db.VarChar(20)
+  recipientId String? @db.Uuid
+  recipient User? @relation("ParcelRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+  description String @db.VarChar(1000)
+  category String @db.VarChar(30)
+  weightGrams Int
+  pickupMode String @db.VarChar(20)
+  pickupAddress String? @db.VarChar(300)
+  priceKobo Int
+  policyVersion String @default("parcel-pilot-v1") @db.VarChar(40)
+  status ParcelStatus @default(REQUESTED)
+  version Int @default(0)
+  codeHash String? @db.Char(64)
+  codeExpiresAt DateTime?
+  codeAttempts Int @default(0)
+  codePurpose String? @db.VarChar(10)
+  codeIssues Int @default(0)
+  codeIssuedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  events ParcelEvent[]
+  @@unique([senderId, clientReference])
+  @@index([senderId, createdAt])
+  @@index([recipientPhone, createdAt])
+  @@index([recipientId, createdAt])
+  @@index([originAgentId, status])
+  @@index([destinationAgentId, status])
+}
+
+model ParcelEvent {
+  id String @id @default(uuid()) @db.Uuid
+  shipmentId String @db.Uuid
+  shipment ParcelShipment @relation(fields: [shipmentId], references: [id], onDelete: Restrict)
+  actorId String @db.Uuid
+  actor User @relation("ParcelEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+  kind String @db.VarChar(40)
+  status ParcelStatus
+  note String @db.VarChar(500)
+  createdAt DateTime @default(now())
+  @@index([shipmentId, createdAt])
 }

@@ -15,6 +15,7 @@ import 'design_widgets.dart';
 import 'social_sign_in.dart';
 import 'privacy_requests.dart';
 import 'appearance_page.dart';
+import 'parcel_pages.dart';
 
 class ProfilePanel extends StatelessWidget {
   const ProfilePanel({
@@ -186,6 +187,16 @@ class ProfilePanel extends StatelessWidget {
             OneCallSection(
               title: 'Work & support',
               children: [
+                tile(
+                  Icons.local_shipping_outlined,
+                  'Parcel agent workspace',
+                  'Apply for a shop, propose routes and record parcel handovers',
+                  PrivateFeaturePage(
+                    title: 'Parcel agent workspace',
+                    api: api,
+                    child: ParcelAgentPage(api: api, state: state, city: city),
+                  ),
+                ),
                 tile(
                   Icons.work_outline,
                   'Provider Workspace',
@@ -660,12 +671,14 @@ class FavoriteServicesPage extends StatelessWidget {
                 await Navigator.push(
                   context,
                   MaterialPageRoute<void>(
-                    builder: (_) => RequestPage(
-                      api: api,
-                      service: s,
-                      state: state,
-                      city: city,
-                    ),
+                    builder: (_) => s.key == 'parcel-delivery'
+                        ? ParcelListPage(api: api, state: state, city: city)
+                        : RequestPage(
+                            api: api,
+                            service: s,
+                            state: state,
+                            city: city,
+                          ),
                   ),
                 );
               }

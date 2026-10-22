@@ -65,6 +65,10 @@ async function view(name) {
   busy = true;
   message('Loading…');
   try {
+    if (name === 'parcels') {
+      await parcelView();
+      return;
+    }
     if (name === 'providers' || name === 'bookings') {
       await operationsView(name);
       return;

@@ -81,58 +81,84 @@ export class PrivacyController {
     const counts = await Promise.all([
       this.prisma.order.count({ where: { customerId: id } }),
       this.prisma.orderMessage.count({ where: { senderId: id } }),
+      this.prisma.parcelShipment.count({ where: { senderId: id } }),
     ]);
-    if (counts[0] > 1000 || counts[1] > 5000)
+    if (counts[0] > 1000 || counts[1] > 5000 || counts[2] > 1000)
       throw new ConflictException(
         'Request a full data export through Privacy requests. Your records exceed the immediate snapshot limit.',
       );
-    const [addresses, bookings, messages, support, identities, photos] =
-      await Promise.all([
-        this.prisma.address.findMany({ where: { userId: id } }),
-        this.prisma.order.findMany({
-          where: { customerId: id },
-          select: {
-            id: true,
-            serviceName: true,
-            state: true,
-            city: true,
-            address: true,
-            description: true,
-            status: true,
-            createdAt: true,
-            scheduledAt: true,
-          },
-        }),
-        this.prisma.orderMessage.findMany({
-          where: { senderId: id },
-          select: { orderId: true, text: true, createdAt: true },
-        }),
-        this.prisma.supportTicket.findMany({
-          where: { userId: id },
-          select: {
-            id: true,
-            subject: true,
-            message: true,
-            status: true,
-            response: true,
-            createdAt: true,
-          },
-        }),
-        this.prisma.socialIdentity.findMany({
-          where: { userId: id },
-          select: { provider: true, subject: true, createdAt: true },
-        }),
-        this.prisma.bookingPhoto.findMany({
-          where: { uploaderId: id },
-          select: {
-            id: true,
-            orderId: true,
-            mime: true,
-            byteSize: true,
-            createdAt: true,
-          },
-        }),
-      ]);
+    const [
+      addresses,
+      bookings,
+      messages,
+      support,
+      identities,
+      photos,
+      parcels,
+    ] = await Promise.all([
+      this.prisma.address.findMany({ where: { userId: id } }),
+      this.prisma.order.findMany({
+        where: { customerId: id },
+        select: {
+          id: true,
+          serviceName: true,
+          state: true,
+          city: true,
+          address: true,
+          description: true,
+          status: true,
+          createdAt: true,
+          scheduledAt: true,
+        },
+      }),
+      this.prisma.orderMessage.findMany({
+        where: { senderId: id },
+        select: { orderId: true, text: true, createdAt: true },
+      }),
+      this.prisma.supportTicket.findMany({
+        where: { userId: id },
+        select: {
+          id: true,
+          subject: true,
+          message: true,
+          status: true,
+          response: true,
+          createdAt: true,
+        },
+      }),
+      this.prisma.socialIdentity.findMany({
+        where: { userId: id },
+        select: { provider: true, subject: true, createdAt: true },
+      }),
+      this.prisma.bookingPhoto.findMany({
+        where: { uploaderId: id },
+        select: {
+          id: true,
+          orderId: true,
+          mime: true,
+          byteSize: true,
+          createdAt: true,
+        },
+      }),
+      this.prisma.parcelShipment.findMany({
+        where: { senderId: id },
+        select: {
+          id: true,
+          reference: true,
+          routeId: true,
+          recipientName: true,
+          recipientPhone: true,
+          description: true,
+          category: true,
+          weightGrams: true,
+          pickupMode: true,
+          pickupAddress: true,
+          priceKobo: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+    ]);
     return {
       generatedAt: new Date(),
       scope:
@@ -152,6 +178,7 @@ export class PrivacyController {
       support,
       identities,
       photos,
+      parcels,
     };
   }
 }

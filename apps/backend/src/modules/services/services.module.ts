@@ -44,17 +44,46 @@ class ServicesController {
       },
       select: { serviceName: true, providerId: true },
     });
+    const parcelRoutes = await this.prisma.parcelRoute.findMany({
+      where: {
+        status: 'ACTIVE',
+        originAgent: {
+          status: 'APPROVED',
+          state,
+          cityKey: cityKey(city),
+          user: {
+            status: 'ACTIVE',
+            emailVerified: true,
+            phoneVerified: true,
+            deletedAt: null,
+          },
+        },
+        destinationAgent: {
+          status: 'APPROVED',
+          user: {
+            status: 'ACTIVE',
+            emailVerified: true,
+            phoneVerified: true,
+            deletedAt: null,
+          },
+        },
+      },
+      select: { originAgentId: true },
+    });
     return {
       country: 'NG',
       state,
       city,
       services: NIGERIA_SERVICES.map((service) => ({
         ...service,
-        availableProviders: new Set(
-          areas
-            .filter((area) => area.serviceName === service.name)
-            .map((area) => area.providerId),
-        ).size,
+        availableProviders:
+          service.key === 'parcel-delivery'
+            ? new Set(parcelRoutes.map((route) => route.originAgentId)).size
+            : new Set(
+                areas
+                  .filter((area) => area.serviceName === service.name)
+                  .map((area) => area.providerId),
+              ).size,
       })),
     };
   }

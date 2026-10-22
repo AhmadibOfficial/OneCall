@@ -41,7 +41,9 @@
     "test:operations": "node --test --test-concurrency=1 test/provider-operations.test.cjs",
     "test:admin": "jest --config ./test/jest-admin.json --runInBand",
     "test:legal": "node --test test/legal-public.test.cjs",
-    "test:social": "jest --config ./test/jest-social.json --runInBand"
+    "test:social": "jest --config ./test/jest-social.json --runInBand",
+    "test:parcels": "jest --config ./test/jest-parcels.json --runInBand",
+    "lint:parcels": "eslint src/modules/parcels test/parcels.e2e-spec.ts"
   },
   "dependencies": {
     "@nest-lab/throttler-storage-redis": "^1.2.0",

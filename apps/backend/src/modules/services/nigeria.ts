@@ -70,7 +70,7 @@ export const NIGERIA_SERVICES = [
     key: 'parcel-delivery',
     name: 'Parcel Delivery',
     label: 'Delivery',
-    description: 'Send a parcel between two addresses',
+    description: 'Send parcels through approved shops and motor-park routes',
     icon: 'delivery',
     kind: 'delivery',
   },

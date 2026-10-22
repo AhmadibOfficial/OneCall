@@ -19,6 +19,7 @@ import { PaymentModule } from '@/modules/payment/payment.module';
 import { ServicesModule } from '@/modules/services/services.module';
 import { MarketplaceModule } from '@/modules/marketplace/marketplace.module';
 import { AdminModule } from '@/modules/admin/admin.module';
+import { ParcelModule } from '@/modules/parcels/parcel.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AdminModule } from '@/modules/admin/admin.module';
     ServicesModule,
     MarketplaceModule,
     AdminModule,
+    ParcelModule,
     PaymentModule,
     OrderModule,
     ThrottlerModule.forRootAsync({

@@ -7,6 +7,7 @@ import 'common.dart';
 import 'finance_pages.dart';
 import 'resource_widgets.dart';
 import 'tracking_page.dart';
+import 'parcel_pages.dart';
 import 'location_picker.dart';
 import 'design_widgets.dart';
 import 'booking_photos.dart';
@@ -742,6 +743,19 @@ class _BookingsPanelState extends State<BookingsPanel> {
   @override
   Widget build(BuildContext context) => Column(
     children: [
+      ListTile(
+        leading: const Icon(Icons.inventory_2_outlined),
+        title: const Text('Parcel delivery & tracking'),
+        subtitle: const Text('View incoming and outgoing shop-to-shop parcels'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) =>
+                ParcelListPage(api: widget.api, agentOnly: widget.providerView),
+          ),
+        ),
+      ),
       Padding(
         padding: const EdgeInsets.all(16),
         child: SegmentedButton<bool>(

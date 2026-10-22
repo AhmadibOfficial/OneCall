@@ -8,6 +8,7 @@ import 'brand.dart';
 import 'common.dart';
 import 'location_picker.dart';
 import 'order_pages.dart';
+import 'parcel_pages.dart';
 import 'profile_pages.dart';
 import 'resource_widgets.dart';
 import 'verification_page.dart';
@@ -164,12 +165,14 @@ class _HomePageState extends State<HomePage> {
       await Navigator.push(
         context,
         MaterialPageRoute<void>(
-          builder: (_) => RequestPage(
-            api: widget.api,
-            service: service,
-            state: _state,
-            city: _city,
-          ),
+          builder: (_) => service.key == 'parcel-delivery'
+              ? ParcelListPage(api: widget.api, state: _state, city: _city)
+              : RequestPage(
+                  api: widget.api,
+                  service: service,
+                  state: _state,
+                  city: _city,
+                ),
         ),
       );
     }

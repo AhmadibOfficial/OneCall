@@ -378,7 +378,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Create account'));
       await tester.pumpAndSettle();
       expect(api.registeredPhone, '+2348012345678');
-      expect(find.text('Verify your email and phone'), findsOneWidget);
+      expect(find.text('Verify your email'), findsOneWidget);
       await tester.ensureVisible(find.text('Tailoring'));
       await tester.tap(find.text('Tailoring'));
       await tester.pumpAndSettle();

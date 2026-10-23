@@ -11,23 +11,22 @@ class VerificationPage extends StatefulWidget {
 }
 
 class _VerificationPageState extends State<VerificationPage> {
-  final _emailToken = TextEditingController(),
-      _phoneCode = TextEditingController();
-  String? _selector, _error, _notice;
+  final _emailToken = TextEditingController();
+  String? _error, _notice;
   bool _busy = false;
-  Future<void> _request(bool phone) async {
+  Future<void> _request() async {
     setState(() {
       _busy = true;
       _error = null;
       _notice = null;
     });
     try {
-      final data = await widget.api.requestVerification(phone);
+      final data = await widget.api.requestVerification(false);
       if (data['alreadyVerified'] == true) {
         await widget.api.reloadUser();
         if (mounted) {
           setState(() {
-            _notice = '${phone ? 'Phone' : 'Email'} is already verified.';
+            _notice = 'Email is already verified.';
           });
         }
         return;
@@ -36,19 +35,13 @@ class _VerificationPageState extends State<VerificationPage> {
         return;
       }
       setState(() {
-        if (phone) {
-          _selector = data['selector'] as String?;
-          if (kDebugMode && data['developmentVerificationCode'] is String) {
-            _phoneCode.text = data['developmentVerificationCode'] as String;
-          }
-        } else if (kDebugMode &&
-            data['developmentVerificationToken'] is String) {
+        if (kDebugMode && data['developmentVerificationToken'] is String) {
           _emailToken.text = data['developmentVerificationToken'] as String;
         }
         _notice =
             data.keys.any((k) => k.startsWith('development')) && kDebugMode
             ? 'Local development challenge loaded. Confirm it below.'
-            : 'Check your ${phone ? 'phone' : 'email'} for the verification ${phone ? 'code' : 'token'}.';
+            : 'Check your email for the verification token.';
       });
     } catch (error) {
       if (mounted) {
@@ -65,15 +58,10 @@ class _VerificationPageState extends State<VerificationPage> {
     }
   }
 
-  Future<void> _confirm(bool phone) async {
-    final value = phone ? _phoneCode.text.trim() : _emailToken.text.trim();
-    if (value.isEmpty ||
-        (phone && (_selector == null || !RegExp(r'^\d{6}$').hasMatch(value)))) {
-      setState(() {
-        _error = phone
-            ? 'Request a code and enter its 6 digits.'
-            : 'Enter the token from your verification email.';
-      });
+  Future<void> _confirm() async {
+    final value = _emailToken.text.trim();
+    if (value.isEmpty) {
+      setState(() => _error = 'Enter the token from your verification email.');
       return;
     }
     setState(() {
@@ -81,10 +69,10 @@ class _VerificationPageState extends State<VerificationPage> {
       _error = null;
     });
     try {
-      await widget.api.confirmVerification(phone, value, selector: _selector);
+      await widget.api.confirmVerification(false, value);
       if (mounted) {
         setState(() {
-          _notice = '${phone ? 'Phone' : 'Email'} verified.';
+          _notice = 'Email verified.';
         });
       }
     } catch (error) {
@@ -105,7 +93,6 @@ class _VerificationPageState extends State<VerificationPage> {
   @override
   void dispose() {
     _emailToken.dispose();
-    _phoneCode.dispose();
     super.dispose();
   }
 
@@ -120,8 +107,7 @@ class _VerificationPageState extends State<VerificationPage> {
           const PageIntro(
             icon: Icons.verified_user_outlined,
             title: 'A safer start',
-            message:
-                'Verify your email and phone before sending a service request.',
+            message: 'Verify your email before sending a service request.',
           ),
           if (_error != null) ErrorNotice(_error!),
           if (_notice != null)
@@ -142,7 +128,7 @@ class _VerificationPageState extends State<VerificationPage> {
             )
           else ...[
             TextButton(
-              onPressed: _busy ? null : () => _request(false),
+              onPressed: _busy ? null : () => _request(),
               child: const Text('Send email verification'),
             ),
             TextField(
@@ -156,39 +142,8 @@ class _VerificationPageState extends State<VerificationPage> {
               ),
             ),
             TextButton(
-              onPressed: _busy ? null : () => _confirm(false),
+              onPressed: _busy ? null : () => _confirm(),
               child: const Text('Confirm email'),
-            ),
-          ],
-          const Divider(height: 36),
-          Text(
-            'Phone: ${user?.phone ?? ''}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          if (user?.phoneVerified == true)
-            const ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.verified, color: teal),
-              title: Text('Phone verified'),
-            )
-          else ...[
-            TextButton(
-              onPressed: _busy ? null : () => _request(true),
-              child: const Text('Send phone code'),
-            ),
-            TextField(
-              controller: _phoneCode,
-              enabled: !_busy,
-              maxLength: 6,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Phone verification code',
-                prefixIcon: Icon(Icons.sms_outlined),
-              ),
-            ),
-            TextButton(
-              onPressed: _busy ? null : () => _confirm(true),
-              child: const Text('Confirm phone'),
             ),
           ],
           if (_busy) const Center(child: CircularProgressIndicator()),

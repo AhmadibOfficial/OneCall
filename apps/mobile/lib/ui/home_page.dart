@@ -662,7 +662,7 @@ class _HomePageState extends State<HomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Verify your email and phone',
+                            'Verify your email',
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 17,

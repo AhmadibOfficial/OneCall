@@ -43,7 +43,7 @@ describe('Kaduna pilot: real HTTP and database contracts', () => {
         passwordHash: await argon2.hash(password),
         status: active ? 'ACTIVE' : 'PENDING',
         emailVerified: active,
-        phoneVerified: active,
+        phoneVerified: false,
       },
     });
     userIds.push(user.id);

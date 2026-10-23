@@ -116,11 +116,10 @@ export class AdminOperationsService {
       if (
         provider.user.status !== 'ACTIVE' ||
         provider.user.deletedAt ||
-        !provider.user.emailVerified ||
-        !provider.user.phoneVerified
+        !provider.user.emailVerified
       )
         throw new ConflictException(
-          'Provider must have an active, email- and phone-verified account',
+          'Provider must have an active, email-verified account',
         );
       // Proposed coverage is not approved automatically. Later approvals add vetted areas.
       if (!provider.approved)
@@ -315,8 +314,7 @@ export class AdminOperationsService {
         !provider?.approved ||
         provider.user.status !== 'ACTIVE' ||
         provider.user.deletedAt ||
-        !provider.user.emailVerified ||
-        !provider.user.phoneVerified
+        !provider.user.emailVerified
       )
         throw new ConflictException(
           'Select an approved active verified provider',

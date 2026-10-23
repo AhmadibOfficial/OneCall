@@ -91,8 +91,7 @@ export class BookingPhotoService {
           !current ||
           current.deletedAt ||
           current.status !== 'ACTIVE' ||
-          !current.emailVerified ||
-          !current.phoneVerified
+          !current.emailVerified
         )
           throw new ForbiddenException(
             'Verify your account before uploading photos.',

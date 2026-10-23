@@ -256,7 +256,7 @@ class _RequestPageState extends State<RequestPage> {
     if (widget.api.user?.canBook != true) {
       setState(
         () => _error =
-            'Sign in and verify your email and phone before sending a request.',
+            'Sign in and verify your email before sending a request.',
       );
       return;
     }

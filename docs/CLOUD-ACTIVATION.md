@@ -20,7 +20,7 @@ The source of truth is the Blueprint's **OneCall / pilot** environment:
 | Resource | Purpose |
 | --- | --- |
 | `onecall-staging-api` | Production-mode account, booking and payment API |
-| `onecall-staging-delivery` | Signed email/SMS verification delivery |
+| `onecall-staging-delivery` | Signed email verification delivery |
 | `onecall-staging-db` | PostgreSQL 16 with external access blocked |
 | `onecall-staging-cache` | Redis-compatible Key Value with external access blocked |
 | `onecall-web` | Existing static client on `publication-onecall` |
@@ -40,9 +40,6 @@ Enter actual provider-issued settings directly in Render, never in source/chat:
 | --- | --- | --- |
 | delivery | `RESEND_API_KEY` | Actual Resend key |
 | delivery | `AUTH_EMAIL_FROM` | Email address on a domain verified in Resend |
-| delivery | `TERMII_API_KEY` | Actual Termii key |
-| delivery | `TERMII_BASE_URL` | Exact HTTPS API origin supplied by Termii |
-| delivery | `TERMII_SENDER_ID` | Approved sender ID |
 | API | `ONECALL_PAYMENT_MODE` | `test` for sandbox, or `disabled` to defer |
 | API | `PAYSTACK_SECRET_KEY` | Matching test secret, or empty when disabled |
 | API | `ONECALL_PAYMENTS_LIVE_APPROVED` | `false` during setup and testing |
@@ -53,7 +50,7 @@ service edit **Environment** and redeploy. A secret key alone never enables
 payments. Render generates OneCall session/delivery secrets and wires private
 connections. The production checks remain mandatory; missing delivery settings
 block startup. Placeholders and development-mode verification bypasses are not
-substitutes. Confirm actual email/SMS receipt on your own test account.
+substitutes. Confirm actual email receipt on your own test account.
 
 ## Payment testing and live activation
 
@@ -99,7 +96,7 @@ Never reset the local database or delete Docker volumes. Apply
 adds payment-mode columns and retains existing records.
 
 Check API `/api/v1/health/ready`, public privacy/deletion pages, delivery
-`/health`, and actual email/SMS receipt. Run **Publish OneCall cloud client**
+`/health`, and actual email receipt. Run **Publish OneCall cloud client**
 with that API's real HTTPS URL ending `/api/v1`, or commit the URL under `apiUrl`
 in `deploy/client-target.json`. Deploy `onecall-web` after the publication branch
 updates. The workflow rejects local, placeholder and unready APIs.
@@ -114,3 +111,18 @@ References: [Render free limits](https://render.com/docs/free),
 [Render environment variables](https://render.com/docs/configure-environment-variables),
 [Paystack checkout](https://paystack.com/docs/payments/accept-payments/),
 [Paystack verification](https://paystack.com/docs/payments/verify-payments/).
+
+## Email-only account verification
+
+An active account needs a verified email to book, upload booking photos or apply
+for provider/parcel-agent access. Provider and agent approval remain separate
+operator decisions. Phone numbers remain contact details, not verified identity.
+Existing phone verification records are preserved; no phone is marked verified
+by this change. SMS is disabled by default (`ONECALL_SMS_ENABLED=false`). Termii
+credentials are not needed for this deployment. Legacy SMS delivery requires an
+explicit opt-in and valid Termii configuration; it is not a booking prerequisite.
+
+For initial Paystack testing set `ONECALL_PAYMENT_MODE=test` and
+`ONECALL_PAYMENTS_LIVE_APPROVED=false` on the API, with a real matching test
+secret key stored privately. Never substitute a placeholder key. This does not
+enable real charges, provider payouts or refunds.

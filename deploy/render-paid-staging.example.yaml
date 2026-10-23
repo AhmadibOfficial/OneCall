@@ -113,15 +113,11 @@ projects:
           property: connectionString
       - key: AUTH_DELIVERY_REDIS_PREFIX
         value: 'onecall:staging:delivery:'
+      - key: ONECALL_SMS_ENABLED
+        value: 'false'
       - key: RESEND_API_KEY
         sync: false
       - key: AUTH_EMAIL_FROM
-        sync: false
-      - key: TERMII_API_KEY
-        sync: false
-      - key: TERMII_BASE_URL
-        sync: false
-      - key: TERMII_SENDER_ID
         sync: false
     - type: web
       name: onecall-web

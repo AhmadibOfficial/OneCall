@@ -47,15 +47,8 @@ async function approve(uid, state, city, keys) {
       const user = await tx.user.findUniqueOrThrow({
         where: { id: snapshot.id },
       });
-      if (
-        user.deletedAt ||
-        user.status !== 'ACTIVE' ||
-        !user.emailVerified ||
-        !user.phoneVerified
-      )
-        throw new Error(
-          'Provider must first register and verify their email and phone',
-        );
+      if (user.deletedAt || user.status !== 'ACTIVE' || !user.emailVerified)
+        throw new Error('Provider must first register and verify their email');
       const p = await tx.provider.upsert({
         where: { userId: user.id },
         create: { userId: user.id, approved: true },

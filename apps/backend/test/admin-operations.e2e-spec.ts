@@ -34,7 +34,7 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
         passwordHash: await argon2.hash('Operations2026!'),
         status: 'ACTIVE',
         emailVerified: true,
-        phoneVerified: true,
+        phoneVerified: false,
       },
     });
     return {
@@ -144,7 +144,7 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
       .expect(400);
     await prisma.user.update({
       where: { id: provider.id },
-      data: { phoneVerified: false },
+      data: { emailVerified: false },
     });
     await call(
       admin,
@@ -158,7 +158,7 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
     ).toBe(0);
     await prisma.user.update({
       where: { id: provider.id },
-      data: { phoneVerified: true },
+      data: { emailVerified: true },
     });
   });
   it('replaces proposed coverage with reviewed coverage and records actor/reason', async () => {

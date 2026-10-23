@@ -383,6 +383,7 @@ model CheckoutIntent {
   orderId String? @db.Uuid
   order Order? @relation(fields: [orderId], references: [id], onDelete: Restrict)
   amountKobo BigInt
+  providerMode String @default("unknown") @db.VarChar(10)
   reference String @unique @db.VarChar(128)
   idempotencyKey String @unique @db.VarChar(128)
   checkoutUrl String? @db.VarChar(500)
@@ -495,6 +496,7 @@ model Payment {
 
   status PaymentStatus @default(INITIATED)
   method String? @db.VarChar(20)
+  providerMode String? @db.VarChar(10)
 
   idempotencyKey String @unique @db.VarChar(128)
 

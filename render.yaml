@@ -71,8 +71,12 @@ projects:
         value: 'false'
       - key: ONECALL_WALLET_ENABLED
         value: 'false'
+      - key: ONECALL_PAYMENT_MODE
+        sync: false
       - key: PAYSTACK_SECRET_KEY
-        value: ''
+        sync: false
+      - key: ONECALL_PAYMENTS_LIVE_APPROVED
+        sync: false
       - key: ONECALL_MIGRATE_ON_START
         value: 'true'
     - type: web
@@ -140,6 +144,7 @@ projects:
     - name: onecall-staging-db
       region: frankfurt
       plan: free
+      postgresMajorVersion: '16'
       databaseName: onecall_staging
       user: onecall_staging
       ipAllowList: []

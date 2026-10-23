@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { paymentConfiguration } from '../../../scripts/payment-configuration.cjs';
 
 type JsonObject = Record<string, unknown>;
 function object(value: unknown): JsonObject {
@@ -17,16 +18,26 @@ function object(value: unknown): JsonObject {
 @Injectable()
 export class PaystackGateway {
   constructor(private readonly config: ConfigService) {}
-  get enabled() {
-    return /^sk_(test|live)_[A-Za-z0-9]+$/.test(
-      this.config.get<string>('PAYSTACK_SECRET_KEY') ?? '',
+  get configuration() {
+    return paymentConfiguration(
+      Object.fromEntries(
+        [
+          'ONECALL_PAYMENT_MODE',
+          'PAYSTACK_SECRET_KEY',
+          'PAYSTACK_CALLBACK_URL',
+          'RENDER_EXTERNAL_URL',
+          'API_PREFIX',
+          'ONECALL_PAYMENTS_LIVE_APPROVED',
+          'ONECALL_WALLET_ENABLED',
+        ].map((key) => [key, this.config.get<string>(key)]),
+      ),
     );
   }
+  get enabled() {
+    return this.configuration.enabled;
+  }
   get walletEnabled() {
-    return (
-      this.enabled &&
-      this.config.get<string>('ONECALL_WALLET_ENABLED') === 'true'
-    );
+    return this.configuration.walletEnabled;
   }
   private secret() {
     const secret = this.config.get<string>('PAYSTACK_SECRET_KEY') ?? '';
@@ -72,6 +83,9 @@ export class PaystackGateway {
       amount: amountKobo.toString(),
       email,
       currency: 'NGN',
+      ...(this.configuration.callbackUrl
+        ? { callback_url: this.configuration.callbackUrl }
+        : {}),
     });
     if (
       data.reference !== reference ||

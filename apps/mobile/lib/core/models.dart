@@ -87,13 +87,18 @@ class ServiceOrder {
     this.quote,
     this.provider,
     this.paymentStatus,
+    this.paymentMode,
   });
   final String id, serviceName, status, city;
   final String? address, description, amount;
   final DateTime createdAt;
   final bool providerAssigned;
   final String state;
-  final String? pickupAddress, destinationAddress, vehicleType, paymentStatus;
+  final String? pickupAddress,
+      destinationAddress,
+      vehicleType,
+      paymentStatus,
+      paymentMode;
   final DateTime? scheduledAt;
   final Map<String, dynamic>? quote, provider;
   bool get canCancel =>
@@ -134,5 +139,6 @@ class ServiceOrder {
         ? Map<String, dynamic>.from(j['provider'] as Map)
         : null,
     paymentStatus: j['paymentStatus'] as String?,
+    paymentMode: j['paymentMode'] as String?,
   );
 }

@@ -1,5 +1,6 @@
 'use strict';
 const { isAbsolute } = require('node:path');
+const { paymentConfiguration } = require('./payment-configuration.cjs');
 function secureUrl(value, originOnly = false) {
   try {
     const u = new URL(value);
@@ -64,9 +65,10 @@ function checks(env = process.env, component = 'api') {
         (env.ONECALL_STORAGE_PERSISTENT === 'true' &&
           isAbsolute(env.ONECALL_UPLOAD_ROOT || '')),
     );
+    const payments = paymentConfiguration(env);
     add(
-      'payments_deferred',
-      !env.PAYSTACK_SECRET_KEY && env.ONECALL_WALLET_ENABLED !== 'true',
+      'payments_configuration',
+      payments.valid && (!payments.enabled || !!payments.callbackUrl),
     );
     add('social_production_gate', env.ONECALL_SOCIAL_LOGIN_ENABLED !== 'true');
     const origins = (env.CORS_ORIGINS || '')

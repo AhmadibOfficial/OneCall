@@ -28,6 +28,7 @@ function checkoutResponse(intent: {
   id: string;
   orderId: string | null;
   amountKobo: bigint;
+  providerMode: string;
   status: string;
   checkoutUrl: string | null;
   createdAt: Date;
@@ -37,6 +38,7 @@ function checkoutResponse(intent: {
     orderId: intent.orderId,
     amount: naira(intent.amountKobo),
     currency: 'NGN',
+    paymentMode: intent.providerMode,
     status: intent.status,
     checkoutUrl: intent.checkoutUrl,
     createdAt: intent.createdAt,
@@ -60,6 +62,10 @@ export class FinanceService {
       balance: naira(wallet?.balanceKobo ?? 0n),
       checkoutEnabled: this.gateway.enabled,
       fundingEnabled: this.gateway.walletEnabled,
+      walletPaymentEnabled: this.gateway.walletEnabled,
+      paymentMode: this.gateway.enabled
+        ? this.gateway.configuration.mode
+        : 'disabled',
       transactions: (wallet?.entries ?? []).map((entry) => ({
         id: entry.id,
         amount: naira(entry.amountKobo),
@@ -132,6 +138,13 @@ export class FinanceService {
         (!input.orderId && intent.amountKobo !== kobo(input.amount!))
       )
         throw new ConflictException('Idempotency key is already in use');
+      if (
+        intent.status !== 'SUCCEEDED' &&
+        intent.providerMode !== this.gateway.configuration.mode
+      )
+        throw new ConflictException(
+          'This checkout belongs to a different payment mode. Contact Support.',
+        );
       return checkoutResponse(intent);
     };
     if (existing) return validateExisting(existing);
@@ -178,6 +191,7 @@ export class FinanceService {
             userId,
             orderId: input.orderId ?? null,
             amountKobo,
+            providerMode: this.gateway.configuration.mode,
             idempotencyKey: input.idempotencyKey,
             reference: 'onecall-' + randomUUID(),
           },
@@ -264,6 +278,13 @@ export class FinanceService {
       where: { reference },
     });
     if (!snapshot || snapshot.status === 'SUCCEEDED') return;
+    if (
+      !this.gateway.enabled ||
+      snapshot.providerMode !== this.gateway.configuration.mode
+    )
+      throw new ConflictException(
+        'This checkout belongs to a different payment mode. Contact Support.',
+      );
     const verified = await this.gateway.verify(reference);
     if (!verified.successful) return;
     const user = await this.prisma.user.findUniqueOrThrow({
@@ -312,6 +333,7 @@ export class FinanceService {
             amount: new Prisma.Decimal(naira(intent.amountKobo)),
             currency: 'NGN',
             method: 'PAYSTACK',
+            providerMode: intent.providerMode,
             status: 'SUCCEEDED',
             idempotencyKey: 'checkout.' + intent.id,
             providerReference: 'paystack-' + intent.reference,
@@ -346,13 +368,19 @@ export class FinanceService {
         data: {
           userId: intent.userId,
           orderId: intent.orderId,
-          title: 'Payment successful',
+          title:
+            intent.providerMode === 'test'
+              ? 'Test payment successful'
+              : 'Payment successful',
           body: `₦${naira(intent.amountKobo)} ${intent.orderId ? 'paid for your booking' : 'added to your wallet'}.`,
         },
       });
     });
   }
   async payWallet(userId: string, orderId: string, idempotencyKey: string) {
+    if (!this.gateway.walletEnabled) {
+      throw new ServiceUnavailableException('Wallet payments are not enabled');
+    }
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${orderId}::uuid FOR UPDATE`;
       const existing = await tx.payment.findUnique({
@@ -412,6 +440,7 @@ export class FinanceService {
           amount: order.amount!,
           currency: 'NGN',
           method: 'WALLET',
+          providerMode: this.gateway.configuration.mode,
           status: 'SUCCEEDED',
           idempotencyKey,
           providerReference: reference,

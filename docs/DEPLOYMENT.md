@@ -2,7 +2,9 @@
 
 The source is merged through the pilot/UI PRs. Cloud activation is a separate step.
 Use **My Workspace** and the **OneCall / pilot** project environment. This is a
-testing deployment, with payments, ads, social production and Amboy disabled.
+testing deployment. Paystack checkout can be configured explicitly in test mode;
+ads, social production and Amboy remain disabled. See [CLOUD-ACTIVATION.md](CLOUD-ACTIVATION.md)
+for workspace switching, private inputs and payment activation gates.
 
 ## Apply the cloud configuration
 
@@ -27,6 +29,9 @@ Enter these actual provider settings in Render's private creation form:
 | `TERMII_API_KEY` | Your Termii API key |
 | `TERMII_BASE_URL` | The exact HTTPS origin shown in your Termii dashboard |
 | `TERMII_SENDER_ID` | Your approved 3–11 character alphanumeric sender |
+| `ONECALL_PAYMENT_MODE` (API) | `test`, or `disabled` to defer |
+| `PAYSTACK_SECRET_KEY` (API) | Matching test key, or empty when disabled |
+| `ONECALL_PAYMENTS_LIVE_APPROVED` (API) | `false` while setting up/testing |
 
 The delivery process stays blocked if these are missing. No test email or SMS is
 sent by deployment checks. A healthy service does not establish real delivery;

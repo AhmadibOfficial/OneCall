@@ -33,7 +33,7 @@ const orderSelect = {
   payments: {
     orderBy: { createdAt: 'desc' as const },
     take: 1,
-    select: { status: true },
+    select: { status: true, providerMode: true },
   },
 } as const;
 

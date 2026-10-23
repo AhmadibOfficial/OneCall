@@ -88,8 +88,8 @@ do not replace this physical-device walkthrough.
 
 Email/SMS live activation remains deferred; existing verification and backend
 permissions remain enforced. Google/Apple live sign-in still requires its own
-credentials and native configuration. Payments, ads and Amboy remain deferred.
-No backend configuration, account roles or production release gates are changed.
+credentials and native configuration. Paystack checkout now has explicit disabled/test/live configuration; its actual availability comes from the backend. See [CLOUD-ACTIVATION.md](CLOUD-ACTIVATION.md). Ads and Amboy remain deferred.
+Switching workspaces does not change account roles or provider approval. Cloud production checks remain enforced.
 
 To remove the USB tunnel when finished:
 

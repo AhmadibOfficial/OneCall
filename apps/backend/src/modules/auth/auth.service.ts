@@ -487,7 +487,6 @@ export class AuthService {
           id: token.userId,
           status: 'PENDING',
           emailVerified: true,
-          phoneVerified: true,
           deletedAt: null,
         },
         data: { status: 'ACTIVE' },

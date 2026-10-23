@@ -126,3 +126,5 @@ For initial Paystack testing set `ONECALL_PAYMENT_MODE=test` and
 `ONECALL_PAYMENTS_LIVE_APPROVED=false` on the API, with a real matching test
 secret key stored privately. Never substitute a placeholder key. This does not
 enable real charges, provider payouts or refunds.
+
+The email-only activation migration activates existing non-deleted PENDING accounts only when their email is already verified. Suspended and email-unverified accounts remain unchanged. New email confirmation activates an eligible account atomically with token consumption.

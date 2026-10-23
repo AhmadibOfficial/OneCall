@@ -50,7 +50,7 @@ class PrivateGate extends StatelessWidget {
               Text(
                 user == null
                     ? 'Your bookings and account details stay with your OneCall account.'
-                    : 'Verify your email and phone before sending a service request.',
+                    : 'Verify your email before sending a service request.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),

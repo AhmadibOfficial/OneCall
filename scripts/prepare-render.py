@@ -27,7 +27,7 @@ def blueprint(paid=False):
         'branch':'main','dockerfilePath':'./deploy/Dockerfile','dockerContext':'.','dockerCommand':'node scripts/start-auth-delivery.cjs','autoDeployTrigger':'off','healthCheckPath':'/health',
         'envVars':[value('AUTH_DELIVERY_HOST','0.0.0.0'),value('AUTH_DELIVERY_PORT','10000'),{'key':'AUTH_DELIVERY_SECRET','generateValue':True},
           {'key':'AUTH_DELIVERY_REDIS_URL','fromService':{'type':'keyvalue','name':'onecall-staging-cache','property':'connectionString'}},
-          value('AUTH_DELIVERY_REDIS_PREFIX','onecall:staging:delivery:'),*[secret(k) for k in ['RESEND_API_KEY','AUTH_EMAIL_FROM','TERMII_API_KEY','TERMII_BASE_URL','TERMII_SENDER_ID']]]
+          value('AUTH_DELIVERY_REDIS_PREFIX','onecall:staging:delivery:'),value('ONECALL_SMS_ENABLED','false'),*[secret(k) for k in ['RESEND_API_KEY','AUTH_EMAIL_FROM']]]
     }
     web = {
         'type':'web','name':'onecall-web','runtime':'static',

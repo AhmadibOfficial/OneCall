@@ -27,7 +27,7 @@ import {
 const activeUser = {
   status: 'ACTIVE' as const,
   emailVerified: true,
-  phoneVerified: true,
+
   deletedAt: null,
 };
 const availableAgent = { status: 'APPROVED' as const, user: activeUser };
@@ -99,7 +99,7 @@ export class ParcelService {
     });
     if (!user)
       throw new ForbiddenException(
-        'An active account with verified email and phone is required',
+        'An active account with verified email is required',
       );
     return user;
   }
@@ -400,7 +400,12 @@ export class ParcelService {
         )
           throw new ConflictException('Daily parcel request limit reached');
         const recipient = await db.user.findFirst({
-          where: { phone: data.recipientPhone, ...activeUser },
+          // An unverified contact number cannot prove ownership of a recipient account.
+          where: {
+            phone: data.recipientPhone,
+            ...activeUser,
+            phoneVerified: true,
+          },
           select: { id: true },
         });
         const row = await db.parcelShipment.create({

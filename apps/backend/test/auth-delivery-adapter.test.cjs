@@ -28,6 +28,7 @@ describe('Authentication delivery: real HTTP + Redis; mocked vendor calls', () =
     AUTH_DELIVERY_REDIS_PREFIX: `onecall:delivery:test:${randomBytes(12).toString('hex')}:`,
     RESEND_API_KEY: 'resend-test-key',
     AUTH_EMAIL_FROM: 'accounts@example.com',
+    ONECALL_SMS_ENABLED: 'true',
     TERMII_API_KEY: 'termii-test-key',
     TERMII_BASE_URL: 'https://api.ng.termii.com',
     TERMII_SENDER_ID: 'OneCall',
@@ -125,6 +126,47 @@ describe('Authentication delivery: real HTTP + Redis; mocked vendor calls', () =
         AUTH_EMAIL_FROM: 'account@example.com\r\nBcc: other@example.com',
       }),
     );
+  });
+  test('email-only configuration needs no Termii credentials and refuses SMS without a provider call', async () => {
+    const emailConfig = readConfig({
+      ...env,
+      ONECALL_SMS_ENABLED: 'false',
+      TERMII_API_KEY: undefined,
+      TERMII_BASE_URL: undefined,
+      TERMII_SENDER_ID: undefined,
+    });
+    assert.equal(emailConfig.smsEnabled, false);
+    assert.equal(emailConfig.termiiUrl, undefined);
+    assert.equal(
+      readConfig({ ...env, ONECALL_SMS_ENABLED: undefined }).smsEnabled,
+      false,
+    );
+    const emailApp = createDeliveryApp({
+      config: emailConfig,
+      redis,
+      now: () => now,
+      fetchImpl: async () => {
+        throw new Error('Unexpected provider call');
+      },
+    });
+    const body = JSON.stringify({
+      kind: 'phone-verification',
+      recipient: '+2348012345678',
+      selector: 'a'.repeat(32),
+      secret: '123456',
+      expiresAt: new Date(now + 600000).toISOString(),
+    });
+    const timestamp = String(Math.floor(now / 1000));
+    const digest = createHmac('sha256', secret)
+      .update(`${timestamp}.${body}`)
+      .digest('hex');
+    await request(emailApp)
+      .post('/challenges')
+      .set('content-type', 'application/json')
+      .set('x-onecall-signature', `t=${timestamp},v1=${digest}`)
+      .send(body)
+      .expect(503);
+    assert.throws(() => readConfig({ ...env, ONECALL_SMS_ENABLED: 'yes' }));
   });
   test('health checks Redis without disclosing configuration', async () => {
     const response = await request(app).get('/health').expect(200);

@@ -49,7 +49,7 @@ describe('Parcel network: permissions, custody and private collection codes', ()
         passwordHash: await argon2.hash('ParcelTests2026!'),
         status: 'ACTIVE',
         emailVerified: true,
-        phoneVerified: true,
+        phoneVerified: false,
       },
     });
     const result = await app
@@ -115,6 +115,10 @@ describe('Parcel network: permissions, custody and private collection codes', ()
     admin = await account();
     sender = await account();
     recipient = await account();
+    await db.user.update({
+      where: { id: recipient.id },
+      data: { phoneVerified: true },
+    });
     origin = await account();
     destination = await account();
     stranger = await account();
@@ -183,12 +187,12 @@ describe('Parcel network: permissions, custody and private collection codes', ()
     await request(app.getHttpServer()).get('/api/v1/parcels').expect(401);
     await db.user.update({
       where: { id: stranger.id },
-      data: { phoneVerified: false },
+      data: { emailVerified: false },
     });
     await call(stranger, 'get', '/parcels/routes').expect(403);
     await db.user.update({
       where: { id: stranger.id },
-      data: { phoneVerified: true },
+      data: { emailVerified: true },
     });
     await call(stranger, 'get', '/admin/parcels').expect(403);
     await call(stranger, 'post', '/parcels/agent/routes')

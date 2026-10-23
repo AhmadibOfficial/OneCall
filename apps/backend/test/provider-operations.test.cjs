@@ -34,7 +34,7 @@ async function account(active) {
       lastName: 'Test',
       status: active ? 'ACTIVE' : 'PENDING',
       emailVerified: active,
-      phoneVerified: active,
+      phoneVerified: false,
     },
   });
 }

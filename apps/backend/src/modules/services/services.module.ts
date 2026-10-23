@@ -37,7 +37,7 @@ class ServicesController {
           user: {
             status: 'ACTIVE',
             emailVerified: true,
-            phoneVerified: true,
+
             deletedAt: null,
           },
         },
@@ -54,7 +54,7 @@ class ServicesController {
           user: {
             status: 'ACTIVE',
             emailVerified: true,
-            phoneVerified: true,
+
             deletedAt: null,
           },
         },
@@ -63,7 +63,7 @@ class ServicesController {
           user: {
             status: 'ACTIVE',
             emailVerified: true,
-            phoneVerified: true,
+
             deletedAt: null,
           },
         },

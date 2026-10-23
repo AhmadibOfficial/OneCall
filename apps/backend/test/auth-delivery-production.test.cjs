@@ -96,6 +96,7 @@ test(
         AUTH_DELIVERY_REDIS_PREFIX: prefix,
         RESEND_API_KEY: 'resend-test-key',
         AUTH_EMAIL_FROM: 'accounts@example.com',
+        ONECALL_SMS_ENABLED: 'true',
         TERMII_API_KEY: 'termii-test-key',
         TERMII_BASE_URL: 'https://api.ng.termii.com',
         TERMII_SENDER_ID: 'OneCall',

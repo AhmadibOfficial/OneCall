@@ -117,7 +117,7 @@ class ProfilePanel extends StatelessWidget {
                         Expanded(
                           child: Text(
                             user.canBook
-                                ? 'Email & phone verified'
+                                ? 'Email verified'
                                 : 'Contact verification needed',
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
@@ -166,7 +166,7 @@ class ProfilePanel extends StatelessWidget {
                 ),
                 tile(
                   Icons.verified_user_outlined,
-                  user.canBook ? 'Account verified' : 'Verify email and phone',
+                  user.canBook ? 'Account verified' : 'Verify email',
                   'Verify your contact details; this is not a face or identity scan',
                   VerificationPage(api: api),
                 ),

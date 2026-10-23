@@ -4,7 +4,7 @@
 
 Updated: 23 October 2026
 
-Version: 2026-10-23-pilot-draft-5
+Version: 2026-10-23-pilot-draft-6
 
 These documents describe the OneCall pilot and its optional Paystack checkout capability. The operator's registered legal name, business address and final retention schedule must be confirmed before public launch. Payment availability is shown in the app; a test payment does not collect real money. Protected payment holds, advertising rewards and AI assistance are not enabled.
 
@@ -48,7 +48,7 @@ Optional location sharing and any future optional marketing are explained separa
 
 - Customers and their assigned providers can access information needed for their booking. The available-jobs queue for unassigned providers excludes the customer's street address, description and pickup/destination details; those details are made available after assignment to perform the job.
 - Authorised OneCall operations and support staff can access relevant records to review applications, manage bookings, investigate complaints and protect accounts. Such access is limited by permissions.
-- Hosting, database, email and SMS vendors process the information needed to provide the services configured for the deployment. When maps are enabled or you choose to open an external map, the relevant map provider may process device/network information and coordinates under its own notice.
+- Hosting, database and email vendors process the information needed to provide the services configured for the deployment. When maps are enabled or you choose to open an external map, the relevant map provider may process device/network information and coordinates under its own notice.
 - Information may be disclosed to authorities or professional advisers when lawfully required or necessary to investigate a complaint or protect users. We do not sell personal data.
 
 ### 5. Location sharing
@@ -60,7 +60,7 @@ Provider GPS sharing is optional and is shown to the customer assigned to that i
 
 Optional Paystack checkout, when activated: transaction references, accepted quote amount, currency, payment mode and status. Paystack receives the email and amount needed for checkout and handles card or bank details on its hosted checkout. Test transactions do not collect real money. Escrow, automatic refunds and provider bank payouts are not provided by this pilot.
 
-The pilot provider application does not collect NIN, identity selfies, bank payout details or identity-verification certificates. Email/phone verification and provider approval do not mean a government identity or background check has been completed.
+The pilot provider application does not collect NIN, identity selfies, bank payout details or identity-verification certificates. Email verification and provider approval do not mean a government identity or background check has been completed.
 
 AdMob rewards and Amboy AI assistance are planned, not active. Before either is enabled, OneCall will explain the additional data recipients, purposes, permissions, retention and applicable choices. OneCall does not claim that future advertising or AI vendors are already covered by this pilot notice.
 
@@ -106,7 +106,7 @@ OneCall helps customers arrange services with independent providers. Providers p
 
 ### 2. Eligibility and accounts
 
-You must be at least 18 and legally able to enter the relevant agreement. Give accurate information and keep credentials private. Do not share passwords or verification codes. Report unauthorised access promptly. Verification of email and phone establishes control of those contact methods; it is not a government identity check.
+You must be at least 18 and legally able to enter the relevant agreement. Give accurate information and keep credentials private. Do not share passwords or verification codes. Report unauthorised access promptly. Email verification establishes control of your email address; it is not a government identity check. SMS verification is not required. Phone numbers supplied for booking contact are not proof of identity.
 
 
 ### 3. Requests, assignment and quotes

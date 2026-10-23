@@ -29,26 +29,33 @@ function readConfig(env = process.env) {
   if (!['redis:', 'rediss:'].includes(redis.protocol) || !redis.hostname) {
     throw new Error('AUTH_DELIVERY_REDIS_URL must be a Redis URL');
   }
-  const termiiUrl = new URL(required(env, 'TERMII_BASE_URL'));
-  if (
-    termiiUrl.protocol !== 'https:' ||
-    !/(^|\.)termii\.com$/.test(termiiUrl.hostname) ||
-    termiiUrl.username ||
-    termiiUrl.password ||
-    termiiUrl.search ||
-    termiiUrl.hash ||
-    termiiUrl.port ||
-    termiiUrl.pathname !== '/'
-  ) {
-    throw new Error(
-      'TERMII_BASE_URL must be the HTTPS Termii origin shown in your dashboard',
-    );
-  }
-  const sender = required(env, 'TERMII_SENDER_ID');
-  if (!/^[A-Za-z0-9]{3,11}$/.test(sender)) {
-    throw new Error(
-      'TERMII_SENDER_ID must be an approved 3–11 character alphanumeric sender',
-    );
+  const smsEnabled = env.ONECALL_SMS_ENABLED === 'true';
+  if (!['true', 'false', undefined].includes(env.ONECALL_SMS_ENABLED))
+    throw new Error('ONECALL_SMS_ENABLED must be true or false');
+  let termiiUrl, sender, termiiKey;
+  if (smsEnabled) {
+    termiiUrl = new URL(required(env, 'TERMII_BASE_URL'));
+    if (
+      termiiUrl.protocol !== 'https:' ||
+      !/(^|\.)termii\.com$/.test(termiiUrl.hostname) ||
+      termiiUrl.username ||
+      termiiUrl.password ||
+      termiiUrl.search ||
+      termiiUrl.hash ||
+      termiiUrl.port ||
+      termiiUrl.pathname !== '/'
+    ) {
+      throw new Error(
+        'TERMII_BASE_URL must be the HTTPS Termii origin shown in your dashboard',
+      );
+    }
+    sender = required(env, 'TERMII_SENDER_ID');
+    if (!/^[A-Za-z0-9]{3,11}$/.test(sender)) {
+      throw new Error(
+        'TERMII_SENDER_ID must be an approved 3–11 character alphanumeric sender',
+      );
+    }
+    termiiKey = required(env, 'TERMII_API_KEY');
   }
   const emailFrom = required(env, 'AUTH_EMAIL_FROM');
   if (
@@ -73,8 +80,9 @@ function readConfig(env = process.env) {
     host: env.AUTH_DELIVERY_HOST ?? '127.0.0.1',
     emailFrom,
     resendKey: required(env, 'RESEND_API_KEY'),
-    termiiKey: required(env, 'TERMII_API_KEY'),
-    termiiUrl: new URL('/api/sms/send', termiiUrl).href,
+    smsEnabled,
+    termiiKey,
+    termiiUrl: termiiUrl ? new URL('/api/sms/send', termiiUrl).href : undefined,
     sender,
   });
 }
@@ -247,6 +255,11 @@ function createDeliveryApp({
           timestamp,
         );
         const challenge = parseChallenge(req.body, timestamp);
+        if (challenge.kind === 'phone-verification' && !config.smsEnabled)
+          throw new DeliveryError(
+            503,
+            'SMS verification is unavailable; verify your email.',
+          );
         // Hash canonical challenge data so whitespace changes cannot bypass deduplication.
         const fingerprint = createHash('sha256')
           .update(

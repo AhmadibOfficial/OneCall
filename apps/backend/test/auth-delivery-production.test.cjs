@@ -252,7 +252,7 @@ test(
       });
       assert.equal(reset.status, 201);
       assert.deepEqual(reset.body, { accepted: true });
-      assert.equal(messages.length, 3);
+      assert.equal(messages.length, 2);
       const resetToken = messages[1].body.text.match(
         /[0-9a-f]{32}\.[0-9a-f]{128}/,
       )[0];

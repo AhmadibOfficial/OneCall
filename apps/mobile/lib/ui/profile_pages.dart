@@ -1410,7 +1410,7 @@ class InformationPage extends StatelessWidget {
           context,
           Icons.privacy_tip_outlined,
           'Data & Location',
-          'OneCall uses account, booking, address, chat and support records to arrange services. Optional provider location sharing is visible to the assigned customer while the job is in progress. Sharing stops when the provider leaves the tracking screen or backgrounds the app; the latest submitted coordinate is removed when the booking completes or is cancelled. Online payments are not offered in this pilot. See the privacy notice for data requests and retention details.',
+          'OneCall uses account, booking, address, chat and support records to arrange services. Optional provider location sharing is visible to the assigned customer while the job is in progress. Sharing stops when the provider leaves the tracking screen or backgrounds the app; the latest submitted coordinate is removed when the booking completes or is cancelled. Optional Paystack checkout sends your email and accepted quote amount to Paystack when activated. Payment availability and test mode are shown before checkout. See the privacy notice for data requests and retention details.',
         ),
         _policy(context, 'Terms of Service', 'terms'),
         _policy(context, 'Privacy Policy', 'privacy'),

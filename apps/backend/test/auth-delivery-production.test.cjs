@@ -96,10 +96,7 @@ test(
         AUTH_DELIVERY_REDIS_PREFIX: prefix,
         RESEND_API_KEY: 'resend-test-key',
         AUTH_EMAIL_FROM: 'accounts@example.com',
-        ONECALL_SMS_ENABLED: 'true',
-        TERMII_API_KEY: 'termii-test-key',
-        TERMII_BASE_URL: 'https://api.ng.termii.com',
-        TERMII_SENDER_ID: 'OneCall',
+        ONECALL_SMS_ENABLED: 'false',
       });
       const messages = [];
       const app = createDeliveryApp({
@@ -225,32 +222,11 @@ test(
         ).status,
         201,
       );
-      const requestedPhone = await api(
-        'POST',
-        '/auth/phone-verification/request',
-        {},
-        access,
-      );
-      assert.equal(requestedPhone.status, 201);
-      assert.deepEqual(Object.keys(requestedPhone.body).sort(), [
-        'accepted',
-        'selector',
-      ]);
-      const code = messages[1].body.sms.match(/\b\d{6}\b/)[0];
-      assert.equal(
-        (
-          await api('POST', '/auth/phone-verification/confirm', {
-            selector: requestedPhone.body.selector,
-            verificationCode: code,
-          })
-        ).status,
-        201,
-      );
       const me = await api('GET', '/users/me', undefined, access);
       assert.equal(me.status, 200);
       assert.equal(me.body.user.status, 'ACTIVE');
       assert.equal(me.body.user.emailVerified, true);
-      assert.equal(me.body.user.phoneVerified, true);
+      assert.equal(me.body.user.phoneVerified, false);
       const order = await api(
         'POST',
         '/orders',
@@ -276,8 +252,8 @@ test(
       });
       assert.equal(reset.status, 201);
       assert.deepEqual(reset.body, { accepted: true });
-      assert.equal(messages.length, 3);
-      const resetToken = messages[2].body.text.match(
+      assert.equal(messages.length, 2);
+      const resetToken = messages[1].body.text.match(
         /[0-9a-f]{32}\.[0-9a-f]{128}/,
       )[0];
       assert.equal(

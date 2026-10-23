@@ -220,6 +220,7 @@ void main() {
     (tester) async {
       final api = FakeApi();
       addTearDown(api.dispose);
+      await api.login('ahmad@example.com', 'Password123!');
       api.currentOrder = ServiceOrder(
         id: 'booking-chat',
         serviceName: 'Tailoring',
@@ -243,6 +244,7 @@ void main() {
         status: 'ACCEPTED',
         createdAt: DateTime(2026, 10, 13),
         providerAssigned: true,
+        provider: {'uid': '9999999999'},
       );
       await tester.pumpWidget(
         MaterialApp(

@@ -117,6 +117,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
+        if (_intent['paymentMode'] == 'test')
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Test payment · No real money is collected.'),
+            ),
+          ),
         Icon(
           _intent['status'] == 'SUCCEEDED'
               ? Icons.check_circle
@@ -189,6 +196,9 @@ class _PaymentPageState extends State<PaymentPage> {
   bool _busy = false;
   String? _error;
   final _checkoutKey = clientKey('booking'), _walletKey = clientKey('wallet');
+  bool get _canPay => _method == 'paystack'
+      ? (_wallet?['checkoutEnabled'] == true)
+      : (_wallet?['walletPaymentEnabled'] == true);
   @override
   void initState() {
     super.initState();
@@ -217,6 +227,9 @@ class _PaymentPageState extends State<PaymentPage> {
   }
 
   Future<void> _pay() async {
+    if (_busy || !_canPay) {
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
@@ -282,6 +295,11 @@ class _PaymentPageState extends State<PaymentPage> {
           ),
         ),
         Text(widget.order.serviceName),
+        if (_wallet?['paymentMode'] == 'test')
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('Test payments only. No real money is collected.'),
+          ),
         const SizedBox(height: 24),
         if (_wallet == null && _error == null) const LinearProgressIndicator(),
         if (_wallet != null) ...[
@@ -309,8 +327,14 @@ class _PaymentPageState extends State<PaymentPage> {
             child: ListTile(
               leading: const Icon(Icons.account_balance_wallet, color: teal),
               title: const Text('OneCall Wallet'),
-              subtitle: Text('Balance: ₦${_wallet!['balance']}'),
-              onTap: _busy ? null : () => setState(() => _method = 'wallet'),
+              subtitle: Text(
+                _wallet!['walletPaymentEnabled'] == true
+                    ? 'Balance: ₦${_wallet!['balance']}'
+                    : 'Wallet payments are unavailable.',
+              ),
+              onTap: _busy || _wallet!['walletPaymentEnabled'] != true
+                  ? null
+                  : () => setState(() => _method = 'wallet'),
               trailing: Icon(
                 _method == 'wallet'
                     ? Icons.radio_button_checked
@@ -320,7 +344,20 @@ class _PaymentPageState extends State<PaymentPage> {
             ),
           ),
           const SizedBox(height: 20),
-          BusyButton(label: 'Pay now', busy: _busy, onPressed: _pay),
+          BusyButton(
+            label: _wallet!['paymentMode'] == 'test'
+                ? 'Continue to test checkout'
+                : 'Pay now',
+            busy: _busy,
+            onPressed: _canPay ? _pay : null,
+          ),
+          if (!_canPay)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                'Online payments are unavailable. You can still view this booking and contact Support.',
+              ),
+            ),
           TextButton(
             onPressed: () => Navigator.push(
               context,
@@ -431,6 +468,13 @@ class _WalletPageState extends State<WalletPage> {
             const Center(child: CircularProgressIndicator()),
           if (_error != null) ErrorNotice(_error!, onRetry: _load),
           if (_wallet != null) ...[
+            if (_wallet!['paymentMode'] == 'test')
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'Test wallet · This balance is for testing, not real money.',
+                ),
+              ),
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(

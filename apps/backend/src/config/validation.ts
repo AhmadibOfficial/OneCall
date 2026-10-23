@@ -23,6 +23,16 @@ export const validationSchema = Joi.object({
     .allow('')
     .default(''),
   ONECALL_WALLET_ENABLED: Joi.string().valid('true', 'false').default('false'),
+  ONECALL_PAYMENT_MODE: Joi.string()
+    .valid('disabled', 'test', 'live')
+    .default('disabled'),
+  PAYSTACK_CALLBACK_URL: Joi.string()
+    .uri({ scheme: ['https'] })
+    .allow('')
+    .default(''),
+  ONECALL_PAYMENTS_LIVE_APPROVED: Joi.string()
+    .valid('true', 'false')
+    .default('false'),
 
   ONECALL_UPLOADS_ENABLED: Joi.string().valid('true', 'false').default('true'),
   ONECALL_UPLOAD_ROOT: Joi.string().allow(''),

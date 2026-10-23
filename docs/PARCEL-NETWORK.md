@@ -27,7 +27,7 @@ A lost response can be retried from the same booking form using its original ide
 ## Boundaries
 
 - Tracking is an agent-recorded custody timeline, **not continuous GPS** or proof that an unrecorded transport event occurred.
-- No online collection, escrow, refund ledger, insurance or agent wallet payout is activated. A quote or DELIVERED status is not proof of payment. Payments, advertising and Amboy remain deferred.
+- No online collection, escrow, refund ledger, insurance or agent wallet payout is activated. A quote or DELIVERED status is not proof of payment. Parcel payments, advertising and Amboy remain deferred. Accepted service-booking quotes have a separate optional Paystack checkout; see [CLOUD-ACTIVATION.md](CLOUD-ACTIVATION.md).
 - Collection codes are shown once to the sender, not stored on the phone or exposed in list/detail/admin responses. They expire after 24 hours, lock after five wrong submissions, and can be replaced at most three times per collection stage in a 24-hour issue window. Replacement invalidates the old code. No automatic SMS of parcel codes is implemented; the sender shares them privately.
 - Account notifications remain available for existing services. Parcel updates require refresh; push notifications and live chat for the new parcel model are not added.
 - Limits: 20 new shipments per sender per rolling day; 100 proposed routes per origin shop; list pages contain at most 50 shipments. Shop/route directories and admin overviews show up to 100 records; filter by state/city or use Support as the network grows. Photo evidence for this separate parcel model is not implemented; legacy booking photos remain private and unchanged.

@@ -13,6 +13,7 @@ import 'profile_pages.dart';
 import 'resource_widgets.dart';
 import 'verification_page.dart';
 import 'service_catalogue.dart';
+import 'workspace_switch.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.api});
@@ -31,6 +32,8 @@ class _HomePageState extends State<HomePage> {
   int _catalogueRevision = 0, _notificationsRevision = 0;
   String? _error, _favoritesError;
   bool _favoritesLoading = false;
+  bool _providerMode = false, _workspaceReady = false;
+  Future<void> _workspaceWrites = Future<void>.value();
   final _searchController = TextEditingController();
   @override
   void initState() {
@@ -45,6 +48,9 @@ class _HomePageState extends State<HomePage> {
         return;
       }
       final key = widget.api.user?.uid ?? 'guest';
+      _providerMode =
+          widget.api.user != null &&
+          prefs.getString('onecall.workspace.$key') == 'provider';
       _state = prefs.getString('onecall.location.$key.state') ?? 'Kaduna';
       _city = prefs.getString('onecall.location.$key.city') ?? 'Kaduna';
       if (!nigeriaStates.contains(_state)) {
@@ -56,6 +62,7 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) {
       return;
     }
+    setState(() => _workspaceReady = true);
     await _load();
     if (widget.api.user != null) {
       await _loadFavorites();
@@ -234,7 +241,13 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  static const _labels = ['Home', 'Bookings', 'Chat', 'Updates', 'Profile'];
+  List<String> get _labels => [
+    _providerMode ? 'Workspace' : 'Home',
+    _providerMode ? 'My jobs' : 'Bookings',
+    'Chat',
+    'Updates',
+    'Profile',
+  ];
   static const _icons = [
     Icons.home_outlined,
     Icons.receipt_long_outlined,
@@ -251,6 +264,34 @@ class _HomePageState extends State<HomePage> {
   ];
 
   void _selectTab(int index) => setState(() => _tab = index);
+
+  void _switchWorkspace(bool provider) {
+    final uid = widget.api.user?.uid;
+    if (uid == null || !_workspaceReady || provider == _providerMode) {
+      return;
+    }
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _providerMode = provider;
+      _tab = 0;
+    });
+    _workspaceWrites = _workspaceWrites.then((_) async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          'onecall.workspace.$uid',
+          provider ? 'provider' : 'customer',
+        );
+      } catch (_) {
+        if (mounted) {
+          notice(
+            context,
+            'Workspace changed. This device could not save your preference.',
+          );
+        }
+      }
+    });
+  }
 
   void _showFavorites() => Navigator.push<void>(
     context,
@@ -304,33 +345,75 @@ class _HomePageState extends State<HomePage> {
                       ]
                     : null,
               ),
-        body: switch (_tab) {
-          0 => _home(),
-          1 => PrivateGate(
-            api: widget.api,
-            verified: true,
-            child: BookingsPanel(api: widget.api),
-          ),
-          2 => PrivateGate(
-            api: widget.api,
-            child: ChatInboxPanel(api: widget.api),
-          ),
-          3 => PrivateGate(
-            api: widget.api,
-            child: ResourceList(
-              key: ValueKey('notifications-$_notificationsRevision'),
-              load: () async =>
-                  await widget.api.request('GET', '/notifications') as List,
-              emptyText: 'Your booking and account updates will appear here.',
-              itemBuilder: (context, item, reload) =>
-                  _notification(Map<String, dynamic>.from(item as Map), reload),
+        body: Column(
+          children: [
+            if (widget.api.user != null)
+              SafeArea(
+                bottom: false,
+                child: WorkspaceSwitch(
+                  providerMode: _providerMode,
+                  onChanged: _workspaceReady ? _switchWorkspace : null,
+                ),
+              ),
+            Expanded(
+              child: KeyedSubtree(
+                key: ValueKey('workspace-$_providerMode-$_tab'),
+                child: switch (_tab) {
+                  0 =>
+                    _providerMode
+                        ? PrivateGate(
+                            api: widget.api,
+                            verified: true,
+                            child: ProviderPage(
+                              api: widget.api,
+                              state: _state,
+                              city: _city,
+                            ),
+                          )
+                        : _home(),
+                  1 => PrivateGate(
+                    api: widget.api,
+                    verified: true,
+                    child: BookingsPanel(
+                      api: widget.api,
+                      providerView: _providerMode,
+                    ),
+                  ),
+                  2 => PrivateGate(
+                    api: widget.api,
+                    child: ChatInboxPanel(
+                      api: widget.api,
+                      providerView: _providerMode,
+                    ),
+                  ),
+                  3 => PrivateGate(
+                    api: widget.api,
+                    child: ResourceList(
+                      key: ValueKey('notifications-$_notificationsRevision'),
+                      load: () async =>
+                          await widget.api.request('GET', '/notifications')
+                              as List,
+                      emptyText:
+                          'Your booking and account updates will appear here.',
+                      itemBuilder: (context, item, reload) => _notification(
+                        Map<String, dynamic>.from(item as Map),
+                        reload,
+                      ),
+                    ),
+                  ),
+                  _ => PrivateGate(
+                    api: widget.api,
+                    child: ProfilePanel(
+                      api: widget.api,
+                      state: _state,
+                      city: _city,
+                    ),
+                  ),
+                },
+              ),
             ),
-          ),
-          _ => PrivateGate(
-            api: widget.api,
-            child: ProfilePanel(api: widget.api, state: _state, city: _city),
-          ),
-        },
+          ],
+        ),
         bottomNavigationBar: wide
             ? null
             : DecoratedBox(

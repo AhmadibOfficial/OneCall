@@ -232,9 +232,13 @@ class ProfilePanel extends StatelessWidget {
                 ),
                 tile(
                   Icons.credit_card_outlined,
-                  'Payment availability',
-                  'Online payments are not offered in this pilot',
-                  legal(documentId: 'payments'),
+                  'Payments & checkout',
+                  'Check availability and view your payment history',
+                  PrivateFeaturePage(
+                    title: 'Payments & checkout',
+                    api: api,
+                    child: PaymentMethodsPage(api: api),
+                  ),
                 ),
                 tile(
                   Icons.settings_outlined,
@@ -717,12 +721,45 @@ class PaymentMethodsPage extends StatelessWidget {
     body: ListView(
       padding: const EdgeInsets.all(22),
       children: [
-        const Card(
-          child: ListTile(
-            leading: Icon(Icons.credit_card, color: teal),
-            title: Text('Online payments unavailable'),
-            subtitle: Text(
-              'Online checkout, wallet funding and protected payment holds are not offered in this pilot. Read Payment availability in Legal & privacy before agreeing a payment arrangement.',
+        FutureBuilder<dynamic>(
+          future: api.request('GET', '/wallet'),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return ErrorNotice(errorMessage(snapshot.error!));
+            }
+            if (!snapshot.hasData) {
+              return const LinearProgressIndicator();
+            }
+            final status = snapshot.data as Map;
+            return Card(
+              child: ListTile(
+                leading: const Icon(Icons.credit_card, color: teal),
+                title: Text(
+                  status['paymentMode'] == 'test'
+                      ? 'Test checkout available'
+                      : status['checkoutEnabled'] == true
+                      ? 'Paystack checkout available'
+                      : 'Online payments unavailable',
+                ),
+                subtitle: Text(
+                  status['paymentMode'] == 'test'
+                      ? 'No real money is collected. Use payment options on an accepted booking quote.'
+                      : status['checkoutEnabled'] == true
+                      ? 'Pay an accepted quote from your booking. Card and bank details are entered with Paystack.'
+                      : 'Your bookings remain available. Checkout will appear when the payment service is activated.',
+                ),
+              ),
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.description_outlined),
+          title: const Text('Payment terms & support'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => const LegalPage(documentId: 'payments'),
             ),
           ),
         ),
@@ -1376,7 +1413,7 @@ class InformationPage extends StatelessWidget {
           context,
           Icons.privacy_tip_outlined,
           'Data & Location',
-          'OneCall uses account, booking, address, chat and support records to arrange services. Optional provider location sharing is visible to the assigned customer while the job is in progress. Sharing stops when the provider leaves the tracking screen or backgrounds the app; the latest submitted coordinate is removed when the booking completes or is cancelled. Online payments are not offered in this pilot. See the privacy notice for data requests and retention details.',
+          'OneCall uses account, booking, address, chat and support records to arrange services. Optional provider location sharing is visible to the assigned customer while the job is in progress. Sharing stops when the provider leaves the tracking screen or backgrounds the app; the latest submitted coordinate is removed when the booking completes or is cancelled. Optional Paystack checkout sends your email and accepted quote amount to Paystack when activated. Payment availability and test mode are shown before checkout. See the privacy notice for data requests and retention details.',
         ),
         _policy(context, 'Terms of Service', 'terms'),
         _policy(context, 'Privacy Policy', 'privacy'),

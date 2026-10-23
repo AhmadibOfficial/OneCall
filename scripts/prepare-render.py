@@ -17,7 +17,7 @@ def blueprint(paid=False):
           {'key':'AUTH_DELIVERY_SECRET','fromService':{'type':'web','name':'onecall-staging-delivery','envVarKey':'AUTH_DELIVERY_SECRET'}},
           {'key':'AUTH_DELIVERY_ORIGIN','fromService':{'type':'web','name':'onecall-staging-delivery','envVarKey':'RENDER_EXTERNAL_URL'}},
           {'key':'CORS_ORIGINS','fromService':{'type':'web','name':'onecall-web','envVarKey':'RENDER_EXTERNAL_URL'}},
-          value('THROTTLE_KEY_PREFIX','onecall:staging:throttle:'),value('ONECALL_UPLOADS_ENABLED','true' if paid else 'false'),value('ONECALL_SOCIAL_LOGIN_ENABLED','false'),value('ONECALL_WALLET_ENABLED','false'),value('PAYSTACK_SECRET_KEY',''),value('ONECALL_MIGRATE_ON_START','false' if paid else 'true')]
+          value('THROTTLE_KEY_PREFIX','onecall:staging:throttle:'),value('ONECALL_UPLOADS_ENABLED','true' if paid else 'false'),value('ONECALL_SOCIAL_LOGIN_ENABLED','false'),value('ONECALL_WALLET_ENABLED','false'),secret('ONECALL_PAYMENT_MODE'),secret('PAYSTACK_SECRET_KEY'),secret('ONECALL_PAYMENTS_LIVE_APPROVED'),value('ONECALL_MIGRATE_ON_START','false' if paid else 'true')]
     }
     if paid:
         api.update({'disk':{'name':'onecall-private-photos','mountPath':'/var/lib/onecall','sizeGB':1},'preDeployCommand':'pnpm prisma:deploy'})
@@ -43,7 +43,7 @@ def blueprint(paid=False):
     resources = {
         'name':'pilot',
         'services':[api,delivery,web,{'type':'keyvalue','name':'onecall-staging-cache','region':'frankfurt','plan':'starter' if paid else 'free','maxmemoryPolicy':'noeviction','ipAllowList':[]}],
-        'databases':[{'name':'onecall-staging-db','region':'frankfurt','plan':'basic-256mb' if paid else 'free','databaseName':'onecall_staging','user':'onecall_staging','ipAllowList':[]}],
+        'databases':[{'name':'onecall-staging-db','region':'frankfurt','plan':'basic-256mb' if paid else 'free','postgresMajorVersion':'16','databaseName':'onecall_staging','user':'onecall_staging','ipAllowList':[]}],
     }
     return {'previews':{'generation':'off'},'projects':[{'name':'OneCall','environments':[resources]}]}
 

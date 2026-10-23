@@ -27,7 +27,7 @@ type OrderResponseSource = {
     vehicleDescription: string | null;
     user: { uid: string; firstName: string; lastName: string; phone: string };
   } | null;
-  payments?: { status: string }[];
+  payments?: { status: string; providerMode?: string | null }[];
 };
 
 export class OrderMapper {
@@ -69,6 +69,7 @@ export class OrderMapper {
           }
         : null,
       paymentStatus: order.payments?.[0]?.status ?? null,
+      paymentMode: order.payments?.[0]?.providerMode ?? null,
     };
   }
 }

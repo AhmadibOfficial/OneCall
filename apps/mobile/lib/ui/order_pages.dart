@@ -604,7 +604,7 @@ class _RequestPageState extends State<RequestPage> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Your assigned provider sends a quote. Review and accept it before work starts. Sending this request does not charge you; online payments are unavailable in this pilot.',
+                    'Your assigned provider sends a quote. Review and accept it before work starts. Sending this request does not charge you. Available payment options appear in your booking.',
                   ),
                 ],
               ),
@@ -1206,7 +1206,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
                           : 'Awaiting customer approval',
                     ),
                   if (_order.paymentStatus != null)
-                    Text('Payment: ${_order.paymentStatus!}'),
+                    Text(
+                      '${_order.paymentMode == 'test' ? 'Test payment' : 'Payment'}: ${_order.paymentStatus!}',
+                    ),
                   if (!_provider &&
                       _order.status == 'ACCEPTED' &&
                       _order.quote != null &&
@@ -1352,13 +1354,26 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
 /// Conversations are derived from the server's participant-scoped bookings.
 /// No message bodies, addresses or contact details are fetched for the inbox.
 class ChatInboxPanel extends StatelessWidget {
-  const ChatInboxPanel({super.key, required this.api});
+  const ChatInboxPanel({
+    super.key,
+    required this.api,
+    this.providerView = false,
+  });
   final OneCallApi api;
+  final bool providerView;
 
   @override
   Widget build(BuildContext context) => ResourceList(
     load: () async =>
-        (await api.orders()).where((order) => order.providerAssigned).toList()
+        (await api.orders())
+            .where(
+              (order) =>
+                  order.providerAssigned &&
+                  (providerView
+                      ? (order.provider?['uid'] == api.user?.uid)
+                      : (order.provider?['uid'] != api.user?.uid)),
+            )
+            .toList()
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
     emptyText:
         'Your booking conversations appear here once a provider is assigned.',

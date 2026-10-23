@@ -7,6 +7,7 @@ describe('Paystack server contract', () => {
   const gateway = new PaystackGateway(
     new ConfigService({
       PAYSTACK_SECRET_KEY: key,
+      ONECALL_PAYMENT_MODE: 'test',
       ONECALL_WALLET_ENABLED: 'false',
     }),
   );
@@ -14,6 +15,86 @@ describe('Paystack server contract', () => {
   test('wallet funding requires an explicit setting', () => {
     expect(gateway.enabled).toBe(true);
     expect(gateway.walletEnabled).toBe(false);
+  });
+  test('a secret key alone never enables payments or a live wallet', () => {
+    expect(
+      new PaystackGateway(new ConfigService({ PAYSTACK_SECRET_KEY: key }))
+        .enabled,
+    ).toBe(false);
+    const configured = {
+      ONECALL_PAYMENT_MODE: 'live',
+      PAYSTACK_SECRET_KEY: 'sk_live_contract',
+      PAYSTACK_CALLBACK_URL:
+        'https://onecall-api.domain.test/api/v1/payments/paystack/return',
+    };
+    expect(new PaystackGateway(new ConfigService(configured)).enabled).toBe(
+      false,
+    );
+    const live = new PaystackGateway(
+      new ConfigService({
+        ...configured,
+        ONECALL_PAYMENTS_LIVE_APPROVED: 'true',
+      }),
+    );
+    expect(live.enabled).toBe(true);
+    expect(live.walletEnabled).toBe(false);
+    expect(
+      new PaystackGateway(
+        new ConfigService({
+          ...configured,
+          ONECALL_PAYMENTS_LIVE_APPROVED: 'true',
+          ONECALL_WALLET_ENABLED: 'true',
+        }),
+      ).enabled,
+    ).toBe(false);
+  });
+  test('payment mode and key must match, and callback cannot carry credentials or query data', () => {
+    for (const change of [
+      { ONECALL_PAYMENT_MODE: 'test', PAYSTACK_SECRET_KEY: 'sk_live_contract' },
+      { ONECALL_PAYMENT_MODE: 'unexpected' },
+      {
+        PAYSTACK_CALLBACK_URL: 'https://user:secret@onecall.domain.test/return',
+      },
+      {
+        PAYSTACK_CALLBACK_URL:
+          'https://onecall.domain.test/return?token=secret',
+      },
+    ])
+      expect(
+        new PaystackGateway(
+          new ConfigService({
+            ONECALL_PAYMENT_MODE: 'test',
+            PAYSTACK_SECRET_KEY: key,
+            ...change,
+          }),
+        ).enabled,
+      ).toBe(false);
+  });
+  test('configured checkout return URL is set only by the server', async () => {
+    const callback =
+      'https://onecall-api.domain.test/api/v1/payments/paystack/return';
+    const configured = new PaystackGateway(
+      new ConfigService({
+        ONECALL_PAYMENT_MODE: 'test',
+        PAYSTACK_SECRET_KEY: key,
+        PAYSTACK_CALLBACK_URL: callback,
+      }),
+    );
+    const fetcher = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          status: true,
+          data: {
+            reference: 'onecall-test',
+            authorization_url: 'https://checkout.paystack.com/valid',
+          },
+        }),
+      ),
+    );
+    await configured.initialize('onecall-test', 12345n, 'customer@example.com');
+    expect(
+      JSON.parse(fetcher.mock.calls[0][1]!.body as string) as unknown,
+    ).toMatchObject({ callback_url: callback, amount: '12345' });
   });
   test('exact request bytes authenticate a webhook', () => {
     const raw = Buffer.from('{"event":"charge.success"}');

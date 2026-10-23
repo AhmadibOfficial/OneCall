@@ -122,6 +122,7 @@ describe('Nigeria marketplace: HTTP, database and mocked gateway', () => {
     auth = app.get(AuthService);
     gateway = app.get(PaystackGateway);
     app.get(ConfigService).set('PAYSTACK_SECRET_KEY', secret);
+    app.get(ConfigService).set('ONECALL_PAYMENT_MODE', 'test');
     app.get(ConfigService).set('ONECALL_WALLET_ENABLED', 'true');
     jest
       .spyOn(gateway, 'initialize')
@@ -405,6 +406,52 @@ describe('Nigeria marketplace: HTTP, database and mocked gateway', () => {
       body<unknown[]>(await call(other, 'get', '/support').expect(200)),
     ).toEqual([]);
   });
+  test('payment return page does not confirm a payment or reflect URL parameters', async () => {
+    const count = await prisma.payment.count();
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/payments/paystack/return?reference=private-reference')
+      .expect(200);
+    expect(response.text).toContain('This page does not confirm a payment');
+    expect(response.text).not.toContain('private-reference');
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(await prisma.payment.count()).toBe(count);
+  });
+  test('disabled wallet prevents a debit even if a caller bypasses the mobile UI', async () => {
+    app.get(ConfigService).set('ONECALL_WALLET_ENABLED', 'false');
+    try {
+      await call(
+        customer,
+        'post',
+        '/orders/00000000-0000-4000-8000-000000000001/pay-wallet',
+      )
+        .send({ idempotencyKey: 'disabled.' + stamp })
+        .expect(503);
+    } finally {
+      app.get(ConfigService).set('ONECALL_WALLET_ENABLED', 'true');
+    }
+  });
+  test('a checkout with a missing or different recorded provider domain cannot settle', async () => {
+    const order = await priced();
+    const checkout = body<Checkout>(
+      await call(customer, 'post', '/checkouts')
+        .send({ orderId: order.id, idempotencyKey: 'domain.' + stamp })
+        .expect(201),
+    );
+    const before = (gateway.verify as jest.Mock).mock.calls.length;
+    for (const providerMode of ['unknown', 'live']) {
+      await prisma.checkoutIntent.update({
+        where: { id: checkout.id },
+        data: { providerMode },
+      });
+      await call(customer, 'post', '/checkouts/' + checkout.id + '/verify')
+        .send({})
+        .expect(409);
+    }
+    expect((gateway.verify as jest.Mock).mock.calls.length).toBe(before);
+    expect(await prisma.payment.count({ where: { orderId: order.id } })).toBe(
+      0,
+    );
+  });
   test('verified funding is credited once; signatures and mismatched amounts cannot create money', async () => {
     const created = body<Checkout>(
       await call(customer, 'post', '/checkouts')
@@ -523,6 +570,9 @@ describe('Nigeria marketplace: HTTP, database and mocked gateway', () => {
     );
     const reference = initialized.at(-1)!;
     expect(checkout.amount).toBe('5000.00');
+    expect((checkout as Checkout & { paymentMode: string }).paymentMode).toBe(
+      'test',
+    );
     await call(customer, 'post', '/orders/' + order.id + '/pay-wallet')
       .send({ idempotencyKey: 'collision.' + stamp })
       .expect(409);
@@ -542,5 +592,9 @@ describe('Nigeria marketplace: HTTP, database and mocked gateway', () => {
         where: { orderId: order.id, status: 'SUCCEEDED' },
       }),
     ).toBe(1);
+    expect(
+      (await prisma.payment.findFirstOrThrow({ where: { orderId: order.id } }))
+        .providerMode,
+    ).toBe('test');
   });
 });

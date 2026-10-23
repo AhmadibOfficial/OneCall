@@ -24,4 +24,5 @@ export class OrderResponseDto {
     vehicleDescription: string | null;
   } | null;
   paymentStatus!: string | null;
+  paymentMode!: string | null;
 }

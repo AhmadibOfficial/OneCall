@@ -1,7 +1,11 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { checks, probe, deliveryUrl } = require('../scripts/release-readiness.cjs');
+const {
+  checks,
+  probe,
+  deliveryUrl,
+} = require('../scripts/release-readiness.cjs');
 function configured() {
   return {
     NODE_ENV: 'production',
@@ -83,7 +87,10 @@ test('Render delivery origin resolves to the signed challenge endpoint without e
   const env = configured();
   delete env.AUTH_DELIVERY_URL;
   env.AUTH_DELIVERY_ORIGIN = 'https://onecall-delivery.onrender.com';
-  assert.equal(deliveryUrl(env), 'https://onecall-delivery.onrender.com/challenges');
+  assert.equal(
+    deliveryUrl(env),
+    'https://onecall-delivery.onrender.com/challenges',
+  );
   assert.equal(checks(env).ready, true);
   assert.ok(!JSON.stringify(checks(env)).includes(env.AUTH_DELIVERY_SECRET));
   env.AUTH_DELIVERY_URL = 'https://custom.domain.test/challenges';
@@ -91,7 +98,8 @@ test('Render delivery origin resolves to the signed challenge endpoint without e
 });
 test('invalid delivery origins stay blocked instead of being converted into usable configuration', () => {
   for (const origin of [
-    '', 'http://onecall-delivery.onrender.com',
+    '',
+    'http://onecall-delivery.onrender.com',
     'https://account:secret@onecall-delivery.onrender.com',
     'https://onecall-delivery.onrender.com/another-path',
     'https://onecall-delivery.onrender.com?token=secret',
@@ -102,5 +110,83 @@ test('invalid delivery origins stay blocked instead of being converted into usab
     env.AUTH_DELIVERY_ORIGIN = origin;
     assert.equal(checks(env).ready, false);
   }
-  assert.equal(checks({ ...configured(), AUTH_DELIVERY_URL: 'http://unsafe.test', AUTH_DELIVERY_ORIGIN: 'https://safe.test' }).ready, false);
+  assert.equal(
+    checks({
+      ...configured(),
+      AUTH_DELIVERY_URL: 'http://unsafe.test',
+      AUTH_DELIVERY_ORIGIN: 'https://safe.test',
+    }).ready,
+    false,
+  );
+});
+
+test('production accepts explicitly configured test checkout without enabling real charges', () => {
+  const env = {
+    ...configured(),
+    ONECALL_PAYMENT_MODE: 'test',
+    PAYSTACK_SECRET_KEY: 'sk_test_localcontract',
+    PAYSTACK_CALLBACK_URL:
+      'https://onecall-api.domain.test/api/v1/payments/paystack/return',
+  };
+  assert.equal(checks(env).ready, true);
+  assert.equal(checks({ ...env, PAYSTACK_CALLBACK_URL: '' }).ready, false);
+  assert.equal(
+    checks({ ...env, PAYSTACK_SECRET_KEY: 'sk_live_localcontract' }).ready,
+    false,
+  );
+  assert.ok(!JSON.stringify(checks(env)).includes(env.PAYSTACK_SECRET_KEY));
+});
+
+test('live checkout requires matching key, return URL and explicit operational activation; live wallet stays blocked', () => {
+  const env = {
+    ...configured(),
+    ONECALL_PAYMENT_MODE: 'live',
+    PAYSTACK_SECRET_KEY: 'sk_live_localcontract',
+    PAYSTACK_CALLBACK_URL:
+      'https://onecall-api.domain.test/api/v1/payments/paystack/return',
+  };
+  assert.equal(checks(env).ready, false);
+  assert.equal(
+    checks({ ...env, ONECALL_PAYMENTS_LIVE_APPROVED: 'true' }).ready,
+    true,
+  );
+  assert.equal(
+    checks({
+      ...env,
+      ONECALL_PAYMENTS_LIVE_APPROVED: 'true',
+      ONECALL_WALLET_ENABLED: 'true',
+    }).ready,
+    false,
+  );
+  assert.equal(
+    checks({
+      ...env,
+      ONECALL_PAYMENTS_LIVE_APPROVED: 'true',
+      PAYSTACK_CALLBACK_URL: 'http://localhost:3000',
+    }).ready,
+    false,
+  );
+});
+
+test('Render supplies the API return URL without a guessed hostname or extra secret', () => {
+  const env = {
+    ...configured(),
+    ONECALL_PAYMENT_MODE: 'test',
+    PAYSTACK_SECRET_KEY: 'sk_test_contract',
+    RENDER_EXTERNAL_URL: 'https://onecall-api.onrender.com',
+    API_PREFIX: 'api/v1',
+  };
+  const {
+    paymentConfiguration,
+  } = require('../scripts/payment-configuration.cjs');
+  assert.equal(
+    paymentConfiguration(env).callbackUrl,
+    'https://onecall-api.onrender.com/api/v1/payments/paystack/return',
+  );
+  assert.equal(checks(env).ready, true);
+  assert.equal(
+    checks({ ...env, PAYSTACK_CALLBACK_URL: 'http://localhost:3000/return' })
+      .ready,
+    false,
+  );
 });

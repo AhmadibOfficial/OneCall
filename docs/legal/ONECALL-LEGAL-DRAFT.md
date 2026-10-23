@@ -2,11 +2,11 @@
 
 **Pilot draft for review**
 
-Updated: 22 October 2026
+Updated: 23 October 2026
 
-Version: 2026-10-22-pilot-draft-4
+Version: 2026-10-23-pilot-draft-5
 
-These documents describe the current OneCall pilot. The operator's registered legal name, business address and final retention schedule must be confirmed before public launch. Online payments, payment protection, advertising rewards and AI assistance are not enabled in this pilot.
+These documents describe the OneCall pilot and its optional Paystack checkout capability. The operator's registered legal name, business address and final retention schedule must be confirmed before public launch. Payment availability is shown in the app; a test payment does not collect real money. Protected payment holds, advertising rewards and AI assistance are not enabled.
 
 Read the terms before using OneCall. The privacy notice explains how information is handled; reading it is not consent to optional marketing, advertising or location sharing. Those uses require their own explanation and permission where applicable.
 
@@ -58,7 +58,7 @@ Provider GPS sharing is optional and is shown to the customer assigned to that i
 
 ### 6. Payments, identity checks, ads and AI
 
-Online checkout, wallet funding, escrow, automatic refunds and provider bank payouts are not offered in this pilot. No payment-card details are requested through the pilot booking flow. Payments are planned for a later release.
+Optional Paystack checkout, when activated: transaction references, accepted quote amount, currency, payment mode and status. Paystack receives the email and amount needed for checkout and handles card or bank details on its hosted checkout. Test transactions do not collect real money. Escrow, automatic refunds and provider bank payouts are not provided by this pilot.
 
 The pilot provider application does not collect NIN, identity selfies, bank payout details or identity-verification certificates. Email/phone verification and provider approval do not mean a government identity or background check has been completed.
 
@@ -118,7 +118,7 @@ The app requires customer acceptance of the current provider quote before the pr
 
 ### 4. Payments and cancellations
 
-Online payments and payment protection are unavailable in this pilot. Agree any payment arrangement transparently with the provider and retain receipts. OneCall does not receive or hold those funds, process automatic refunds or guarantee recovery of a direct payment.
+Payment availability is shown in the app. An accepted quote does not charge you. Paystack test checkout is clearly labelled and does not collect real money. Read Payment availability before using an active checkout. Agree direct payment arrangements transparently and retain receipts; OneCall cannot automatically refund money it did not collect.
 
 Use the cancellation action when available. If work has started or the action is unavailable, contact support promptly. Cancellation rights and any lawful, reasonable charges depend on the circumstances and applicable consumer law. The pilot does not automatically impose a cancellation fee. Do not treat a status change as an automatic refund or a waiver of consumer rights.
 
@@ -155,16 +155,21 @@ Online parcel payments, protected payment holds, agent wallet payouts and parcel
 
 ## Payment availability
 
-Online payments and payment protection are not active.
+Check availability, recognise test payments and get help with payment records.
 
-### Current pilot
+### Availability and test payments
 
-OneCall's online checkout, wallet funding, provider payouts and protected payment holds are not offered in this pilot. Booking and quote acceptance do not debit an account. Direct payment arrangements are between the customer and provider; OneCall cannot issue an automatic refund for money it did not collect. Contact support with evidence if a service or payment arrangement causes a problem. Your statutory rights remain available.
+Booking and accepting a quote do not charge you. When online checkout is unavailable, the app disables its payment action. When test checkout is enabled, it is labelled as a test and does not collect real money. A successful test payment is not evidence that a provider has been paid.
 
 
-### Before a future payment launch
+### Paystack checkout when activated
 
-OneCall must publish specific payment terms after confirming its processor and the implemented collection, fees, settlement, refunds and dispute workflow. Paystack is the proposed integration, but holding funds until completion, escrow, delayed settlement and automatic refunds require a supported and verified arrangement; a normal checkout alone does not establish those protections. Future terms will show fees and timing before payment and will not remove lawful bank, chargeback or consumer remedies.
+For a service booking, the payment amount comes from your accepted quote. Review the amount and scope before choosing payment. The app opens Paystack hosted checkout; card or bank details are entered with Paystack, not in OneCall. OneCall records the checkout reference, amount, currency, test/live mode, status and confirmation time. A browser return page alone never confirms payment; OneCall checks the transaction with Paystack.
+
+
+### Support, settlement and refunds
+
+This pilot does not provide escrow, protected payment holds, automatic refunds, automatic provider bank payouts or live wallet funding. Before enabling live collection, the operator must confirm and publish fees, provider settlement arrangements, refund handling and dispute contacts. Do not assume that confirming work releases held money. If a checkout or direct payment arrangement causes a problem, contact Support or onecalltech@gmail.com with your booking or checkout ID and relevant evidence. Never send passwords, full card details or one-time codes. Your statutory bank, chargeback and consumer remedies remain available.
 
 
 ## Consumer protection
@@ -187,7 +192,7 @@ Session credentials, preferences and temporary data on your device.
 
 ### Essential storage
 
-The mobile app uses secure-storage facilities for the saved session and basic user profile. Device/browser preferences remember the selected state and city. Forms may hold unsent text temporarily while open; this draft does not promise saved booking drafts after restarting the app. Signing out removes the saved OneCall session. Clearing app or browser data may also remove preferences and require a new sign-in; it does not delete your server-side account.
+The mobile app uses secure-storage facilities for the saved session and basic user profile. Device/browser preferences remember the selected state, city, appearance and Customer/Provider workspace. The workspace preference does not change account permissions. Forms may hold unsent text temporarily while open; this draft does not promise saved booking drafts after restarting the app. Signing out removes the saved OneCall session. Clearing app or browser data may also remove preferences and require a new sign-in; it does not delete your server-side account.
 
 
 ### Advertising and analytics

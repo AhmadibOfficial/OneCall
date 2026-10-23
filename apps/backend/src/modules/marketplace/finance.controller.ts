@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Headers,
+  Header,
   Param,
   ParseUUIDPipe,
   Post,
@@ -22,10 +23,14 @@ type AuthRequest = Request & { user: { id: string } };
 @UseGuards(JwtAuthGuard, VerifiedAccountGuard)
 export class FinanceController {
   constructor(private readonly finance: FinanceService) {}
-  @Get('wallet') wallet(@Req() r: AuthRequest) {
+  @Get('wallet')
+  @Header('Cache-Control', 'no-store')
+  wallet(@Req() r: AuthRequest) {
     return this.finance.wallet(r.user.id);
   }
-  @Get('checkouts') checkouts(@Req() r: AuthRequest) {
+  @Get('checkouts')
+  @Header('Cache-Control', 'no-store')
+  checkouts(@Req() r: AuthRequest) {
     return this.finance.checkouts(r.user.id);
   }
   @Post('checkouts')
@@ -50,6 +55,13 @@ export class FinanceController {
 @Controller('payments/paystack')
 export class PaystackWebhookController {
   constructor(private readonly finance: FinanceService) {}
+  @Get('return')
+  @Header('Cache-Control', 'no-store')
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  returned() {
+    // A browser redirect never verifies or settles a transaction.
+    return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Return to OneCall</title><main><h1>Return to OneCall</h1><p>Return to your OneCall checkout and choose Check payment status. This page does not confirm a payment.</p><p>If you need help, contact OneCall Support with your checkout ID.</p></main></html>';
+  }
   @Post('webhook')
   @SkipThrottle()
   webhook(

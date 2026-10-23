@@ -32,7 +32,7 @@ class WorkspaceApi extends FakeApi {
     bool authenticated = true,
   }) async {
     calls.add('$method $path');
-    if (path == '/provider/me')
+    if (path == '/provider/me') {
       return {
         'provider': {
           'approved': approved,
@@ -40,8 +40,11 @@ class WorkspaceApi extends FakeApi {
           'coverage': <dynamic>[],
         },
       };
-    if (path == '/orders/available') return <dynamic>[];
-    if (path == '/wallet')
+    }
+    if (path == '/orders/available') {
+      return <dynamic>[];
+    }
+    if (path == '/wallet') {
       return {
         'balance': '0.00',
         'paymentMode': paymentMode,
@@ -50,6 +53,7 @@ class WorkspaceApi extends FakeApi {
         'fundingEnabled': false,
         'transactions': <dynamic>[],
       };
+    }
     return super.request(
       method,
       path,

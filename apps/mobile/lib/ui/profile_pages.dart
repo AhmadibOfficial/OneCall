@@ -724,9 +724,12 @@ class PaymentMethodsPage extends StatelessWidget {
         FutureBuilder<dynamic>(
           future: api.request('GET', '/wallet'),
           builder: (context, snapshot) {
-            if (snapshot.hasError)
+            if (snapshot.hasError) {
               return ErrorNotice(errorMessage(snapshot.error!));
-            if (!snapshot.hasData) return const LinearProgressIndicator();
+            }
+            if (!snapshot.hasData) {
+              return const LinearProgressIndicator();
+            }
             final status = snapshot.data as Map;
             return Card(
               child: ListTile(

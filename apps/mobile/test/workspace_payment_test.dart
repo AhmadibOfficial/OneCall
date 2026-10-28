@@ -105,7 +105,18 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).last,
       );
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Workspace').last);
       await tester.pumpAndSettle();
@@ -130,7 +141,18 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).last,
       );
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
       expect(api.user, same(customer));
@@ -187,7 +209,18 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).last,
       );
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('My jobs').last);
       await tester.pumpAndSettle();
@@ -204,7 +237,18 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).last,
       );
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Chat'));
       await tester.pumpAndSettle();
@@ -226,7 +270,18 @@ void main() {
     await tester.tap(find.text('Profile').last);
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const ValueKey('workspace-switch')));
-    await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+    await Scrollable.ensureVisible(
+      tester.element(find.byKey(const ValueKey('workspace-switch'))),
+      alignment: 0.5,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Workspace').last);
     await tester.pumpAndSettle();
@@ -264,7 +319,18 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).last,
       );
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Workspace').last);
       await tester.pumpAndSettle();

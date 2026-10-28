@@ -71,6 +71,27 @@ export class ParcelReviewDto extends ParcelReasonDto {
 
 export class ParcelRouteReviewDto extends ParcelReasonDto {
   @IsBoolean() active!: boolean;
+  @ValidateIf(
+    (v: ParcelRouteReviewDto) => v.active || v.shopsConfirmed !== undefined,
+  )
+  @Equals(true)
+  shopsConfirmed?: boolean;
+  @ValidateIf(
+    (v: ParcelRouteReviewDto) => v.active || v.pricingConfirmed !== undefined,
+  )
+  @Equals(true)
+  pricingConfirmed?: boolean;
+  @ValidateIf(
+    (v: ParcelRouteReviewDto) => v.active || v.custodyConfirmed !== undefined,
+  )
+  @Equals(true)
+  custodyConfirmed?: boolean;
+  @ValidateIf(
+    (v: ParcelRouteReviewDto) =>
+      v.active || v.restrictionsConfirmed !== undefined,
+  )
+  @Equals(true)
+  restrictionsConfirmed?: boolean;
 }
 
 export class ParcelCodeDto {

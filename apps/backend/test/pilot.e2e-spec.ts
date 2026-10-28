@@ -115,7 +115,7 @@ describe('Kaduna pilot: real HTTP and database contracts', () => {
     );
   });
 
-  test('registration → login → verification → service request', async () => {
+  test('registration → login → immediate service request → optional verification', async () => {
     const email = `registration-${stamp}@example.com`;
     const registration = await request(app.getHttpServer())
       .post('/api/v1/auth/register')
@@ -140,8 +140,14 @@ describe('Kaduna pilot: real HTTP and database contracts', () => {
     await request(app.getHttpServer())
       .post('/api/v1/orders')
       .set('Authorization', bearer)
-      .send({ serviceName: 'Tailoring' })
-      .expect(403);
+      .send({
+        serviceName: 'Tailoring',
+        address: 'Test immediate booking address',
+      })
+      .expect(201);
+    expect(
+      payload<{ status: string; emailVerified: boolean }>(registration),
+    ).toMatchObject({ status: 'ACTIVE', emailVerified: false });
     const originalEnvironment = process.env.NODE_ENV;
     try {
       process.env.NODE_ENV = 'development';

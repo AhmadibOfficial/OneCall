@@ -255,8 +255,7 @@ class _RequestPageState extends State<RequestPage> {
     }
     if (widget.api.user?.canBook != true) {
       setState(
-        () => _error =
-            'Sign in and verify your email before sending a request.',
+        () => _error = 'An active account is required to send a request.',
       );
       return;
     }
@@ -296,7 +295,7 @@ class _RequestPageState extends State<RequestPage> {
 
   Widget _reviewRow(IconData icon, String label, String value, int step) =>
       ListTile(
-        leading: Icon(icon, color: navy),
+        leading: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
         title: Text(
           label.toUpperCase(),
           style: const TextStyle(
@@ -307,10 +306,10 @@ class _RequestPageState extends State<RequestPage> {
         ),
         subtitle: Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
-            color: navy,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         trailing: const Icon(Icons.edit_outlined, size: 20),
@@ -331,10 +330,7 @@ class _RequestPageState extends State<RequestPage> {
                   const SizedBox(height: 20),
                   Text(
                     _service.name,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(_service.description),
@@ -837,9 +833,9 @@ Widget bookingTile(
         children: [
           Text(
             order.serviceName,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 19,
-              color: navy,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1083,10 +1079,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
           ),
           Text(
             _order.serviceName,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: navy,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 14),
@@ -1181,12 +1177,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Price and payment',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: navy,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -1194,10 +1190,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage>
                     _order.quote == null
                         ? 'Price: awaiting a quote'
                         : 'Quote: ₦${_order.quote!['amount']}',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
                   ),
                   if (_order.quote != null)
                     Text(

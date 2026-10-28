@@ -2,9 +2,9 @@
 
 **Pilot draft for review**
 
-Updated: 23 October 2026
+Updated: 28 October 2026
 
-Version: 2026-10-23-pilot-draft-6
+Version: 2026-10-28-pilot-draft-7
 
 These documents describe the OneCall pilot and its optional Paystack checkout capability. The operator's registered legal name, business address and final retention schedule must be confirmed before public launch. Payment availability is shown in the app; a test payment does not collect real money. Protected payment holds, advertising rewards and AI assistance are not enabled.
 
@@ -35,7 +35,7 @@ The notice is prepared with reference to the Nigeria Data Protection Act 2023 an
 - Apple sign-in, when configured: encrypted refresh credentials are retained to check continued authorisation. Signed provider notices can remove a withdrawn link and revoke OneCall sessions. Browser sign-in results are encrypted and expire after five minutes; credentials never appear in callback URLs.
 - Appearance preferences: text size and reduced motion are saved locally on the device. Device accessibility text scaling remains respected.
 - Privacy requests: requests and support responses are recorded in your account. A password-protected basic account snapshot is available; it does not replace a full access request. A support response does not mean deletion has been completed. Deletion requires identity checks and review of lawful retention requirements.
-- Parcel network records: sender account, recipient name and phone, declared contents, weight, optional pickup address, selected shops and route, quoted price, custody events, support reports and collection-code issue/attempt records. Code hashes are stored; collection codes are shown only to the sender when created. Approved shops receive the details needed to handle their assigned parcels; an existing verified recipient account matching the phone at booking can view the parcel. A later change in phone ownership does not grant access to old parcels. Public shop addresses and active routes are visible to verified users. Operator access to private parcel details is audited.
+- Parcel network records: sender account, recipient name and phone, declared contents, weight, optional pickup address, selected shops and route, quoted price, custody events, support reports and collection-code issue/attempt records. Code hashes are stored; collection codes are shown only to the sender when created. Approved shops receive the details needed to handle their assigned parcels; an existing verified recipient account matching the phone at booking can view the parcel. A later change in phone ownership does not grant access to old parcels. Public shop addresses and active routes are visible to signed-in active users. Operator access to private parcel details is audited.
 
 ### 3. Purposes and lawful bases
 
@@ -106,7 +106,7 @@ OneCall helps customers arrange services with independent providers. Providers p
 
 ### 2. Eligibility and accounts
 
-You must be at least 18 and legally able to enter the relevant agreement. Give accurate information and keep credentials private. Do not share passwords or verification codes. Report unauthorised access promptly. Email verification establishes control of your email address; it is not a government identity check. SMS verification is not required. Phone numbers supplied for booking contact are not proof of identity.
+You must be at least 18 and legally able to enter the relevant agreement. Give accurate information and keep credentials private. Do not share passwords or verification codes. Report unauthorised access promptly. Email verification is optional for customer and approved-provider service access. When completed, it establishes control of your email address; it is not a government identity check. SMS verification is not required. Phone numbers supplied for booking contact are not proof of identity.
 
 
 ### 3. Requests, assignment and quotes
@@ -223,7 +223,7 @@ Use customer addresses, contact details and messages only for the assigned job a
 
 Parcel shop approval is separate from ordinary service-provider approval. Operations must check identity, physical shop and custody arrangements and record a review reference. Approval is not an automated NIN verification or a guarantee against loss. The app does not collect NIN documents in this flow.
 
-Origin shops propose route prices, capacity and transit estimates; an independent administrator must activate each route. Record only physical handovers you have verified. Do not release a parcel without the proper collection code. Keep recipient information and codes private, use them only for the shipment, and report custody incidents through Support. Suspended shops cannot receive new bookings or perform custody updates until Operations resolves the issue.
+Origin shops propose route prices, capacity and transit estimates; an independent administrator must confirm both shops, pricing, custody arrangements and permitted-item restrictions before activating each route. Record only physical handovers you have verified. Do not release a parcel without the proper collection code. Keep recipient information and codes private, use them only for the shipment, and report custody incidents through Support. Suspended shops cannot receive new bookings or perform custody updates until Operations resolves the issue.
 
 
 ## Account deletion & data requests

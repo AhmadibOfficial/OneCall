@@ -100,7 +100,7 @@ describe('Social authentication: real HTTP/database, mocked provider verificatio
       ).body,
     ).toMatchObject({ google: true, apple: true });
   });
-  it('signup creates pending phone verification, preserves booking guard, and ticket cannot replay', async () => {
+  it('signup grants active service access without phone verification and ticket cannot replay', async () => {
     const result = await signup();
     const me = await request(app.getHttpServer())
       .get('/api/v1/users/me')
@@ -117,7 +117,7 @@ describe('Social authentication: real HTTP/database, mocked provider verificatio
         city: 'Kaduna',
         address: 'Test address Kaduna',
       })
-      .expect(403);
+      .expect(201);
     await post('complete').send(result.details).expect(401);
     await post('exchange')
       .send({
@@ -331,17 +331,49 @@ describe('Social authentication: real HTTP/database, mocked provider verificatio
     ).toBe(hash);
   });
   it('Apple revocation removes only its link, revokes sessions and handles duplicate notices', async () => {
-    const account=await signup();
-    const user=await prisma.user.findUniqueOrThrow({where:{uid:account.session.user.uid}});
-    const subject=token();
-    await prisma.socialIdentity.create({data:{userId:user.id,provider:'apple',subject,authorizedAt:new Date(Date.now()-60000)}});
-    verifier.notice.mockResolvedValue({jti:token(),type:'consent-revoked',subject,time:Math.floor(Date.now()/1000)});
-    await post('apple/notifications').send({payload:'mock-signed-notice'}).expect(201);
-    await post('apple/notifications').send({payload:'mock-signed-notice'}).expect(201);
-    expect(await prisma.socialIdentity.count({where:{userId:user.id,provider:'apple'}})).toBe(0);
-    expect(await prisma.socialIdentity.count({where:{userId:user.id,provider:'google'}})).toBe(1);
-    expect((await prisma.user.findUniqueOrThrow({where:{id:user.id}})).tokenVersion).toBe(user.tokenVersion+1);
-    await request(app.getHttpServer()).get('/api/v1/users/me').set('Authorization','Bearer '+account.session.accessToken).expect(401);
+    const account = await signup();
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { uid: account.session.user.uid },
+    });
+    const subject = token();
+    await prisma.socialIdentity.create({
+      data: {
+        userId: user.id,
+        provider: 'apple',
+        subject,
+        authorizedAt: new Date(Date.now() - 60000),
+      },
+    });
+    verifier.notice.mockResolvedValue({
+      jti: token(),
+      type: 'consent-revoked',
+      subject,
+      time: Math.floor(Date.now() / 1000),
+    });
+    await post('apple/notifications')
+      .send({ payload: 'mock-signed-notice' })
+      .expect(201);
+    await post('apple/notifications')
+      .send({ payload: 'mock-signed-notice' })
+      .expect(201);
+    expect(
+      await prisma.socialIdentity.count({
+        where: { userId: user.id, provider: 'apple' },
+      }),
+    ).toBe(0);
+    expect(
+      await prisma.socialIdentity.count({
+        where: { userId: user.id, provider: 'google' },
+      }),
+    ).toBe(1);
+    expect(
+      (await prisma.user.findUniqueOrThrow({ where: { id: user.id } }))
+        .tokenVersion,
+    ).toBe(user.tokenVersion + 1);
+    await request(app.getHttpServer())
+      .get('/api/v1/users/me')
+      .set('Authorization', 'Bearer ' + account.session.accessToken)
+      .expect(401);
   });
   it('privacy requests and snapshots stay within the signed-in account', async () => {
     const owner = await signup(),
@@ -390,7 +422,7 @@ describe('Social authentication: real HTTP/database, mocked provider verificatio
       outsider = await signup();
     const user = await prisma.user.update({
       where: { uid: owner.session.user.uid },
-      data: { status: 'ACTIVE', phoneVerified: true, emailVerified: true },
+      data: { status: 'ACTIVE', phoneVerified: false, emailVerified: false },
     });
     const order = await prisma.order.create({
       data: {

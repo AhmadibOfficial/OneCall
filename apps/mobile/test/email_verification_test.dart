@@ -15,12 +15,13 @@ void main() {
         phoneVerified: phoneVerified,
       );
   test(
-    'email verification enables booking without claiming a verified phone',
+    'active customers can book without falsely marking contact details verified',
     () {
       final customer = user('ACTIVE', true, false);
       expect(customer.canBook, isTrue);
       expect(customer.phoneVerified, isFalse);
-      expect(user('ACTIVE', false, true).canBook, isFalse);
+      expect(user('ACTIVE', false, false).canBook, isTrue);
+      expect(user('ACTIVE', false, false).emailVerified, isFalse);
       expect(user('SUSPENDED', true, true).canBook, isFalse);
       expect(user('PENDING', true, false).canBook, isFalse);
     },

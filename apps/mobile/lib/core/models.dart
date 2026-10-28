@@ -14,7 +14,7 @@ class PilotUser {
   final String id, uid, email, firstName, lastName, phone, status;
   final bool emailVerified, phoneVerified;
   final String? avatarUrl;
-  bool get canBook => status == 'ACTIVE' && emailVerified;
+  bool get canBook => status == 'ACTIVE';
   factory PilotUser.fromJson(Map<String, dynamic> j) => PilotUser(
     id: j['id'] as String,
     uid: j['uid'] as String,

@@ -35,9 +35,7 @@ export class UserService {
   }
 
   async findAuthUserByEmail(email: string) {
-    return this.userRepository.findAuthUserByEmail(
-      email.trim().toLowerCase(),
-    );
+    return this.userRepository.findAuthUserByEmail(email.trim().toLowerCase());
   }
 
   async create(data: {
@@ -47,15 +45,13 @@ export class UserService {
     firstName: string;
     lastName: string;
   }) {
-    const existingEmail =
-      await this.userRepository.findByEmail(data.email);
+    const existingEmail = await this.userRepository.findByEmail(data.email);
 
     if (existingEmail) {
       throw new ConflictException('Email already exists');
     }
 
-    const existingPhone =
-      await this.userRepository.findByPhone(data.phone);
+    const existingPhone = await this.userRepository.findByPhone(data.phone);
 
     if (existingPhone) {
       throw new ConflictException('Phone already exists');
@@ -64,6 +60,7 @@ export class UserService {
     return this.userRepository.create({
       ...data,
       uid: this.idService.generateUserUid(),
+      status: 'ACTIVE',
     });
   }
 

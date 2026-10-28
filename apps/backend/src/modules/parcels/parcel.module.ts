@@ -147,7 +147,7 @@ class ParcelAdminController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: ParcelRouteReviewDto,
   ) {
-    return this.parcels.reviewRoute(req.user.id, id, body.active, body.reason);
+    return this.parcels.reviewRoute(req.user.id, id, body);
   }
   @Post('shipments/:id/view') detail(
     @Req() req: Actor,

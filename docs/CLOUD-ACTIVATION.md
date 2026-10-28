@@ -1,3 +1,5 @@
+> Service access update (28 October 2026): email verification is optional for active customers and approved providers. The Customer/Provider switch is in Profile only. Provider/shop approval, independent parcel-route review, account suspension and payment activation controls still apply. Earlier verification acceptance steps below can be used to test optional verification and password recovery; they are not booking prerequisites.
+
 # OneCall cloud, payments and account workspaces
 
 The Customer/Provider switch keeps the same signed-in account. It saves a device

@@ -107,7 +107,8 @@ class _VerificationPageState extends State<VerificationPage> {
           const PageIntro(
             icon: Icons.verified_user_outlined,
             title: 'A safer start',
-            message: 'Verify your email before sending a service request.',
+            message:
+                'Email verification is optional. You can use services without it.',
           ),
           if (_error != null) ErrorNotice(_error!),
           if (_notice != null)

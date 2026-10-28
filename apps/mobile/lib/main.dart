@@ -74,6 +74,23 @@ class _OneCallAppState extends State<OneCallApp> {
     super.dispose();
   }
 
+  ThemeData _theme(Brightness brightness) {
+    final theme = oneCallTheme(brightness: brightness);
+    if (!AppearancePreferences.instance.reducedMotion) return theme;
+    return theme.copyWith(
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: ReducedTransitions(),
+          TargetPlatform.iOS: ReducedTransitions(),
+          TargetPlatform.linux: ReducedTransitions(),
+          TargetPlatform.macOS: ReducedTransitions(),
+          TargetPlatform.windows: ReducedTransitions(),
+          TargetPlatform.fuchsia: ReducedTransitions(),
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: AppearancePreferences.instance,
@@ -81,20 +98,9 @@ class _OneCallAppState extends State<OneCallApp> {
       title: 'OneCall · Nigeria',
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigator,
-      theme: AppearancePreferences.instance.reducedMotion
-          ? oneCallTheme().copyWith(
-              pageTransitionsTheme: const PageTransitionsTheme(
-                builders: {
-                  TargetPlatform.android: ReducedTransitions(),
-                  TargetPlatform.iOS: ReducedTransitions(),
-                  TargetPlatform.linux: ReducedTransitions(),
-                  TargetPlatform.macOS: ReducedTransitions(),
-                  TargetPlatform.windows: ReducedTransitions(),
-                  TargetPlatform.fuchsia: ReducedTransitions(),
-                },
-              ),
-            )
-          : oneCallTheme(),
+      themeMode: AppearancePreferences.instance.themeMode,
+      darkTheme: _theme(Brightness.dark),
+      theme: _theme(Brightness.light),
       themeAnimationDuration: AppearancePreferences.instance.reducedMotion
           ? Duration.zero
           : const Duration(milliseconds: 200),

@@ -31,14 +31,19 @@ class PageIntro extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 25,
-            color: navy,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 8),
-        Text(message, style: const TextStyle(color: Color(0xFF536581))),
+        Text(
+          message,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
       ],
     ),
   );
@@ -63,7 +68,10 @@ class EmptyNotice extends StatelessWidget {
         Text(
           message,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Color(0xFF536581), height: 1.5),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            height: 1.5,
+          ),
         ),
       ],
     ),

@@ -36,8 +36,6 @@ class ServicesController {
           approved: true,
           user: {
             status: 'ACTIVE',
-            emailVerified: true,
-
             deletedAt: null,
           },
         },
@@ -53,8 +51,6 @@ class ServicesController {
           cityKey: cityKey(city),
           user: {
             status: 'ACTIVE',
-            emailVerified: true,
-
             deletedAt: null,
           },
         },
@@ -62,8 +58,6 @@ class ServicesController {
           status: 'APPROVED',
           user: {
             status: 'ACTIVE',
-            emailVerified: true,
-
             deletedAt: null,
           },
         },

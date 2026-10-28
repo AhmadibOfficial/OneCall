@@ -177,10 +177,12 @@ void main() {
       final preferences = AppearancePreferences();
       await preferences.setTextSize(1.15);
       await preferences.setReducedMotion(true);
+      await preferences.setThemeMode(ThemeMode.dark);
       final restored = AppearancePreferences();
       await restored.load();
       expect(restored.textSize, 1.15);
       expect(restored.reducedMotion, isTrue);
+      expect(restored.themeMode, ThemeMode.dark);
       expect(const OneCallTextScaler(TextScaler.linear(2), 1.15).scale(10), 23);
       preferences.dispose();
       restored.dispose();

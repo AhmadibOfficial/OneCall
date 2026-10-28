@@ -22,12 +22,11 @@ import {
   ParcelMoveDto,
   ParcelReviewDto,
   ParcelRouteDto,
+  ParcelRouteReviewDto,
 } from './parcel.dto';
 
 const activeUser = {
   status: 'ACTIVE' as const,
-  emailVerified: true,
-
   deletedAt: null,
 };
 const availableAgent = { status: 'APPROVED' as const, user: activeUser };
@@ -97,10 +96,7 @@ export class ParcelService {
       where: { id: userId, ...activeUser },
       select: { id: true, phone: true },
     });
-    if (!user)
-      throw new ForbiddenException(
-        'An active account with verified email is required',
-      );
+    if (!user) throw new ForbiddenException('An active account is required');
     return user;
   }
   private async admin(db: Tx, userId: string) {
@@ -184,6 +180,7 @@ export class ParcelService {
     action: string,
     resourceId: string,
     reason: string,
+    details: Prisma.InputJsonObject = {},
   ) {
     await db.adminOperation.create({
       data: {
@@ -191,7 +188,7 @@ export class ParcelService {
         action,
         resourceId,
         reason,
-        details: { source: 'parcel-network' },
+        details: { source: 'parcel-network', ...details },
       },
     });
   }
@@ -804,12 +801,20 @@ export class ParcelService {
       });
     });
   }
-  async reviewRoute(
-    userId: string,
-    id: string,
-    active: boolean,
-    reason: string,
-  ) {
+  async reviewRoute(userId: string, id: string, body: ParcelRouteReviewDto) {
+    const { active, reason } = body;
+    if (
+      active &&
+      ![
+        body.shopsConfirmed,
+        body.pricingConfirmed,
+        body.custodyConfirmed,
+        body.restrictionsConfirmed,
+      ].every((v) => v === true)
+    )
+      throw new BadRequestException(
+        'Complete the independent parcel route review checklist',
+      );
     return this.tx(async (db) => {
       await this.admin(db, userId);
       const route = await db.parcelRoute.findUnique({
@@ -835,7 +840,7 @@ export class ParcelService {
         })) !== 2
       )
         throw new ConflictException(
-          'Both shops must be approved and have verified active accounts',
+          'Both shops must be approved and have active accounts',
         );
       await this.audit(
         db,
@@ -843,6 +848,23 @@ export class ParcelService {
         active ? 'PARCEL_ROUTE_ACTIVATE' : 'PARCEL_ROUTE_PAUSE',
         id,
         reason,
+        {
+          routeId: id,
+          originAgentId: route.originAgentId,
+          destinationAgentId: route.destinationAgentId,
+          priceKobo: route.priceKobo,
+          homePickupFeeKobo: route.homePickupFeeKobo,
+          maxWeightGrams: route.maxWeightGrams,
+          estimatedHours: route.estimatedHours,
+          ...(active
+            ? {
+                shopsConfirmed: true,
+                pricingConfirmed: true,
+                custodyConfirmed: true,
+                restrictionsConfirmed: true,
+              }
+            : {}),
+        },
       );
       return db.parcelRoute.update({
         where: { id },

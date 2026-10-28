@@ -87,14 +87,9 @@ export class BookingPhotoService {
       return await this.prisma.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId}::uuid FOR UPDATE`;
         const current = await tx.user.findUnique({ where: { id: userId } });
-        if (
-          !current ||
-          current.deletedAt ||
-          current.status !== 'ACTIVE' ||
-          !current.emailVerified
-        )
+        if (!current || current.deletedAt || current.status !== 'ACTIVE')
           throw new ForbiddenException(
-            'Verify your account before uploading photos.',
+            'An active account is required to upload photos.',
           );
         await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${orderId}::uuid FOR UPDATE`;
         const order = await tx.order.findUnique({

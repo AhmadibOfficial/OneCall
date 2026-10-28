@@ -6,9 +6,15 @@ class AppearancePreferences extends ChangeNotifier {
   static final instance = AppearancePreferences();
   double textSize = 1;
   bool reducedMotion = false;
+  ThemeMode themeMode = ThemeMode.system;
   Future<void> load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final mode = prefs.getString('onecall.appearance.themeMode');
+      themeMode = ThemeMode.values.firstWhere(
+        (v) => v.name == mode,
+        orElse: () => ThemeMode.system,
+      );
       final saved = prefs.getDouble('onecall.appearance.textSize');
       textSize = [1.0, 1.15, 1.3].contains(saved) ? saved! : 1;
       reducedMotion =
@@ -17,7 +23,15 @@ class AppearancePreferences extends ChangeNotifier {
       // A stale or unavailable preference store must not prevent app startup.
       textSize = 1;
       reducedMotion = false;
+      themeMode = ThemeMode.system;
     }
+    notifyListeners();
+  }
+
+  Future<void> setThemeMode(ThemeMode value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('onecall.appearance.themeMode', value.name);
+    themeMode = value;
     notifyListeners();
   }
 
@@ -69,6 +83,36 @@ class AppearancePage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
+          const Text(
+            'Theme',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          for (final option in [
+            (ThemeMode.system, 'System default'),
+            (ThemeMode.light, 'Light'),
+            (ThemeMode.dark, 'Dark'),
+          ])
+            ListTile(
+              key: ValueKey('theme-${option.$1.name}'),
+              title: Text(option.$2),
+              leading: Icon(
+                AppearancePreferences.instance.themeMode == option.$1
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_off,
+              ),
+              onTap: () async {
+                try {
+                  await AppearancePreferences.instance.setThemeMode(option.$1);
+                } catch (_) {
+                  if (context.mounted)
+                    notice(
+                      context,
+                      'Could not save theme preference. Try again.',
+                    );
+                }
+              },
+            ),
+          const SizedBox(height: 24),
           const Text(
             'Text size',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),

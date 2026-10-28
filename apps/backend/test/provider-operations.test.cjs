@@ -33,12 +33,12 @@ async function account(active) {
       firstName: 'Operations',
       lastName: 'Test',
       status: active ? 'ACTIVE' : 'PENDING',
-      emailVerified: active,
+      emailVerified: false,
       phoneVerified: false,
     },
   });
 }
-test('operator approval rejects unverified accounts and grants only vetted coverage idempotently', async () => {
+test('operator approval rejects inactive accounts and grants only vetted coverage idempotently', async () => {
   const users = [];
   try {
     const pending = await account(false);

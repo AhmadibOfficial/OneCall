@@ -73,9 +73,9 @@ class _LegalPageState extends State<LegalPage> {
               selected == null
                   ? 'Legal & privacy'
                   : selected['title'] as String,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
-                color: navy,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -121,10 +121,10 @@ class _LegalPageState extends State<LegalPage> {
                 const Divider(height: 32),
                 Text(
                   (raw as Map)['heading'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.bold,
-                    color: navy,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 12),

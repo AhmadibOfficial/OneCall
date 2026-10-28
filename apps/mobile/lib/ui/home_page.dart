@@ -406,7 +406,9 @@ class _HomePageState extends State<HomePage> {
             : DecoratedBox(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  border: Border(top: BorderSide(color: Color(0xFFE5EAF2))),
+                  border: const Border(
+                    top: BorderSide(color: Color(0xFFE5EAF2)),
+                  ),
                 ),
                 child: SafeArea(
                   top: false,
@@ -435,7 +437,9 @@ class _HomePageState extends State<HomePage> {
                 width: 220,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  border: Border(right: BorderSide(color: Color(0xFFE5EAF2))),
+                  border: const Border(
+                    right: BorderSide(color: Color(0xFFE5EAF2)),
+                  ),
                 ),
                 child: SafeArea(
                   child: Column(

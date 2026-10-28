@@ -1392,7 +1392,7 @@ class InformationPage extends StatelessWidget {
   final String city, state;
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: oneCallMist,
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     appBar: AppBar(title: const Text('Settings & Information')),
     body: ListView(
       padding: const EdgeInsets.all(24),

@@ -35,7 +35,7 @@ ThemeData oneCallTheme({Brightness brightness = Brightness.light}) {
         color: foreground,
       ),
     ),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: navy,
       foregroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
@@ -45,8 +45,10 @@ ThemeData oneCallTheme({Brightness brightness = Brightness.light}) {
         statusBarColor: navy,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: surface,
+        systemNavigationBarIconBrightness: dark
+            ? Brightness.light
+            : Brightness.dark,
       ),
       titleTextStyle: TextStyle(
         fontSize: 22,

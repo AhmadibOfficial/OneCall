@@ -104,11 +104,12 @@ class AppearancePage extends StatelessWidget {
                 try {
                   await AppearancePreferences.instance.setThemeMode(option.$1);
                 } catch (_) {
-                  if (context.mounted)
+                  if (context.mounted) {
                     notice(
                       context,
                       'Could not save theme preference. Try again.',
                     );
+                  }
                 }
               },
             ),

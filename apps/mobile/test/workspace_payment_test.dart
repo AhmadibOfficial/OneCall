@@ -100,8 +100,10 @@ void main() {
       expect(find.byKey(const ValueKey('workspace-switch')), findsNothing);
       await tester.tap(find.text('Profile').last);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(
+      await tester.scrollUntilVisible(
         find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
       );
       await tester.tap(find.byKey(const ValueKey('workspace-switch')));
       await tester.pumpAndSettle();
@@ -123,8 +125,10 @@ void main() {
       );
       await tester.tap(find.text('Profile').last);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(
+      await tester.scrollUntilVisible(
         find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
       );
       await tester.tap(find.byKey(const ValueKey('workspace-switch')));
       await tester.pumpAndSettle();
@@ -178,8 +182,10 @@ void main() {
       expect(find.text('Assigned plumbing job'), findsNothing);
       await tester.tap(find.text('Profile').last);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(
+      await tester.scrollUntilVisible(
         find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
       );
       await tester.tap(find.byKey(const ValueKey('workspace-switch')));
       await tester.pumpAndSettle();
@@ -193,8 +199,10 @@ void main() {
       expect(find.text('Customer repair'), findsNothing);
       await tester.tap(find.text('Profile').last);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(
+      await tester.scrollUntilVisible(
         find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
       );
       await tester.tap(find.byKey(const ValueKey('workspace-switch')));
       await tester.pumpAndSettle();
@@ -251,8 +259,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Profile').last);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(
+      await tester.scrollUntilVisible(
         find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
       );
       await tester.tap(find.byKey(const ValueKey('workspace-switch')));
       await tester.pumpAndSettle();

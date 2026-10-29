@@ -116,8 +116,23 @@ async function parcelView() {
         action(active ? 'Activate route' : 'Pause route', async () => {
           const why = reason();
           if (why === null) return;
+          if (
+            active &&
+            !window.confirm(
+              'Independent route review: confirm BOTH shop identities and locations, the full price and pickup fee, capacity and transit estimate, physical custody/return arrangements, and permitted-item restrictions. Cancel if any check is incomplete.',
+            )
+          )
+            return;
           await api('admin/parcels/routes/' + route.id + '/review', {
             active,
+            ...(active
+              ? {
+                  shopsConfirmed: true,
+                  pricingConfirmed: true,
+                  custodyConfirmed: true,
+                  restrictionsConfirmed: true,
+                }
+              : {}),
             reason: why,
           });
           await parcelView();

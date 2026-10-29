@@ -417,7 +417,7 @@ class _SocialProfilePageState extends State<SocialProfilePage> {
           padding: const EdgeInsets.all(24),
           children: [
             const Text(
-              'Add your name and Nigerian phone number. Verify your phone before sending a service request. No new password is required for this sign-in option.',
+              'Add your name and Nigerian phone number. Email and phone verification are optional for service access. No new password is required for this sign-in option.',
             ),
             const SizedBox(height: 20),
             for (final field in [

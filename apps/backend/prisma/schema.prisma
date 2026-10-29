@@ -96,7 +96,7 @@ model User {
   avatarUrl String?
 
   // Account status
-  status AccountStatus @default(PENDING)
+  status AccountStatus @default(ACTIVE)
 
   // Verification
   emailVerified   Boolean   @default(false)

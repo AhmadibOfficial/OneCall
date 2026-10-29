@@ -129,7 +129,7 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
       })
       .expect(403);
   });
-  it('validates coverage and rejects unverified accounts without audit or approval writes', async () => {
+  it('validates coverage and rejects suspended accounts without audit or approval writes', async () => {
     await call(
       admin,
       'post',
@@ -144,7 +144,7 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
       .expect(400);
     await prisma.user.update({
       where: { id: provider.id },
-      data: { emailVerified: false },
+      data: { status: 'SUSPENDED', emailVerified: false },
     });
     await call(
       admin,
@@ -158,7 +158,7 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
     ).toBe(0);
     await prisma.user.update({
       where: { id: provider.id },
-      data: { emailVerified: true },
+      data: { status: 'ACTIVE', emailVerified: false, phoneVerified: false },
     });
   });
   it('replaces proposed coverage with reviewed coverage and records actor/reason', async () => {

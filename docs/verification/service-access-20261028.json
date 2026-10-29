@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-28",
+  "scope": "Optional email verification for service access, Profile-only workspace switch, saved theme modes and independent parcel-route checklist",
+  "backend": {
+    "build": "passed",
+    "testTypescript": "passed",
+    "schemaValidation": "passed",
+    "changedModuleLint": "passed",
+    "coreTests": 146,
+    "pilotTests": 12,
+    "adminTests": 12,
+    "parcelTests": 17,
+    "marketplaceTests": 13,
+    "socialPhotoPrivacyTests": 36,
+    "operatorTests": 2,
+    "publicLegalTests": 4,
+    "database": "Disposable PGlite socket server and native Redis; not the cloud database",
+    "migrationUpgrade": "passed: nondeleted pending account activates; suspended/deleted accounts and verification flags preserved",
+    "nativePostgresContentionAndPrismaDeploy": "pending normal CI"
+  },
+  "flutter": {
+    "dartFormatting": "passed",
+    "analysisTestsBuilds": "pending",
+    "blocker": "Automatic approval review rejected Flutter SDK startup because it attempted cloud metadata endpoint access. No bypass attempted."
+  },
+  "release": "Draft source; no live migration, deployment or new APK publication"
+}

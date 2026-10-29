@@ -36,7 +36,7 @@ async function freePort() {
 }
 
 test(
-  'compiled production backend → signed HTTPS adapter → verification → booking → reset',
+  'compiled production backend → immediate booking → optional signed email verification → reset',
   { timeout: 30000 },
   async () => {
     const temporary = mkdtempSync(
@@ -195,13 +195,15 @@ test(
         lastName: 'Test',
       });
       assert.equal(registration.status, 201);
+      assert.equal(registration.body.status, 'ACTIVE');
+      assert.equal(registration.body.emailVerified, false);
       const login = await api('POST', '/auth/login', { email, password });
       assert.equal(login.status, 201);
       const access = login.body.accessToken;
       assert.equal(
         (await api('POST', '/orders', { serviceName: 'Tailoring' }, access))
           .status,
-        403,
+        201,
       );
       const requestedEmail = await api(
         'POST',

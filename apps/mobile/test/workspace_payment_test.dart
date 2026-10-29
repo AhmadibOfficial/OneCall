@@ -11,8 +11,8 @@ const customer = PilotUser(
   uid: '1234567890',
   email: 'customer@example.com',
   status: 'ACTIVE',
-  emailVerified: true,
-  phoneVerified: true,
+  emailVerified: false,
+  phoneVerified: false,
 );
 
 class WorkspaceApi extends FakeApi {
@@ -97,7 +97,28 @@ void main() {
       final api = WorkspaceApi();
       addTearDown(api.dispose);
       await display(tester, HomePage(api: api));
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      expect(find.byKey(const ValueKey('workspace-switch')), findsNothing);
+      await tester.tap(find.text('Profile').last);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Workspace').last);
       await tester.pumpAndSettle();
       expect(find.text('Application awaiting approval'), findsOneWidget);
       expect(api.user, same(customer));
@@ -113,7 +134,25 @@ void main() {
         ),
         'provider',
       );
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      await tester.tap(find.text('Profile').last);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Home'), findsOneWidget);
       expect(api.user, same(customer));
@@ -129,6 +168,8 @@ void main() {
       final api = WorkspaceApi();
       addTearDown(api.dispose);
       await display(tester, HomePage(key: ValueKey(customer.uid), api: api));
+      await tester.tap(find.text('Workspace').last);
+      await tester.pumpAndSettle();
       expect(find.text('Application awaiting approval'), findsOneWidget);
       final other = WorkspaceApi(
         user: const PilotUser(
@@ -161,7 +202,25 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Customer repair'), findsOneWidget);
       expect(find.text('Assigned plumbing job'), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      await tester.tap(find.text('Profile').last);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('My jobs').last);
       await tester.pumpAndSettle();
@@ -171,7 +230,25 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Assigned plumbing job'), findsOneWidget);
       expect(find.text('Customer repair'), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      await tester.tap(find.text('Profile').last);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Chat'));
       await tester.pumpAndSettle();
@@ -180,25 +257,39 @@ void main() {
     },
   );
 
-  testWidgets(
-    'unverified account must verify before provider workspace can load',
-    (tester) async {
-      final api = WorkspaceApi(
-        user: const PilotUser(
-          id: 'pending',
-          uid: '3333333333',
-          email: 'pending@example.com',
-        ),
-      );
-      addTearDown(api.dispose);
-      await display(tester, HomePage(api: api));
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
-      await tester.pumpAndSettle();
-      expect(api.calls, isNot(contains('GET /provider/me')));
-      expect(find.text('Available jobs'), findsNothing);
-      expect(api.loginCalls, 0);
-    },
-  );
+  testWidgets('inactive account cannot load provider jobs', (tester) async {
+    final api = WorkspaceApi(
+      user: const PilotUser(
+        id: 'pending',
+        uid: '3333333333',
+        email: 'pending@example.com',
+      ),
+    );
+    addTearDown(api.dispose);
+    await display(tester, HomePage(api: api));
+    await tester.tap(find.text('Profile').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('workspace-switch')));
+    await Scrollable.ensureVisible(
+      tester.element(find.byKey(const ValueKey('workspace-switch'))),
+      alignment: 0.5,
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Workspace').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Account unavailable'), findsOneWidget);
+    expect(api.calls, isNot(contains('GET /provider/me')));
+    expect(find.text('Available jobs'), findsNothing);
+    expect(api.loginCalls, 0);
+  });
 
   testWidgets(
     'workspace switch remains usable on narrow screens with large text',
@@ -221,7 +312,27 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('workspace-switch')));
+      await tester.tap(find.text('Profile').last);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('workspace-switch')),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await Scrollable.ensureVisible(
+        tester.element(find.byKey(const ValueKey('workspace-switch'))),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('workspace-switch')).hitTestable(),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Workspace').last);
       await tester.pumpAndSettle();
       expect(find.text('Application awaiting approval'), findsOneWidget);
       expect(tester.takeException(), isNull);

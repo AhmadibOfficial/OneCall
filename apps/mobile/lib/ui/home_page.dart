@@ -11,9 +11,7 @@ import 'order_pages.dart';
 import 'parcel_pages.dart';
 import 'profile_pages.dart';
 import 'resource_widgets.dart';
-import 'verification_page.dart';
 import 'service_catalogue.dart';
-import 'workspace_switch.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.api});
@@ -158,15 +156,8 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     if (!widget.api.user!.canBook) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute<void>(
-          builder: (_) => VerificationPage(api: widget.api),
-        ),
-      );
-      if (!mounted || widget.api.user?.canBook != true) {
-        return;
-      }
+      notice(context, 'This account is unavailable. Contact Support.');
+      return;
     }
     if (mounted) {
       await Navigator.push(
@@ -273,7 +264,7 @@ class _HomePageState extends State<HomePage> {
     FocusScope.of(context).unfocus();
     setState(() {
       _providerMode = provider;
-      _tab = 0;
+      _tab = 4;
     });
     _workspaceWrites = _workspaceWrites.then((_) async {
       try {
@@ -347,14 +338,6 @@ class _HomePageState extends State<HomePage> {
               ),
         body: Column(
           children: [
-            if (widget.api.user != null)
-              SafeArea(
-                bottom: false,
-                child: WorkspaceSwitch(
-                  providerMode: _providerMode,
-                  onChanged: _workspaceReady ? _switchWorkspace : null,
-                ),
-              ),
             Expanded(
               child: KeyedSubtree(
                 key: ValueKey('workspace-$_providerMode-$_tab'),
@@ -407,6 +390,10 @@ class _HomePageState extends State<HomePage> {
                       api: widget.api,
                       state: _state,
                       city: _city,
+                      providerMode: _providerMode,
+                      onWorkspaceChanged: _workspaceReady
+                          ? _switchWorkspace
+                          : null,
                     ),
                   ),
                 },
@@ -417,9 +404,11 @@ class _HomePageState extends State<HomePage> {
         bottomNavigationBar: wide
             ? null
             : DecoratedBox(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(top: BorderSide(color: Color(0xFFE5EAF2))),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  border: const Border(
+                    top: BorderSide(color: Color(0xFFE5EAF2)),
+                  ),
                 ),
                 child: SafeArea(
                   top: false,
@@ -446,9 +435,11 @@ class _HomePageState extends State<HomePage> {
             Material(
               child: Container(
                 width: 220,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(right: BorderSide(color: Color(0xFFE5EAF2))),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  border: const Border(
+                    right: BorderSide(color: Color(0xFFE5EAF2)),
+                  ),
                 ),
                 child: SafeArea(
                   child: Column(
@@ -464,13 +455,15 @@ class _HomePageState extends State<HomePage> {
                           minExtendedWidth: 218,
                           selectedIndex: _tab,
                           onDestinationSelected: _selectTab,
-                          backgroundColor: Colors.white,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.surface,
                           indicatorColor: const Color(0xFFEAF2FF),
                           selectedIconTheme: const IconThemeData(
                             color: Color(0xFF075ECB),
                           ),
-                          selectedLabelTextStyle: const TextStyle(
-                            color: navy,
+                          selectedLabelTextStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w700,
                           ),
                           destinations: [
@@ -662,7 +655,7 @@ class _HomePageState extends State<HomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Verify your email',
+                            'Account unavailable',
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 17,
@@ -670,18 +663,17 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 6),
                           const Text(
-                            'Complete contact verification before sending your first request.',
+                            'Contact Support to review your account status.',
                           ),
                           TextButton.icon(
                             onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute<void>(
-                                builder: (_) =>
-                                    VerificationPage(api: widget.api),
+                                builder: (_) => SupportPage(api: widget.api),
                               ),
                             ),
                             icon: const Icon(Icons.arrow_forward, size: 18),
-                            label: const Text('Verify account'),
+                            label: const Text('Contact Support'),
                           ),
                         ],
                       ),

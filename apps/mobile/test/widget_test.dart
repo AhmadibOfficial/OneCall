@@ -35,7 +35,7 @@ class FakeApi extends OneCallApi {
     email: 'ahmad@example.com',
     firstName: 'Ahmad',
     phone: '+2348012345678',
-    status: active ? 'ACTIVE' : 'PENDING',
+    status: 'ACTIVE',
     emailVerified: active,
     phoneVerified: active,
   );
@@ -177,10 +177,12 @@ void main() {
       final preferences = AppearancePreferences();
       await preferences.setTextSize(1.15);
       await preferences.setReducedMotion(true);
+      await preferences.setThemeMode(ThemeMode.dark);
       final restored = AppearancePreferences();
       await restored.load();
       expect(restored.textSize, 1.15);
       expect(restored.reducedMotion, isTrue);
+      expect(restored.themeMode, ThemeMode.dark);
       expect(const OneCallTextScaler(TextScaler.linear(2), 1.15).scale(10), 23);
       preferences.dispose();
       restored.dispose();
@@ -360,7 +362,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
   testWidgets(
-    'registration normalizes Nigerian phones and gates service requests',
+    'registration normalizes Nigerian phones and allows unverified service requests',
     (tester) async {
       final api = FakeApi();
       addTearDown(api.dispose);
@@ -378,11 +380,13 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Create account'));
       await tester.pumpAndSettle();
       expect(api.registeredPhone, '+2348012345678');
-      expect(find.text('Verify your email'), findsOneWidget);
+      expect(api.user!.canBook, isTrue);
+      expect(api.user!.emailVerified, isFalse);
+      expect(find.text('Verify your email'), findsNothing);
       await tester.ensureVisible(find.text('Tailoring'));
       await tester.tap(find.text('Tailoring'));
       await tester.pumpAndSettle();
-      expect(find.text('Verify your account'), findsOneWidget);
+      expect(find.text('What do you need?'), findsOneWidget);
       expect(api.createCalls, 0);
       await tester.pumpWidget(const SizedBox());
     },

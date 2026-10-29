@@ -217,7 +217,9 @@ class _ServiceCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     service.description,
-                    style: const TextStyle(color: Color(0xFF536581)),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 10),
@@ -225,9 +227,9 @@ class _ServiceCard extends StatelessWidget {
                   service.availableProviders == 0
                       ? 'Awaiting local providers'
                       : '${service.availableProviders} approved ${service.availableProviders == 1 ? 'provider' : 'providers'}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF536581),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 16),

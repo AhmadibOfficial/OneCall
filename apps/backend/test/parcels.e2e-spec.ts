@@ -48,7 +48,7 @@ describe('Parcel network: permissions, custody and private collection codes', ()
         lastName: 'Test',
         passwordHash: await argon2.hash('ParcelTests2026!'),
         status: 'ACTIVE',
-        emailVerified: true,
+        emailVerified: false,
         phoneVerified: false,
       },
     });
@@ -67,6 +67,12 @@ describe('Parcel network: permissions, custody and private collection codes', ()
     homePickup: true,
     homePickupFeeKobo: 50000,
   });
+  const reviewChecks = {
+    shopsConfirmed: true,
+    pricingConfirmed: true,
+    custodyConfirmed: true,
+    restrictionsConfirmed: true,
+  };
   const parcelBody = () => ({
     routeId,
     clientReference: randomUUID(),
@@ -159,7 +165,7 @@ describe('Parcel network: permissions, custody and private collection codes', ()
       .expect(201);
     routeId = (route.body as { id: string }).id;
     await call(admin, 'post', `/admin/parcels/routes/${routeId}/review`)
-      .send({ active: true, reason })
+      .send({ active: true, reason, ...reviewChecks })
       .expect(201);
   });
   afterAll(async () => {
@@ -183,21 +189,61 @@ describe('Parcel network: permissions, custody and private collection codes', ()
     }
     if (app) await app.close();
   });
-  it('requires authentication and verified contact details', async () => {
+  it('allows unverified active customers but enforces authentication, suspension and agent approval', async () => {
     await request(app.getHttpServer()).get('/api/v1/parcels').expect(401);
     await db.user.update({
       where: { id: stranger.id },
       data: { emailVerified: false },
     });
-    await call(stranger, 'get', '/parcels/routes').expect(403);
+    await call(stranger, 'get', '/parcels/routes').expect(200);
     await db.user.update({
       where: { id: stranger.id },
-      data: { emailVerified: true },
+      data: { status: 'SUSPENDED' },
+    });
+    await call(stranger, 'get', '/parcels/routes').expect(401);
+    await db.user.update({
+      where: { id: stranger.id },
+      data: { status: 'ACTIVE', emailVerified: false },
     });
     await call(stranger, 'get', '/admin/parcels').expect(403);
     await call(stranger, 'post', '/parcels/agent/routes')
       .send(routeBody())
       .expect(403);
+  });
+  it('requires a complete independent route review and preserves the reviewed quote', async () => {
+    const proposed = await call(origin, 'post', '/parcels/agent/routes')
+      .send(routeBody())
+      .expect(201);
+    const id = (proposed.body as { id: string }).id;
+    await call(admin, 'post', `/admin/parcels/routes/${id}/review`)
+      .send({ active: true, reason })
+      .expect(400);
+    for (const key of Object.keys(reviewChecks)) {
+      await call(admin, 'post', `/admin/parcels/routes/${id}/review`)
+        .send({ active: true, reason, ...reviewChecks, [key]: false })
+        .expect(400);
+    }
+    await call(origin, 'post', `/admin/parcels/routes/${id}/review`)
+      .send({ active: true, reason, ...reviewChecks })
+      .expect(403);
+    expect(
+      (await db.parcelRoute.findUniqueOrThrow({ where: { id } })).status,
+    ).toBe('PENDING');
+    await call(admin, 'post', `/admin/parcels/routes/${id}/review`)
+      .send({ active: true, reason, ...reviewChecks })
+      .expect(201);
+    const audit = await db.adminOperation.findFirstOrThrow({
+      where: { resourceId: id, action: 'PARCEL_ROUTE_ACTIVATE' },
+    });
+    expect(audit.details).toMatchObject({
+      ...reviewChecks,
+      priceKobo: 250000,
+      originAgentId: originId,
+      destinationAgentId: destinationId,
+    });
+    await call(admin, 'post', `/admin/parcels/routes/${id}/review`)
+      .send({ active: false, reason })
+      .expect(201);
   });
   it('lists real available routes with scoped shop details and catalogue availability', async () => {
     const result = await call(

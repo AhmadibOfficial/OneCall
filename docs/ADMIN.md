@@ -1,6 +1,6 @@
 # OneCall provider approval and booking operations
 
-Open http://127.0.0.1:3000/admin/ with the existing locally granted ADMIN account, using email and password. The admin APIs check current database roles, and mutations recheck account/role availability within their transaction. Provider/customer identity never grants admin access. Tokens remain only in browser memory. Payments remain unconfigured.
+Open http://127.0.0.1:3000/admin/ with the existing locally granted ADMIN account, using email and password. The admin APIs check current database roles, and mutations recheck account/role availability within their transaction. Provider/customer identity never grants admin access. Tokens remain only in browser memory. Payment availability follows the deployment configuration. Email verification is optional for service access; provider approval and reviewed coverage remain mandatory.
 
 ## Provider operations
 
@@ -12,7 +12,7 @@ Revocation disables provider availability and new assignments. Active ACCEPTED/I
 
 Search by request ID, customer UID, service or town; filter by status; page through 25 results at a time. Inspect the booking's addresses, description, schedule, provider and quote acceptance state. Admin operations history records new admin assignments/cancellations and their actor/reason, including prior/new status. Earlier customer/provider transitions are not reconstructed.
 
-Only unassigned PENDING requests can be assigned. The eligible provider list is limited to 100 approved, active, verified providers matching the booking's exact service/state/town or a reviewed state-wide area. A provider cannot fulfil their own customer request. The server rechecks eligibility and the pending state under locks; concurrent admin/provider acceptance produces one winner. Assignment changes the request to ACCEPTED, notifies the customer/provider and leaves provider quotation and customer quote acceptance in place. Admin cannot mark work started or completed or supply prices.
+Only unassigned PENDING requests can be assigned. The eligible provider list is limited to 100 approved, active providers matching the booking's exact service/state/town or a reviewed state-wide area. A provider cannot fulfil their own customer request. The server rechecks eligibility and the pending state under locks; concurrent admin/provider acceptance produces one winner. Assignment changes the request to ACCEPTED, notifies the customer/provider and leaves provider quotation and customer quote acceptance in place. Admin cannot mark work started or completed or supply prices.
 
 Cancellation requires a 3–500 character reason and an active booking. Pending/succeeded payments or unresolved/succeeded checkouts block cancellation. Completed/cancelled requests cannot be cancelled again. Successful cancellation clears the location, records history and notifies the parties. Terminal chat restrictions remain in the customer/provider API.
 

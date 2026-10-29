@@ -4,7 +4,6 @@ import '../core/api.dart';
 import 'auth_page.dart';
 import 'common.dart';
 import 'brand.dart';
-import 'verification_page.dart';
 
 class PrivateGate extends StatelessWidget {
   const PrivateGate({
@@ -39,10 +38,10 @@ class PrivateGate extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                user == null ? 'Sign in to continue' : 'Verify your account',
-                style: const TextStyle(
+                user == null ? 'Sign in to continue' : 'Account unavailable',
+                style: TextStyle(
                   fontSize: 23,
-                  color: navy,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -50,26 +49,26 @@ class PrivateGate extends StatelessWidget {
               Text(
                 user == null
                     ? 'Your bookings and account details stay with your OneCall account.'
-                    : 'Verify your email before sending a service request.',
+                    : 'This account cannot use services. Contact Support for help.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               BusyButton(
-                label: user == null ? 'Sign In' : 'Verify account',
+                label: user == null ? 'Sign In' : 'Back',
                 busy: false,
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => user == null
-                        ? AuthPage(
+                onPressed: () => user != null
+                    ? Navigator.maybePop(context)
+                    : Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => AuthPage(
                             api: api,
                             onAuthenticated: () => Navigator.of(
                               context,
                             ).popUntil((route) => route.isFirst),
-                          )
-                        : VerificationPage(api: api),
-                  ),
-                ),
+                          ),
+                        ),
+                      ),
               ),
             ],
           ),

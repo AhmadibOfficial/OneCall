@@ -3,32 +3,39 @@ import 'package:flutter/services.dart';
 import 'common.dart';
 
 // One theme owns the appearance of customer, provider and account screens.
-ThemeData oneCallTheme() {
-  const borderColor = Color(0xFFDCE5F1);
+ThemeData oneCallTheme({Brightness brightness = Brightness.light}) {
+  final dark = brightness == Brightness.dark;
+  final surface = dark ? const Color(0xFF182231) : Colors.white;
+  final foreground = dark ? const Color(0xFFE5ECF7) : navy;
+  final muted = dark ? const Color(0xFFB3C0D3) : const Color(0xFF536581);
+  final borderColor = dark ? const Color(0xFF38465B) : const Color(0xFFDCE5F1);
   const rounded = BorderRadius.all(Radius.circular(18));
   return ThemeData(
     useMaterial3: true,
+    brightness: brightness,
     colorScheme: ColorScheme.fromSeed(
       seedColor: navy,
-      brightness: Brightness.light,
-      primary: navy,
+      brightness: brightness,
+      primary: dark ? const Color(0xFF9BC7FF) : navy,
       secondary: teal,
-      surface: Colors.white,
+      surface: surface,
     ),
-    scaffoldBackgroundColor: const Color(0xFFF5F7FB),
-    canvasColor: Colors.white,
+    scaffoldBackgroundColor: dark
+        ? const Color(0xFF101722)
+        : const Color(0xFFF5F7FB),
+    canvasColor: surface,
     dividerColor: borderColor,
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(fontSize: 16, height: 1.5, color: navy),
-      bodyMedium: TextStyle(fontSize: 14, height: 1.5, color: navy),
-      bodySmall: TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF536581)),
+    textTheme: TextTheme(
+      bodyLarge: TextStyle(fontSize: 16, height: 1.5, color: foreground),
+      bodyMedium: TextStyle(fontSize: 14, height: 1.5, color: foreground),
+      bodySmall: TextStyle(fontSize: 12, height: 1.4, color: muted),
       titleMedium: TextStyle(
         fontSize: 17,
         fontWeight: FontWeight.w600,
-        color: navy,
+        color: foreground,
       ),
     ),
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: navy,
       foregroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
@@ -38,8 +45,10 @@ ThemeData oneCallTheme() {
         statusBarColor: navy,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: surface,
+        systemNavigationBarIconBrightness: dark
+            ? Brightness.light
+            : Brightness.dark,
       ),
       titleTextStyle: TextStyle(
         fontSize: 22,
@@ -47,15 +56,15 @@ ThemeData oneCallTheme() {
         color: Colors.white,
       ),
     ),
-    inputDecorationTheme: const InputDecorationTheme(
+    inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Color(0xFFF8FAFE),
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      prefixIconColor: navy,
-      suffixIconColor: navy,
-      labelStyle: TextStyle(color: Color(0xFF536581)),
-      floatingLabelStyle: TextStyle(color: navy),
-      hintStyle: TextStyle(color: Color(0xFF596C86), fontSize: 14),
+      fillColor: dark ? const Color(0xFF202D40) : const Color(0xFFF8FAFE),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      prefixIconColor: foreground,
+      suffixIconColor: foreground,
+      labelStyle: TextStyle(color: muted),
+      floatingLabelStyle: TextStyle(color: foreground),
+      hintStyle: TextStyle(color: muted, fontSize: 14),
       border: OutlineInputBorder(
         borderRadius: rounded,
         borderSide: BorderSide(color: borderColor),
@@ -64,16 +73,16 @@ ThemeData oneCallTheme() {
         borderRadius: rounded,
         borderSide: BorderSide(color: borderColor),
       ),
-      focusedBorder: OutlineInputBorder(
+      focusedBorder: const OutlineInputBorder(
         borderRadius: rounded,
         borderSide: BorderSide(color: teal, width: 1.5),
       ),
     ),
-    cardTheme: const CardThemeData(
-      color: Colors.white,
+    cardTheme: CardThemeData(
+      color: surface,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      margin: EdgeInsets.symmetric(vertical: 6),
+      margin: const EdgeInsets.symmetric(vertical: 6),
       shape: RoundedRectangleBorder(
         borderRadius: rounded,
         side: BorderSide(color: borderColor),
@@ -90,14 +99,18 @@ ThemeData oneCallTheme() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: navy,
+        foregroundColor: foreground,
         minimumSize: const Size(0, 48),
-        side: const BorderSide(color: borderColor),
+        side: BorderSide(color: borderColor),
         shape: const RoundedRectangleBorder(borderRadius: rounded),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(foregroundColor: const Color(0xFF075ECB)),
+      style: TextButton.styleFrom(
+        foregroundColor: dark
+            ? const Color(0xFF9BC7FF)
+            : const Color(0xFF075ECB),
+      ),
     ),
     snackBarTheme: const SnackBarThemeData(
       backgroundColor: navy,
@@ -107,26 +120,26 @@ ThemeData oneCallTheme() {
       shape: RoundedRectangleBorder(borderRadius: rounded),
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(color: teal),
-    bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: Colors.white,
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: surface,
       surfaceTintColor: Colors.transparent,
       showDragHandle: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
     ),
-    navigationBarTheme: const NavigationBarThemeData(
-      backgroundColor: Colors.white,
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: surface,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: Color(0xFFE8F2FF),
+      indicatorColor: dark ? const Color(0xFF2A466A) : const Color(0xFFE8F2FF),
       height: 72,
     ),
-    listTileTheme: const ListTileThemeData(
-      iconColor: navy,
-      textColor: navy,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    listTileTheme: ListTileThemeData(
+      iconColor: foreground,
+      textColor: foreground,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     ),
-    iconTheme: const IconThemeData(color: navy),
+    iconTheme: IconThemeData(color: foreground),
     tooltipTheme: const TooltipThemeData(
       waitDuration: Duration(milliseconds: 400),
     ),
@@ -138,15 +151,18 @@ class OneCallViewport extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
-    value: const SystemUiOverlayStyle(
+    value: SystemUiOverlayStyle(
       statusBarColor: navy,
       statusBarIconBrightness: Brightness.light,
       statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Theme.of(context).colorScheme.surface,
+      systemNavigationBarIconBrightness:
+          Theme.of(context).brightness == Brightness.dark
+          ? Brightness.light
+          : Brightness.dark,
     ),
     child: ColoredBox(
-      color: const Color(0xFFF1F5FC),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1360),

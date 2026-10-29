@@ -10,9 +10,9 @@ export class VerifiedAccountGuard implements CanActivate {
     const user = context.switchToHttp().getRequest<{
       user?: { status: string; emailVerified: boolean; phoneVerified: boolean };
     }>().user;
-    if (!user || user.status !== 'ACTIVE' || !user.emailVerified) {
+    if (!user || user.status !== 'ACTIVE') {
       throw new ForbiddenException(
-        'Verify your email before requesting a service',
+        'An active account is required to request a service',
       );
     }
     return true;

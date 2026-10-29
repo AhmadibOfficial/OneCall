@@ -113,14 +113,8 @@ export class AdminOperationsService {
         where: { id },
         include: { user: true },
       });
-      if (
-        provider.user.status !== 'ACTIVE' ||
-        provider.user.deletedAt ||
-        !provider.user.emailVerified
-      )
-        throw new ConflictException(
-          'Provider must have an active, email-verified account',
-        );
+      if (provider.user.status !== 'ACTIVE' || provider.user.deletedAt)
+        throw new ConflictException('Provider must have an active account');
       // Proposed coverage is not approved automatically. Later approvals add vetted areas.
       if (!provider.approved)
         await tx.providerCoverage.deleteMany({ where: { providerId: id } });
@@ -263,8 +257,6 @@ export class AdminOperationsService {
               user: {
                 status: 'ACTIVE',
                 deletedAt: null,
-                emailVerified: true,
-                phoneVerified: true,
               },
               userId: {
                 not: (
@@ -313,12 +305,9 @@ export class AdminOperationsService {
       if (
         !provider?.approved ||
         provider.user.status !== 'ACTIVE' ||
-        provider.user.deletedAt ||
-        !provider.user.emailVerified
+        provider.user.deletedAt
       )
-        throw new ConflictException(
-          'Select an approved active verified provider',
-        );
+        throw new ConflictException('Select an approved active provider');
       if (provider.userId === order.customerId)
         throw new ConflictException(
           'A provider cannot fulfil their own request',

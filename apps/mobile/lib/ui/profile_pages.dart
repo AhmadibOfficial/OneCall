@@ -16,6 +16,7 @@ import 'social_sign_in.dart';
 import 'privacy_requests.dart';
 import 'appearance_page.dart';
 import 'parcel_pages.dart';
+import 'workspace_switch.dart';
 
 class ProfilePanel extends StatelessWidget {
   const ProfilePanel({
@@ -23,7 +24,11 @@ class ProfilePanel extends StatelessWidget {
     required this.api,
     required this.state,
     required this.city,
+    this.providerMode = false,
+    this.onWorkspaceChanged,
   });
+  final bool providerMode;
+  final ValueChanged<bool>? onWorkspaceChanged;
   final OneCallApi api;
   final String state, city;
   void _open(BuildContext context, Widget child) =>
@@ -37,10 +42,14 @@ class ProfilePanel extends StatelessWidget {
           leading: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFEAF2FF),
+              color: Theme.of(context).colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: navy, size: 22),
+            child: Icon(
+              icon,
+              color: Theme.of(context).colorScheme.onSurface,
+              size: 22,
+            ),
           ),
           title: Text(
             title,
@@ -107,7 +116,7 @@ class ProfilePanel extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          user.canBook
+                          user.emailVerified
                               ? Icons.check_circle_outline
                               : Icons.shield_outlined,
                           size: 20,
@@ -116,9 +125,9 @@ class ProfilePanel extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            user.canBook
+                            user.emailVerified
                                 ? 'Email verified'
-                                : 'Contact verification needed',
+                                : 'Email not verified · verification is optional',
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
@@ -127,14 +136,15 @@ class ProfilePanel extends StatelessWidget {
                     const SizedBox(height: 12),
                     SelectableText(
                       'OneCall ID: ${user.uid}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF68768A),
-                      ),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF68768A)),
                     ),
                   ],
                 ),
               ),
+            ),
+            WorkspaceSwitch(
+              providerMode: providerMode,
+              onChanged: onWorkspaceChanged,
             ),
             const SizedBox(height: 24),
             OneCallSection(
@@ -143,7 +153,7 @@ class ProfilePanel extends StatelessWidget {
                 tile(
                   Icons.text_fields,
                   'Appearance & accessibility',
-                  'Text size and page motion',
+                  'Light, dark, system theme, text size and page motion',
                   const AppearancePage(),
                 ),
                 tile(
@@ -166,7 +176,9 @@ class ProfilePanel extends StatelessWidget {
                 ),
                 tile(
                   Icons.verified_user_outlined,
-                  user.canBook ? 'Account verified' : 'Verify email',
+                  user.emailVerified
+                      ? 'Email verified'
+                      : 'Verify email (optional)',
                   'Verify your contact details; this is not a face or identity scan',
                   VerificationPage(api: api),
                 ),
@@ -663,11 +675,9 @@ class FavoriteServicesPage extends StatelessWidget {
             subtitle: Text(s.description),
             onTap: () async {
               if (api.user?.canBook != true) {
-                await Navigator.push(
+                notice(
                   context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => VerificationPage(api: api),
-                  ),
+                  'This account is unavailable. Contact Support.',
                 );
                 return;
               }
@@ -843,9 +853,9 @@ class _ProviderPageState extends State<ProviderPage> {
                 provider == null
                     ? 'Offer your services'
                     : 'Application awaiting approval',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 26,
-                  color: navy,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -894,13 +904,13 @@ class _ProviderPageState extends State<ProviderPage> {
           child: Column(
             children: [
               Container(
-                color: const Color(0xFFEAF2FF),
+                color: Theme.of(context).colorScheme.primaryContainer,
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 child: Text(
                   provider['displayName'] as String? ?? 'Approved provider',
-                  style: const TextStyle(
-                    color: navy,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1102,11 +1112,11 @@ class _ProviderApplyPageState extends State<ProviderApplyPage> {
               labelText: 'Vehicle description, if applicable',
             ),
           ),
-          const Text(
+          Text(
             'Services you offer',
             style: TextStyle(
               fontSize: 20,
-              color: navy,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1216,10 +1226,10 @@ class _SupportPageState extends State<SupportPage> {
               children: [
                 Text(
                   t['subject'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.bold,
-                    color: navy,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1343,10 +1353,13 @@ class InvitePage extends StatelessWidget {
       children: [
         const OneCallLogo(),
         const SizedBox(height: 25),
-        const Text(
+        Text(
           'ONE CALL. EVERY SERVICE.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: navy, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 20),
         const Text(
@@ -1379,7 +1392,7 @@ class InformationPage extends StatelessWidget {
   final String city, state;
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: oneCallMist,
+    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     appBar: AppBar(title: const Text('Settings & Information')),
     body: ListView(
       padding: const EdgeInsets.all(24),
@@ -1436,8 +1449,11 @@ class InformationPage extends StatelessWidget {
     String body,
   ) => ListTile(
     contentPadding: EdgeInsets.zero,
-    leading: Icon(icon, color: navy),
-    title: Text(title, style: const TextStyle(color: navy)),
+    leading: Icon(icon, color: Theme.of(context).colorScheme.onSurface),
+    title: Text(
+      title,
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+    ),
     trailing: const Icon(Icons.chevron_right, color: Color(0xFF68768A)),
     onTap: () => Navigator.push(
       context,
@@ -1457,8 +1473,14 @@ class InformationPage extends StatelessWidget {
   Widget _policy(BuildContext context, String title, String documentId) =>
       ListTile(
         contentPadding: EdgeInsets.zero,
-        leading: const Icon(Icons.description_outlined, color: navy),
-        title: Text(title, style: const TextStyle(color: navy)),
+        leading: Icon(
+          Icons.description_outlined,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
         trailing: const Icon(Icons.chevron_right, color: Color(0xFF68768A)),
         onTap: () => Navigator.push(
           context,

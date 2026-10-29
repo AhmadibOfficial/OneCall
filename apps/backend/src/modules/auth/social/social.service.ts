@@ -267,6 +267,7 @@ export class SocialService {
             firstName: data.firstName.trim(),
             lastName: data.lastName.trim(),
             passwordHash,
+            status: 'ACTIVE',
             emailVerified,
             emailVerifiedAt: emailVerified ? new Date() : null,
             socialIdentities: {

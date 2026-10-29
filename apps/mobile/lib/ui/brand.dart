@@ -45,7 +45,12 @@ class OneCallLogo extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
-      CustomPaint(size: Size.square(size), painter: _MarkPainter(light)),
+      CustomPaint(
+        size: Size.square(size),
+        painter: _MarkPainter(
+          light || Theme.of(context).brightness == Brightness.dark,
+        ),
+      ),
       RichText(
         text: TextSpan(
           style: TextStyle(
@@ -56,7 +61,11 @@ class OneCallLogo extends StatelessWidget {
           children: [
             TextSpan(
               text: 'One',
-              style: TextStyle(color: light ? Colors.white : navy),
+              style: TextStyle(
+                color: light || Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : navy,
+              ),
             ),
             const TextSpan(
               text: 'Call',

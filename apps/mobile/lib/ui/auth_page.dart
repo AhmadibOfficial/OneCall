@@ -133,10 +133,10 @@ class _AuthPageState extends State<AuthPage> {
                           _register
                               ? 'Make room for an easier day.'
                               : 'Good to have you back.',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
-                            color: navy,
+                            color: Theme.of(context).colorScheme.onSurface,
                             height: 1.2,
                             letterSpacing: -.5,
                           ),
@@ -146,7 +146,11 @@ class _AuthPageState extends State<AuthPage> {
                           _register
                               ? 'Create an account to request services and keep track of every booking.'
                               : 'Sign in to see your bookings, messages and saved services.',
-                          style: const TextStyle(color: Color(0xFF536581)),
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 24),
                         SocialSignInButtons(

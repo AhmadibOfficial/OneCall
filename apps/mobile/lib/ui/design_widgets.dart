@@ -22,8 +22,8 @@ class OneCallSection extends StatelessWidget {
           padding: const EdgeInsets.only(left: 6, bottom: 12),
           child: Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF59667A),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),

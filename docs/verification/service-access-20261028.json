@@ -14,14 +14,21 @@
     "socialPhotoPrivacyTests": 36,
     "operatorTests": 2,
     "publicLegalTests": 4,
-    "database": "Disposable PGlite socket server and native Redis; not the cloud database",
+    "database": "Native PostgreSQL/Redis in CI; disposable PGlite/Redis for additional local migration upgrade checks",
     "migrationUpgrade": "passed: nondeleted pending account activates; suspended/deleted accounts and verification flags preserved",
-    "nativePostgresContentionAndPrismaDeploy": "pending normal CI"
+    "nativePostgresContentionAndPrismaDeploy": "passed CI",
+    "deliveryTests": 18,
+    "readinessTests": 8,
+    "totalTests": 268
   },
   "flutter": {
     "dartFormatting": "passed",
-    "analysisTestsBuilds": "pending",
-    "blocker": "Automatic approval review rejected Flutter SDK startup because it attempted cloud metadata endpoint access. No bypass attempted."
+    "analysisTestsBuilds": "passed CI: no analyzer issues, 58 tests, web and debug APK",
+    "blocker": "Local SDK startup was rejected for cloud metadata access; normal repository CI subsequently completed validation."
   },
-  "release": "Draft source; no live migration, deployment or new APK publication"
+  "release": "Merged; publish cloud clients against existing verified API. Debug pilot, physical-device acceptance separate.",
+  "validatedAt": "2026-10-29",
+  "applicationHead": "c3017904bc383176fc7991bc3542eb6a3aa61411",
+  "mergeCommit": "9de34c0222487badf713131ce3396c9fd31687a2",
+  "ci": "https://github.com/AhmadibOfficial/OneCall/actions/runs/40727831148"
 }

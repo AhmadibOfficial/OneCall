@@ -114,10 +114,9 @@ References: [Render free limits](https://render.com/docs/free),
 [Paystack checkout](https://paystack.com/docs/payments/accept-payments/),
 [Paystack verification](https://paystack.com/docs/payments/verify-payments/).
 
-## Email-only account verification
+## Optional email verification
 
-An active account needs a verified email to book, upload booking photos or apply
-for provider/parcel-agent access. Provider and agent approval remain separate
+An active account can book, upload booking photos and apply for provider or parcel-agent access without email verification. Email verification remains optional. Provider and agent approval remain separate
 operator decisions. Phone numbers remain contact details, not verified identity.
 Existing phone verification records are preserved; no phone is marked verified
 by this change. SMS is disabled by default (`ONECALL_SMS_ENABLED=false`). Termii
@@ -129,4 +128,4 @@ For initial Paystack testing set `ONECALL_PAYMENT_MODE=test` and
 secret key stored privately. Never substitute a placeholder key. This does not
 enable real charges, provider payouts or refunds.
 
-The email-only activation migration activates existing non-deleted PENDING accounts only when their email is already verified. Suspended and email-unverified accounts remain unchanged. New email confirmation activates an eligible account atomically with token consumption.
+The 28 October service-access migration activates existing nondeleted PENDING accounts without changing email or phone verification flags. Suspended and deleted accounts remain blocked. New registrations are ACTIVE immediately. Optional email confirmation still verifies a token atomically; it is not required to book.

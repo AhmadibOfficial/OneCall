@@ -16,6 +16,8 @@ Recipient-account attachment still requires proof of phone ownership. Unverified
 
 ## Validation and release
 
-Backend build, test TypeScript compilation, changed-module ESLint, Prisma schema validation and generated legal-page checks are run for this revision. Disposable SQL tests use PGlite with native Redis, not the cloud database. Native PostgreSQL contention and Prisma migrate deploy still require normal CI acceptance.
+Final application head `c3017904bc383176fc7991bc3542eb6a3aa61411` passed native PostgreSQL/Redis backend CI, Prisma migrations, TypeScript, ESLint, Flutter analysis, 58 Flutter tests, release web/debug APK builds, Docker and CodeQL. Backend suites passed 268 tests across core, booking, delivery, marketplace, admin, parcel, social/photo/privacy, operator, readiness and legal checks. Local disposable migration upgrade checks also preserved suspended/deleted restrictions and verification facts.
 
-Local Flutter SDK startup was blocked by automatic approval review because it attempted to access a cloud metadata endpoint. Standalone Dart formatting succeeded, but this is not Flutter analysis, widget-test, visual or APK acceptance. The source includes updated workspace tests and tests for persisted appearance choices and OS brightness changes. Keep the PR draft and do not publish clients or deploy the backend policy until the normal Flutter and native database CI gates pass. No live accounts or bookings were changed during development.
+Local Flutter SDK startup was blocked by automatic approval review because it attempted cloud metadata access; no bypass was attempted. The repository's normal CI completed Flutter acceptance. Physical-device acceptance remains a separate check.
+
+PR #15 merged as `9de34c0222487badf713131ce3396c9fd31687a2`. Cloud client publication uses the existing verified Render API target. It remains a debug cloud pilot, not a Play Store release. Payments and other gated integrations retain their existing activation settings.

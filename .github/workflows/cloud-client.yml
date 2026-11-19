@@ -15,16 +15,21 @@ concurrency:
   group: onecall-cloud-client
   cancel-in-progress: false
 jobs:
-  build:
+  build_and_publish:
+    permissions:
+      contents: write
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       CI: 'true'
       FLUTTER_SUPPRESS_ANALYTICS: 'true'
+      ONECALL_PILOT_TAG: pilot-${{ github.run_number }}-${{ github.run_attempt }}
       ONECALL_APPLICATION_ID: com.example.onecall.cloudpilot
       ONECALL_REQUESTED_API_URL: ${{ inputs.api_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Resolve the real cloud target
         run: python3 scripts/client_distribution.py resolve >> "$GITHUB_ENV"
       - name: Verify live API and public privacy pages
@@ -55,12 +60,12 @@ jobs:
           p = Path('apps/mobile/android/app/src/main/AndroidManifest.xml')
           ET.register_namespace('android', 'http://schemas.android.com/apk/res/android')
           tree = ET.parse(p)
-          tree.getroot().find('application').set('{http://schemas.android.com/apk/res/android}label', 'OneCall Cloud Pilot')
+          tree.getroot().find('application').set('{http://schemas.android.com/apk/res/android}label', 'OneCall')
           tree.write(p, encoding='utf-8', xml_declaration=True)
           PY
       - name: Install checksum-verified Android NDK
         run: bash scripts/prepare-android-ci.sh
-      - name: Build downloadable pilot APK
+      - name: Build Android APK
         working-directory: apps/mobile
         run: flutter build apk --debug --dart-define="ONECALL_API_URL=$ONECALL_API_URL"
       - name: Package and verify the APK
@@ -69,41 +74,31 @@ jobs:
           onecall_apksigner="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
           test -n "$onecall_apksigner"
           "$onecall_apksigner" verify --print-certs distribution/OneCall-pilot.apk > distribution/SIGNING.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: onecall-cloud-apk
-          path: distribution
-          retention-days: 30
-      - uses: actions/upload-artifact@v4
-        with:
-          name: onecall-cloud-web
-          path: apps/mobile/build/web
-          retention-days: 7
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    env:
-      GH_TOKEN: ${{ github.token }}
-      ONECALL_PILOT_TAG: pilot-${{ github.run_number }}-${{ github.run_attempt }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: onecall-cloud-apk
-          path: distribution
-      - uses: actions/download-artifact@v4
-        with:
-          name: onecall-cloud-web
-          path: web-output
+      - name: Require private source repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: test "$(gh repo view "$GITHUB_REPOSITORY" --json isPrivate --jq .isPrivate)" = true
+      - name: Preserve verified web build on the runner
+        run: |
+          cp -a apps/mobile/build/web web-output
+          cp distribution/build-info.json web-output/build-info.json
       - name: Publish the Android testing release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           cp distribution/build-info.json "$RUNNER_TEMP/onecall-release-notes.txt"
-          gh release create "$ONECALL_PILOT_TAG" distribution/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --title "OneCall cloud pilot $ONECALL_PILOT_TAG" --notes-file "$RUNNER_TEMP/onecall-release-notes.txt"
+          gh release create "$ONECALL_PILOT_TAG" distribution/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --title "OneCall Android build $GITHUB_RUN_NUMBER" --notes-file "$RUNNER_TEMP/onecall-release-notes.txt"
       - name: Add the verified Android download page
         run: |
           python3 scripts/client_distribution.py page --destination web-output/download
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('web-output/download/index.html')
+          text = p.read_text().replace('Try the OneCall cloud pilot. This testing build installs separately from the earlier local pilot.', 'Use OneCall on your Android phone. This build connects to the OneCall cloud service.')
+          text = text.replace('Download APK', 'Download APK with GitHub access')
+          text = text.replace('<p>This is an Android testing build.', '<p>APK downloads require access to the private OneCall repository.</p><p>This is an Android testing build.')
+          p.write_text(text)
+          PY
           printf 'User-agent: *\nDisallow: /\n' > web-output/robots.txt
       - uses: actions/checkout@v4
         with:

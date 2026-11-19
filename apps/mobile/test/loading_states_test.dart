@@ -3,8 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:onecall/ui/loading_widgets.dart';
 import 'package:onecall/ui/resource_widgets.dart';
+import 'package:onecall/ui/home_page.dart';
+import 'package:onecall/core/models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'widget_test.dart' show FakeApi, service;
 
 void main() {
+  testWidgets('OneCall home allows Profile navigation while services load', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final api = _WaitingCatalogueApi();
+    addTearDown(api.dispose);
+    await tester.pumpWidget(MaterialApp(home: HomePage(api: api)));
+    await tester.pump();
+    await tester.pump();
+    expect(find.byType(ContentSkeleton), findsOneWidget);
+    await tester.tap(find.text('Profile').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Sign in to continue'), findsOneWidget);
+    api.pending.complete([service]);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('initial loading keeps navigation usable and has no fake actions', (tester) async {
     final pending = Completer<List<dynamic>>();
     var navigated = false;
@@ -68,7 +88,9 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: Scaffold(body: ResourceList(
       load: () {
         calls++;
-        if (calls == 1) throw Exception('offline');
+        if (calls == 1) {
+          throw Exception('offline');
+        }
         return pending.future;
       },
       emptyText: 'No items',
@@ -107,4 +129,10 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(tester.binding.hasScheduledFrame, isFalse);
   });
+}
+
+class _WaitingCatalogueApi extends FakeApi {
+  final pending = Completer<List<PilotService>>();
+  @override
+  Future<List<PilotService>> servicesForLocation(String state, String city) => pending.future;
 }

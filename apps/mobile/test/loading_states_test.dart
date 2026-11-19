@@ -126,6 +126,8 @@ void main() {
       data: const MediaQueryData(textScaler: TextScaler.linear(2), disableAnimations: true),
       child: const Scaffold(body: SingleChildScrollView(child: ContentSkeleton(cards: true))),
     )));
+    // Let initial Material layout settle before checking for ongoing animation.
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(tester.binding.hasScheduledFrame, isFalse);
   });

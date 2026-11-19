@@ -12,6 +12,7 @@ import 'parcel_pages.dart';
 import 'profile_pages.dart';
 import 'resource_widgets.dart';
 import 'service_catalogue.dart';
+import 'loading_widgets.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.api});
@@ -694,7 +695,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     TextButton(
-                      onPressed: _loading || _error != null
+                      onPressed: _services.isEmpty && (_loading || _error != null)
                           ? null
                           : _allServices,
                       child: const Text('View all'),
@@ -711,17 +712,15 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (value) => setState(() => _category = value),
                 ),
                 const SizedBox(height: 18),
-                if (_loading)
+                if (_loading && _services.isEmpty)
+                  const ContentSkeleton(label: 'Loading services', cards: true),
+                if (_loading && _services.isNotEmpty)
                   const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        semanticsLabel: 'Loading services',
-                      ),
-                    ),
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: LinearProgressIndicator(semanticsLabel: 'Refreshing services'),
                   ),
                 if (_error != null) ErrorNotice(_error!, onRetry: _load),
-                if (!_loading && _error == null) ...[
+                if (_services.isNotEmpty || (!_loading && _error == null)) ...[
                   if (hasFilters)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -801,7 +800,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _favoriteList() {
     if (_favoritesLoading) {
-      return const AppLoading();
+      return ListView(
+        padding: const EdgeInsets.all(18),
+        children: const [ContentSkeleton(label: 'Loading favourites')],
+      );
     }
     if (_favoritesError != null) {
       return Padding(

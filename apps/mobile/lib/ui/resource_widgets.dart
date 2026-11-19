@@ -3,7 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/api.dart';
 import 'auth_page.dart';
 import 'common.dart';
-import 'brand.dart';
+import 'loading_widgets.dart';
 
 class PrivateGate extends StatelessWidget {
   const PrivateGate({
@@ -93,52 +93,72 @@ class ResourceList extends StatefulWidget {
 }
 
 class _ResourceListState extends State<ResourceList> {
-  late Future<List<dynamic>> _future = widget.load();
-  Future<void> _reload() async {
-    setState(() => _future = widget.load());
+  List<dynamic>? _items;
+  Object? _error;
+  bool _loading = true;
+  Future<void>? _inFlight;
+
+  @override
+  void initState() {
+    super.initState();
+    _reload();
+  }
+
+  Future<void> _reload() {
+    // Coalesce refresh gestures and item actions into the current request.
+    return _inFlight ??= _fetch();
+  }
+
+  Future<void> _fetch() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      await _future;
-    } catch (_) {
-      // FutureBuilder renders the failure and its retry action.
+      final items = await Future<List<dynamic>>.sync(widget.load);
+      if (mounted) {
+        setState(() => _items = items);
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _error = error);
+      }
+    } finally {
+      _inFlight = null;
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
   @override
-  Widget build(BuildContext context) => FutureBuilder<List<dynamic>>(
-    future: _future,
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const AppLoading();
-      }
-      if (snapshot.hasError) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: ErrorNotice(
-            errorMessage(snapshot.error!),
-            onRetry: () {
-              _reload().catchError((Object _) {});
-            },
-          ),
-        );
-      }
-      final items = snapshot.data ?? [];
-      return RefreshIndicator(
-        onRefresh: _reload,
-        child: ListView(
-          padding: const EdgeInsets.all(18),
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: [
-            if (items.isEmpty) EmptyNotice(widget.emptyText),
-            ...items.map(
-              (item) => widget.itemBuilder(context, item, () {
-                _reload().catchError((Object _) {});
-              }),
-            ),
+  Widget build(BuildContext context) {
+    final items = _items;
+    return RefreshIndicator(
+      onRefresh: _reload,
+      child: ListView(
+        padding: const EdgeInsets.all(18),
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          if (_loading && items == null)
+            const ContentSkeleton()
+          else ...[
+            if (_loading)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: LinearProgressIndicator(semanticsLabel: 'Refreshing content'),
+              ),
+            if (_error != null)
+              ErrorNotice(errorMessage(_error!), onRetry: _reload),
+            if (items != null) ...[
+              if (items.isEmpty) EmptyNotice(widget.emptyText),
+              ...items.map((item) => widget.itemBuilder(context, item, _reload)),
+            ],
           ],
-        ),
-      );
-    },
-  );
+        ],
+      ),
+    );
+  }
 }
 
 void notice(BuildContext context, String message) => ScaffoldMessenger.of(

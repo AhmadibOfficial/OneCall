@@ -1,0 +1,9 @@
+{
+  "app": "OneCall Cloud Pilot",
+  "sourceCommit": "ef705183cb99eed759643f88ffeac8cfcac2cc4e",
+  "apiUrl": "https://onecall-staging-api-bb81.onrender.com/api/v1",
+  "applicationId": "com.example.onecall.cloudpilot",
+  "buildType": "debug-pilot",
+  "sha256": "fb4dce514cefbeaf1b9e785deb46e71931c72107707382c0ea77056c2238e858",
+  "signing": "CI test certificate; not a Play Store release"
+}

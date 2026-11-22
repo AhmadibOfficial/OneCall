@@ -62,10 +62,11 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     setState(() => _workspaceReady = true);
-    await _load();
-    if (widget.api.user != null) {
-      await _loadFavorites();
-    }
+    // These requests are independent; neither needs to wait for the other.
+    await Future.wait([
+      _load(),
+      if (widget.api.user != null) _loadFavorites(),
+    ]);
   }
 
   Future<void> _loadFavorites() async {

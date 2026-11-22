@@ -22,48 +22,50 @@ class LocationQuery {
 }
 
 @Controller('services')
-class ServicesController {
+export class ServicesController {
   constructor(private readonly prisma: PrismaService) {}
   @Get()
   async list(@Query() query: LocationQuery) {
     const state = query.state ?? 'Kaduna';
     const city = query.city?.trim() || (state === 'FCT' ? 'Abuja' : state);
-    const areas = await this.prisma.providerCoverage.findMany({
-      where: {
-        state,
-        cityKey: { in: [cityKey(city), '*'] },
-        provider: {
-          approved: true,
-          user: {
-            status: 'ACTIVE',
-            deletedAt: null,
-          },
-        },
-      },
-      select: { serviceName: true, providerId: true },
-    });
-    const parcelRoutes = await this.prisma.parcelRoute.findMany({
-      where: {
-        status: 'ACTIVE',
-        originAgent: {
-          status: 'APPROVED',
+    const [areas, parcelRoutes] = await Promise.all([
+      this.prisma.providerCoverage.findMany({
+        where: {
           state,
-          cityKey: cityKey(city),
-          user: {
-            status: 'ACTIVE',
-            deletedAt: null,
+          cityKey: { in: [cityKey(city), '*'] },
+          provider: {
+            approved: true,
+            user: {
+              status: 'ACTIVE',
+              deletedAt: null,
+            },
           },
         },
-        destinationAgent: {
-          status: 'APPROVED',
-          user: {
-            status: 'ACTIVE',
-            deletedAt: null,
+        select: { serviceName: true, providerId: true },
+      }),
+      this.prisma.parcelRoute.findMany({
+        where: {
+          status: 'ACTIVE',
+          originAgent: {
+            status: 'APPROVED',
+            state,
+            cityKey: cityKey(city),
+            user: {
+              status: 'ACTIVE',
+              deletedAt: null,
+            },
+          },
+          destinationAgent: {
+            status: 'APPROVED',
+            user: {
+              status: 'ACTIVE',
+              deletedAt: null,
+            },
           },
         },
-      },
-      select: { originAgentId: true },
-    });
+        select: { originAgentId: true },
+      }),
+    ]);
     return {
       country: 'NG',
       state,

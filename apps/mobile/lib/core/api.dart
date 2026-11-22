@@ -117,6 +117,7 @@ class OneCallClient extends OneCallApi {
   }
   final Dio _dio;
   final SessionStore _store;
+  final Map<String, Future<List<PilotService>>> _catalogueRequests = {};
   PilotUser? _user;
   String? _accessToken, _refreshToken;
   Future<void>? _rotation;
@@ -484,15 +485,31 @@ class OneCallClient extends OneCallApi {
     return _user!;
   }
 
-  @override
-  Future<List<PilotService>> services() async {
-    final result = _object(
-      await _send('GET', '/services', authenticated: false),
-    );
-    return (result['services'] as List)
-        .map((j) => PilotService.fromJson(_object(j)))
-        .toList();
+  // Share simultaneous public catalogue reads only while they are in flight.
+  // No completed response or private account data is cached.
+  Future<List<PilotService>> _catalogue(String path) {
+    final existing = _catalogueRequests[path];
+    if (existing != null) {
+      return existing;
+    }
+    final operation = () async {
+      try {
+        final data = _object(await _send('GET', path, authenticated: false));
+        return List<PilotService>.unmodifiable(
+          (data['services'] as List).map(
+            (value) => PilotService.fromJson(_object(value)),
+          ),
+        );
+      } finally {
+        _catalogueRequests.remove(path);
+      }
+    }();
+    _catalogueRequests[path] = operation;
+    return operation;
   }
+
+  @override
+  Future<List<PilotService>> services() => _catalogue('/services');
 
   @override
   Future<dynamic> request(
@@ -502,21 +519,10 @@ class OneCallClient extends OneCallApi {
     bool authenticated = true,
   }) => _send(method, path, body: body, authenticated: authenticated);
   @override
-  Future<List<PilotService>> servicesForLocation(
-    String state,
-    String city,
-  ) async {
-    final data = _object(
-      await _send(
-        'GET',
+  Future<List<PilotService>> servicesForLocation(String state, String city) =>
+      _catalogue(
         '/services?state=${Uri.encodeQueryComponent(state)}&city=${Uri.encodeQueryComponent(city)}',
-        authenticated: false,
-      ),
-    );
-    return (data['services'] as List)
-        .map((value) => PilotService.fromJson(_object(value)))
-        .toList();
-  }
+      );
 
   @override
   Future<ServiceOrder> book(

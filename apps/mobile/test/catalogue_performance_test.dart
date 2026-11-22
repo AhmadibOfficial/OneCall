@@ -16,10 +16,12 @@ const catalogue = {
 void main() {
   test('simultaneous catalogue requests share a network read but later refresh is fresh', () async {
     final gate = Completer<void>();
+    final started = Completer<void>();
     var count = 0;
     final api = client(MemoryStore(), (_) async {
       count++;
       if (count == 1) {
+        started.complete();
         await gate.future;
       }
       return jsonResponse(catalogue);
@@ -27,10 +29,11 @@ void main() {
     addTearDown(api.dispose);
     final a = api.servicesForLocation('Kaduna', 'Kaduna');
     final b = api.servicesForLocation('Kaduna', 'Kaduna');
-    await Future<void>.delayed(Duration.zero);
+    await started.future;
     expect(count, 1);
     gate.complete();
     final results = await Future.wait([a, b]);
+    expect(count, 1);
     expect(results[0].single.name, 'Tailoring');
     expect(results[1].single.name, 'Tailoring');
     expect(() => results[0].clear(), throwsUnsupportedError);
@@ -56,10 +59,12 @@ void main() {
 
   test('failed shared requests are cleared so retry can reach the server', () async {
     final gate = Completer<void>();
+    final started = Completer<void>();
     var count = 0;
     final api = client(MemoryStore(), (_) async {
       count++;
       if (count == 1) {
+        started.complete();
         await gate.future;
         return jsonResponse({'message': 'Unavailable'}, 503);
       }
@@ -68,10 +73,11 @@ void main() {
     addTearDown(api.dispose);
     final pending = Future.wait([api.services(), api.services()]);
     final failure = expectLater(pending, throwsA(isA<Exception>()));
-    await Future<void>.delayed(Duration.zero);
+    await started.future;
     expect(count, 1);
     gate.complete();
     await failure;
+    expect(count, 1);
     expect((await api.services()).single.name, 'Tailoring');
     expect(count, 2);
   });

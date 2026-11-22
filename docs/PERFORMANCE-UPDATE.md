@@ -11,3 +11,5 @@ Tests cover one request serving concurrent callers, fresh subsequent refreshes, 
 No measured end-to-end latency improvement is claimed. Render's available HTTP latency series was empty during inspection. Validate cold and warm startup, sign-in, catalogue loading and booking submission on a physical phone over Wi-Fi and mobile data before setting production latency targets.
 
 Hosting findings on 22 November 2026: the API remains on the free compute plan, which may spin down after inactivity. Database metadata reports expiry at 2026-11-22T12:43:36Z. Preserve the existing database and accounts; select an approved ongoing hosting budget before changing paid plans. UI placeholders do not remove server startup delay. No billing or infrastructure change is included here.
+
+The current distributed APK is a debug build. A performance-ready release build needs the final owned application ID and private upload signing configuration already enforced by the Android project. These release checks have not been bypassed.

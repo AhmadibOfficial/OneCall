@@ -1,8 +1,7 @@
 'use strict';
 /* global api, node, table, $, message */
-async function parcelView() {
+async function parcelView(content = $('content')) {
   const data = await api('admin/parcels');
-  const content = $('content');
   content.replaceChildren();
   content.append(
     node('h2', 'Parcel network'),

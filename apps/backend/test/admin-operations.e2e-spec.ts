@@ -401,6 +401,193 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
       .send({})
       .expect(409);
   });
+  it('delegates dispatch without customer/finance/owner access, then revokes an existing session immediately', async () => {
+    const target = await prisma.user.findUniqueOrThrow({
+      where: { id: customer.id },
+    });
+    const body = {
+      uid: target.uid,
+      role: 'ONECALL_DISPATCH',
+      enabled: true,
+      password: 'Operations2026!',
+      reason,
+    };
+    await call(admin, 'post', '/management/staff')
+      .send({ ...body, password: 'WrongPassword2026!' })
+      .expect(403);
+    await call(admin, 'post', '/management/staff')
+      .send({ ...body, role: 'ADMIN' })
+      .expect(400);
+    await call(admin, 'post', '/management/staff').send(body).expect(201);
+    const session = await call(customer, 'get', '/management/session').expect(
+      200,
+    );
+    expect((session.body as { permissions: string[] }).permissions).toContain(
+      'bookings.write',
+    );
+    expect(
+      (session.body as { permissions: string[] }).permissions,
+    ).not.toContain('*');
+    await call(customer, 'get', '/admin/operations/bookings').expect(200);
+    await call(customer, 'get', '/management/customers').expect(403);
+    await call(customer, 'get', '/management/finance').expect(403);
+    await call(customer, 'get', '/management/staff').expect(403);
+    await call(admin, 'post', '/management/staff')
+      .send({ ...body, enabled: false })
+      .expect(201);
+    await call(customer, 'get', '/management/session').expect(403);
+    await call(customer, 'get', '/admin/operations/bookings').expect(403);
+    expect(
+      await prisma.adminOperation.count({
+        where: { resourceId: customer.id, action: 'STAFF_ACCESS_CHANGED' },
+      }),
+    ).toBe(2);
+  });
+  it('reschedules only before work starts and records a reason without accepting quotes', async () => {
+    const id = await order();
+    const scheduledAt = new Date(Date.now() + 3600000).toISOString();
+    await call(customer, 'post', '/management/bookings/' + id + '/schedule')
+      .send({ scheduledAt, reason })
+      .expect(403);
+    await call(admin, 'post', '/management/bookings/' + id + '/schedule')
+      .send({ scheduledAt: '2020-01-01T00:00:00Z', reason })
+      .expect(400);
+    await call(admin, 'post', '/management/bookings/' + id + '/schedule')
+      .send({ scheduledAt, reason })
+      .expect(201);
+    let row = await prisma.order.findUniqueOrThrow({ where: { id } });
+    expect(row.scheduledAt?.toISOString()).toBe(scheduledAt);
+    expect(row.status).toBe('PENDING');
+    await prisma.order.update({ where: { id }, data: { status: 'COMPLETED' } });
+    await call(admin, 'post', '/management/bookings/' + id + '/schedule')
+      .send({ scheduledAt, reason })
+      .expect(409);
+    row = await prisma.order.findUniqueOrThrow({ where: { id } });
+    expect(row.status).toBe('COMPLETED');
+  });
+  it('assigns and resolves support while preventing a response from certifying personal data deletion', async () => {
+    const ticket = await prisma.supportTicket.create({
+      data: {
+        userId: customer.id,
+        subject: 'Booking help',
+        message: 'Please review this booking',
+      },
+    });
+    const body = {
+      status: 'IN_REVIEW',
+      priority: 'HIGH',
+      assignedToId: admin.id,
+      dueAt: new Date(Date.now() + 86400000).toISOString(),
+      reason,
+    };
+    await call(admin, 'post', '/management/support/' + ticket.id)
+      .send(body)
+      .expect(201);
+    const row = await prisma.supportTicket.findUniqueOrThrow({
+      where: { id: ticket.id },
+    });
+    expect(row.assignedToId).toBe(admin.id);
+    expect(row.priority).toBe('HIGH');
+    await call(admin, 'post', '/management/support/' + ticket.id)
+      .send({ ...body, status: 'RESOLVED' })
+      .expect(400);
+    await call(admin, 'post', '/management/support/' + ticket.id)
+      .send({
+        ...body,
+        status: 'RESOLVED',
+        response: 'Your booking has been reviewed.',
+      })
+      .expect(201);
+    const privacy = await prisma.supportTicket.create({
+      data: {
+        userId: customer.id,
+        subject: '[Privacy request] DELETION',
+        message: 'Please delete my account',
+      },
+    });
+    await call(admin, 'post', '/management/support/' + privacy.id)
+      .send({ ...body, status: 'RESOLVED', response: 'Received' })
+      .expect(409);
+    await call(admin, 'post', '/admin/support/' + privacy.id + '/resolve')
+      .send({ response: 'Received' })
+      .expect(409);
+    expect(
+      (
+        await prisma.supportTicket.findUniqueOrThrow({
+          where: { id: privacy.id },
+        })
+      ).status,
+    ).toBe('OPEN');
+    await prisma.supportTicket.deleteMany({
+      where: { id: { in: [ticket.id, privacy.id] } },
+    });
+  });
+  it('pauses new requests in the backend while preserving existing bookings and resumes the catalogue', async () => {
+    const id = await order();
+    try {
+      await call(admin, 'post', '/management/catalogue/plumbing')
+        .send({
+          enabled: false,
+          description: 'Reviewed plumbing service description',
+          reason,
+        })
+        .expect(201);
+      const catalogue = await request(app.getHttpServer())
+        .get('/api/v1/services?state=Kaduna&city=Kaduna')
+        .expect(200);
+      expect(
+        (catalogue.body as { services: { key: string }[] }).services.some(
+          (s: { key: string }) => s.key === 'plumbing',
+        ),
+      ).toBe(false);
+      await call(customer, 'post', '/orders')
+        .send({
+          serviceName: 'Plumbing',
+          state: 'Kaduna',
+          city: 'Kaduna',
+          address: 'Private test street',
+        })
+        .expect(409);
+      await call(customer, 'get', '/orders/' + id).expect(200);
+    } finally {
+      await prisma.serviceSetting.deleteMany({ where: { key: 'plumbing' } });
+    }
+  });
+  it('limits account records and separates test collections from recognized revenue', async () => {
+    const users = await call(admin, 'get', '/management/customers').expect(200);
+    expect(
+      (users.body as { items: unknown[] }).items.length,
+    ).toBeLessThanOrEqual(25);
+    expect(JSON.stringify(users.body)).not.toMatch(
+      /passwordHash|refreshToken|storageKey/,
+    );
+    const id = await order();
+    await prisma.payment.create({
+      data: {
+        orderId: id,
+        amount: '123.45',
+        currency: 'NGN',
+        status: 'SUCCEEDED',
+        providerMode: 'test',
+        paidAt: new Date(),
+        idempotencyKey: 'management-' + stamp,
+      },
+    });
+    const reports = await call(admin, 'get', '/management/reports').expect(200);
+    expect(
+      (reports.body as { recognizedRevenue: null }).recognizedRevenue,
+    ).toBeNull();
+    expect(
+      (reports.body as { verifiedLiveCollections: unknown[] })
+        .verifiedLiveCollections,
+    ).toEqual([]);
+    const finance = await call(admin, 'get', '/management/finance').expect(200);
+    expect(
+      (finance.body as { refundExecutionAvailable: boolean })
+        .refundExecutionAvailable,
+    ).toBe(false);
+    expect(JSON.stringify(finance.body)).not.toContain('idempotencyKey');
+  });
   it('role revocation takes effect for an already-issued JWT', async () => {
     await prisma.userRole.deleteMany({ where: { userId: admin.id } });
     await call(admin, 'get', '/admin/operations/bookings').expect(403);

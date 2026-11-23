@@ -17,6 +17,9 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 export { AdminGuard } from './admin.guard';
 import { AdminGuard } from './admin.guard';
 import { AdminOperationsController } from './operations.controller';
+import { ManagementController } from './management.controller';
+import { ManagementService } from './management.service';
+import { ManagementGuard } from './management.permissions';
 import { AdminOperationsService } from './operations.service';
 class ResponseDto {
   @IsString()
@@ -110,6 +113,10 @@ export class AdminController {
     await this.prisma.$transaction(async (tx) => {
       const ticket = await tx.supportTicket.findUnique({ where: { id } });
       if (!ticket) throw new ConflictException('Ticket is unavailable');
+      if (ticket.subject === '[Privacy request] DELETION')
+        throw new ConflictException(
+          'Use the operator deletion procedure; resolving support does not delete personal data',
+        );
       const result = await tx.supportTicket.updateMany({
         where: { id, status: 'OPEN' },
         data: { response, status: 'RESOLVED' },
@@ -129,7 +136,17 @@ export class AdminController {
 }
 @Module({
   imports: [PrismaModule],
-  controllers: [AdminController, AdminOperationsController],
-  providers: [AdminGuard, JwtAuthGuard, AdminOperationsService],
+  controllers: [
+    AdminController,
+    AdminOperationsController,
+    ManagementController,
+  ],
+  providers: [
+    AdminGuard,
+    JwtAuthGuard,
+    AdminOperationsService,
+    ManagementGuard,
+    ManagementService,
+  ],
 })
 export class AdminModule {}

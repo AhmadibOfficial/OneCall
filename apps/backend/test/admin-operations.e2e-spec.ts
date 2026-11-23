@@ -91,25 +91,33 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
     ).id;
   });
   afterAll(async () => {
-    if (prisma && admin && customer && provider && otherProvider) {
-      const ids = [admin.id, customer.id, provider.id, otherProvider.id];
-      const rows = await prisma.order.findMany({
-        where: { customerId: { in: ids } },
-        select: { id: true },
-      });
-      const orderIds = rows.map((row) => row.id);
-      await prisma.payment.deleteMany({ where: { orderId: { in: orderIds } } });
-      await prisma.checkoutIntent.deleteMany({
-        where: { userId: { in: ids } },
-      });
-      await prisma.order.deleteMany({ where: { id: { in: orderIds } } });
-      await prisma.adminOperation.deleteMany({
-        where: { actorId: { in: ids } },
-      });
-      await prisma.provider.deleteMany({ where: { userId: { in: ids } } });
-      await prisma.user.deleteMany({ where: { id: { in: ids } } });
+    try {
+      if (prisma && admin && customer && provider && otherProvider) {
+        const ids = [admin.id, customer.id, provider.id, otherProvider.id];
+        const rows = await prisma.order.findMany({
+          where: { customerId: { in: ids } },
+          select: { id: true },
+        });
+        const orderIds = rows.map((row) => row.id);
+        await prisma.payment.deleteMany({
+          where: { orderId: { in: orderIds } },
+        });
+        await prisma.checkoutIntent.deleteMany({
+          where: { userId: { in: ids } },
+        });
+        await prisma.bookingPhoto.deleteMany({
+          where: { orderId: { in: orderIds } },
+        });
+        await prisma.order.deleteMany({ where: { id: { in: orderIds } } });
+        await prisma.adminOperation.deleteMany({
+          where: { actorId: { in: ids } },
+        });
+        await prisma.provider.deleteMany({ where: { userId: { in: ids } } });
+        await prisma.user.deleteMany({ where: { id: { in: ids } } });
+      }
+    } finally {
+      if (app) await app.close();
     }
-    if (app) await app.close();
   });
   it('denies anonymous, customer and provider access and cannot grant admin through request data', async () => {
     await request(app.getHttpServer())

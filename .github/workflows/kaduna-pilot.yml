@@ -3,6 +3,9 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+concurrency:
+  group: onecall-verification-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:

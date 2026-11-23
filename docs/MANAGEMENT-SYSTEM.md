@@ -39,6 +39,6 @@ Provider coverage is the current skills/location model. Dedicated shift calendar
 4. Open `/management/` on the API host and sign in with an existing owner account. Use Staff and Permissions to delegate limited responsibilities to an existing account by its ten-digit OneCall ID.
 5. Confirm that a delegated session cannot access finance, staff administration or parcel approval without authority. Test grant/revoke with a separate account before operational use.
 
-For application rollback, retain the additive columns/table; the previous application can ignore them. Reverting the service-pause code also removes pause enforcement, so review paused services before rolling back. Do not drop data as part of rollback. Verify hosting/database availability separately before deployment; source validation does not establish cloud health.
+Before rolling back, return cases in `IN_REVIEW` or `ESCALATED` to `OPEN` using the management workflow with a recorded reason; older support pages cannot manage those states. For application rollback, retain the additive columns/table; the previous application can ignore them. Reverting the service-pause code also removes pause enforcement, so review paused services before rolling back. Do not drop data as part of rollback. Verify hosting/database availability separately before deployment; source validation does not establish cloud health.
 
 Changes are prepared for private repository review. Deployment is a separate verified step.

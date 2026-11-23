@@ -7,6 +7,7 @@ permissions:
   contents: read
 jobs:
   backend:
+    timeout-minutes: 12
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -61,6 +62,7 @@ jobs:
       - run: pnpm --filter backend test:delivery
       - run: pnpm --filter backend test:nigeria
       - run: pnpm --filter backend test:admin
+        timeout-minutes: 2
       - name: Verify management permissions and browser navigation
         run: |
           pnpm --filter backend exec eslint src/modules/admin/management*.ts test/admin-operations.e2e-spec.ts

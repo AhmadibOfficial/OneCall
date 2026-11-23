@@ -47,7 +47,8 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
   function call(actor: Actor, method: 'get' | 'post', path: string) {
     return request(app.getHttpServer())
       [method]('/api/v1' + path)
-      .set('Authorization', 'Bearer ' + actor.token);
+      .set('Authorization', 'Bearer ' + actor.token)
+      .timeout({ response: 5000, deadline: 10000 });
   }
   async function order(owner = customer) {
     const result = await call(owner, 'post', '/orders')

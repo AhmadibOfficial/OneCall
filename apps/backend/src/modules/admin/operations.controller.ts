@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Param,
   ParseUUIDPipe,
   Post,
@@ -26,12 +27,16 @@ type Actor = { user: { id: string } };
 @UseGuards(JwtAuthGuard, ManagementGuard)
 export class AdminOperationsController {
   constructor(private readonly service: AdminOperationsService) {}
-  @Get('catalogue') @ManagementPermission('providers') catalogue() {
+  @Header('Cache-Control', 'no-store')
+  @Get('catalogue')
+  @ManagementPermission('providers')
+  catalogue() {
     return this.service.catalogue();
   }
-  @Get('providers') @ManagementPermission('providers') providers(
-    @Query() query: OperationsQuery,
-  ) {
+  @Header('Cache-Control', 'no-store')
+  @Get('providers')
+  @ManagementPermission('providers')
+  providers(@Query() query: OperationsQuery) {
     return this.service.providers(query);
   }
   @Post('providers/:id/approve')
@@ -50,14 +55,16 @@ export class AdminOperationsController {
   ) {
     return this.service.revoke(r.user.id, id, d.reason);
   }
-  @Get('bookings') @ManagementPermission('bookings') bookings(
-    @Query() q: OperationsQuery,
-  ) {
+  @Header('Cache-Control', 'no-store')
+  @Get('bookings')
+  @ManagementPermission('bookings')
+  bookings(@Query() q: OperationsQuery) {
     return this.service.bookings(q);
   }
-  @Get('bookings/:id') @ManagementPermission('bookings') detail(
-    @Param('id', new ParseUUIDPipe()) id: string,
-  ) {
+  @Header('Cache-Control', 'no-store')
+  @Get('bookings/:id')
+  @ManagementPermission('bookings')
+  detail(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.service.detail(id);
   }
   @Post('bookings/:id/assign') @ManagementPermission('bookings.write') assign(

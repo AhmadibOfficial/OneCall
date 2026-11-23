@@ -414,9 +414,16 @@ export class ManagementService {
       });
       if (!item || !/^[0-9a-f-]{36}\.(jpg|png|webp)$/.test(item.storageKey))
         throw new NotFoundException('Photo unavailable');
-      await this.audit(tx, actorId, orderId, 'BOOKING_PHOTO_REVIEWED', reason, {
-        photoId,
-      });
+      await this.audit(
+        tx,
+        actorId,
+        orderId,
+        'BOOKING_PHOTO_REVIEW_REQUESTED',
+        reason,
+        {
+          photoId,
+        },
+      );
       return item;
     });
     try {
@@ -496,6 +503,10 @@ export class ManagementService {
       since,
       asOf: new Date(),
       bookings: total,
+      assignedBookings: providers.reduce((n, p) => n + p._count._all, 0),
+      assignmentConversionRate: total
+        ? providers.reduce((n, p) => n + p._count._all, 0) / total
+        : null,
       completed,
       completionRate: total ? completed / total : null,
       activeProviders: providers.length,
@@ -505,7 +516,7 @@ export class ManagementService {
       verifiedLiveCollections: collections,
       recognizedRevenue: null,
       definitions:
-        'Completion rate: completed / created bookings in the last 30 days. Repeat customers: more than one booking created in that window. Live collections are gross successful payments, not recognized OneCall revenue. Test payments excluded.',
+        'Assignment conversion: bookings with an assigned provider / created bookings. Completion rate: completed / created bookings in the last 30 days. Repeat customers: more than one booking created in that window. Live collections are gross successful payments, not recognized OneCall revenue. Test payments excluded.',
     };
   }
   async auditLog(q: ManagementQuery) {

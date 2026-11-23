@@ -15,7 +15,7 @@ The management workspace is served by the API at `/management/`. `/admin/` remai
 | Finance | Paginated payment records, provider references, mode and activation indicators; reconciliation review |
 | Catalogue | Existing categories and supported states, editable descriptions and new-request pause/resume enforced by service listings and booking creation |
 | Staff | Owner-only delegation/revocation of fixed responsibilities to existing accounts, password confirmation, mandatory reason, activity history |
-| Reports | Last-30-day booking counts, completion rate, assigned-provider activity, repeat-booking customers, successful live gross collections by currency |
+| Reports | Last-30-day booking counts, assignment conversion, completion rate, assigned-provider activity, repeat-booking customers, successful live gross collections by currency |
 
 ## Permissions and safeguards
 
@@ -34,7 +34,7 @@ Provider coverage is the current skills/location model. Dedicated shift calendar
 ## Activation and rollback
 
 1. Back up the database through its established backup mechanism and confirm a restore path.
-2. Apply the additive Prisma migration `20261123000000_management_cases`; it adds case metadata and a service settings table without rewriting existing records.
+2. Apply the additive Prisma migration `20261123000000_management_cases`; it adds case metadata, provider assignment availability and a service settings table without rewriting existing records.
 3. Build and deploy the backend with its existing environment, database, private upload storage and HTTPS configuration.
 4. Open `/management/` on the API host and sign in with an existing owner account. Use Staff and Permissions to delegate limited responsibilities to an existing account by its ten-digit OneCall ID.
 5. Confirm that a delegated session cannot access finance, staff administration or parcel approval without authority. Test grant/revoke with a separate account before operational use.

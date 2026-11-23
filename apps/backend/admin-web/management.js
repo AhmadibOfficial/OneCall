@@ -34,6 +34,10 @@ async function managementView(name, content) {
     cards(content, {
       'Bookings created': d.bookings,
       'Completed bookings': d.completed,
+      'Assignment conversion':
+        d.assignmentConversionRate === null
+          ? 'No bookings'
+          : (d.assignmentConversionRate * 100).toFixed(1) + '%',
       'Completion rate':
         d.completionRate === null
           ? 'No bookings'

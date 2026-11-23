@@ -626,6 +626,37 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
       });
     }
   });
+  it('allows reason-audited staff photo review while protecting private bytes from other accounts', async () => {
+    const id = await order();
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1cAAAAASUVORK5CYII=',
+      'base64',
+    );
+    const upload = await call(customer, 'post', '/orders/' + id + '/photos')
+      .attach('file', png, {
+        filename: 'evidence.png',
+        contentType: 'image/png',
+      })
+      .expect(201);
+    const photoId = (upload.body as { id: string }).id;
+    const detail = await call(
+      admin,
+      'get',
+      '/admin/operations/bookings/' + id,
+    ).expect(200);
+    expect(JSON.stringify(detail.body)).not.toMatch(/storageKey|passwordHash/);
+    const path = '/management/bookings/' + id + '/photos/' + photoId;
+    await call(otherProvider, 'post', path).send({ reason }).expect(403);
+    await call(admin, 'post', path).send({ reason: ' ' }).expect(400);
+    const bytes = await call(admin, 'post', path).send({ reason }).expect(201);
+    expect(bytes.headers['cache-control']).toBe('no-store');
+    expect(bytes.headers['content-type']).toContain('image/png');
+    expect(
+      await prisma.adminOperation.count({
+        where: { resourceId: id, action: 'BOOKING_PHOTO_REVIEW_REQUESTED' },
+      }),
+    ).toBe(1);
+  });
   it('role revocation takes effect for an already-issued JWT', async () => {
     await prisma.userRole.deleteMany({ where: { userId: admin.id } });
     await call(admin, 'get', '/admin/operations/bookings').expect(403);

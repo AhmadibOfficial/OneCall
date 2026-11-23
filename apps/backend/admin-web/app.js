@@ -32,12 +32,12 @@ function signedOut() {
   $('logout').hidden = true;
   $('content').replaceChildren();
 }
-async function api(path, body) {
+async function api(path, body, authorization = token) {
   const response = await fetch('/api/v1/' + path, {
     method: body === undefined ? 'GET' : 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: 'Bearer ' + token } : {}),
+      ...(authorization ? { Authorization: 'Bearer ' + authorization } : {}),
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
@@ -181,9 +181,10 @@ $('login-form').addEventListener('submit', async (e) => {
   }
 });
 $('logout').onclick = async () => {
-  const refresh = refreshToken;
+  const refresh = refreshToken,
+    authorization = token;
   signedOut();
-  await api('auth/logout', { refreshToken: refresh }).catch(() =>
+  await api('auth/logout', { refreshToken: refresh }, authorization).catch(() =>
     message('Signed out locally. Server logout could not be confirmed.'),
   );
 };

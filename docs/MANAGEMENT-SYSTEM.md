@@ -8,7 +8,7 @@ The management workspace is served by the API at `/management/`. `/admin/` remai
 | --- | --- |
 | Operations Centre | Counts and entry points for unassigned bookings, past scheduled times, provider and parcel approvals, unresolved and overdue cases |
 | Booking and Dispatch | Search, status and queue filters, eligible-provider assignment, guarded cancellation, pre-work scheduling, quote review, private photo download with a reason, history |
-| Providers | Search, reviewed coverage approval, approval revocation subject to active-job safeguards |
+| Providers | Search, reviewed coverage approval, approval revocation subject to active-job safeguards, pause/resume new assignments, actual booking status counts |
 | Customers | Paginated account search, latest 50 bookings and support/privacy requests; no credentials or private storage keys returned |
 | Parcels | Existing shop and route review, custody events and exception investigation; independent-review and recipient-code protections retained |
 | Support and Disputes | Search, case ownership, priority, response deadline, escalation, customer response and resolution with history |
@@ -29,7 +29,7 @@ Support resolution is not personal-data deletion. Deletion requests cannot be ma
 
 This release does not execute refunds, release held funds, generate commissions, perform NIN verification, or establish that an uploaded photo proves completion. It does not invent revenue: successful live collections are gross collections, test payments are excluded, and recognized OneCall revenue is explicitly unrecorded until a revenue ledger exists. Payment activation continues to use the existing separate configuration and approval controls. A requested arrival time in the past is a queue flag, not a contractual breach determination.
 
-Provider coverage is the current skills/location model. Dedicated shift calendars, provider self-service availability, measured retention cohorts, automatic dispute adjudication, native staff MFA enrollment, full-history exports, custom category creation and new-location authoring remain further work. No claim of full enterprise feature completeness is made.
+Provider coverage is the current skills/location model. Dedicated shift calendars, provider self-service shift calendars, measured retention cohorts, automatic dispute adjudication, native staff MFA enrollment, full-history exports, custom category creation and new-location authoring remain further work. No claim of full enterprise feature completeness is made.
 
 ## Activation and rollback
 

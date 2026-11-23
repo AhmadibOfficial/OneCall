@@ -226,6 +226,7 @@ model Address {
 }
 
 model Provider {
+  available Boolean @default(true)
   id String @id @default(uuid()) @db.Uuid
 
   userId String @db.Uuid

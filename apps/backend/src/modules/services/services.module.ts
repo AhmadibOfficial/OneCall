@@ -34,6 +34,7 @@ class ServicesController {
         cityKey: { in: [cityKey(city), '*'] },
         provider: {
           approved: true,
+          available: true,
           user: {
             status: 'ACTIVE',
             deletedAt: null,

@@ -588,6 +588,44 @@ describe('Admin provider and booking operations: real HTTP/database', () => {
     ).toBe(false);
     expect(JSON.stringify(finance.body)).not.toContain('idempotencyKey');
   });
+  it('pauses new provider assignments without changing approval or existing jobs', async () => {
+    const id = await order();
+    try {
+      await call(
+        admin,
+        'post',
+        '/management/providers/' + providerId + '/availability',
+      )
+        .send({ available: false, reason })
+        .expect(201);
+      const row = await prisma.provider.findUniqueOrThrow({
+        where: { id: providerId },
+      });
+      expect(row.available).toBe(false);
+      expect(row.approved).toBe(true);
+      await call(admin, 'post', '/admin/operations/bookings/' + id + '/assign')
+        .send({ providerId, reason })
+        .expect(409);
+      await call(provider, 'post', '/orders/' + id + '/accept')
+        .send({})
+        .expect(404);
+      const detail = await call(
+        admin,
+        'get',
+        '/admin/operations/bookings/' + id,
+      ).expect(200);
+      expect(
+        (
+          detail.body as { eligibleProviders: { id: string }[] }
+        ).eligibleProviders.some((p) => p.id === providerId),
+      ).toBe(false);
+    } finally {
+      await prisma.provider.update({
+        where: { id: providerId },
+        data: { available: true },
+      });
+    }
+  });
   it('role revocation takes effect for an already-issued JWT', async () => {
     await prisma.userRole.deleteMany({ where: { userId: admin.id } });
     await call(admin, 'get', '/admin/operations/bookings').expect(403);

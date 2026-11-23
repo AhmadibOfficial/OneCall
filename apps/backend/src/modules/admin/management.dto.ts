@@ -38,3 +38,7 @@ export class CatalogueDto extends ReasonDto {
   @IsString() @Length(1, 500) description!: string;
   @IsBoolean() enabled!: boolean;
 }
+
+export class AvailabilityDto extends ReasonDto {
+  @IsBoolean() available!: boolean;
+}

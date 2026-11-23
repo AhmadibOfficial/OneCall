@@ -136,7 +136,7 @@ export class OrderRepository {
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "Provider" WHERE "id" = ${providerId}::uuid FOR UPDATE`;
       const provider = await tx.provider.findFirst({
-        where: { id: providerId, approved: true },
+        where: { id: providerId, approved: true, available: true },
       });
       const order = await tx.order.findUnique({ where: { id } });
       if (!provider || !order || provider.userId === order.customerId)

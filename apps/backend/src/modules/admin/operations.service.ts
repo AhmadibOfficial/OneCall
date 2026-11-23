@@ -60,6 +60,7 @@ export class AdminOperationsService {
         select: {
           id: true,
           approved: true,
+          available: true,
           displayName: true,
           user: {
             select: {
@@ -77,7 +78,22 @@ export class AdminOperationsService {
       }),
       this.prisma.provider.count({ where }),
     ]);
-    return { items, total, page: q.page, pageSize: 25 };
+    const activity = await this.prisma.order.groupBy({
+      by: ['providerId', 'status'],
+      where: { providerId: { in: items.map((p) => p.id) } },
+      _count: { _all: true },
+    });
+    return {
+      items: items.map((p) => ({
+        ...p,
+        activity: activity
+          .filter((a) => a.providerId === p.id)
+          .map((a) => ({ status: a.status, count: a._count._all })),
+      })),
+      total,
+      page: q.page,
+      pageSize: 25,
+    };
   }
   async approve(actorId: string, id: string, dto: ApprovalDto) {
     const reason = this.reason(dto.reason);
@@ -256,6 +272,7 @@ export class AdminOperationsService {
         ? await this.prisma.provider.findMany({
             where: {
               approved: true,
+              available: true,
               user: {
                 status: 'ACTIVE',
                 deletedAt: null,
@@ -306,6 +323,7 @@ export class AdminOperationsService {
         );
       if (
         !provider?.approved ||
+        !provider.available ||
         provider.user.status !== 'ACTIVE' ||
         provider.user.deletedAt
       )

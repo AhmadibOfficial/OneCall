@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { IsString, Length } from 'class-validator';
@@ -107,6 +108,7 @@ export class AdminController {
   async resolve(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: ResponseDto,
+    @Req() req?: { user: { id: string } },
   ) {
     const response = dto.response.trim();
     if (!response) throw new ConflictException('A response is required');
@@ -123,6 +125,16 @@ export class AdminController {
       });
       if (!result.count)
         throw new ConflictException('Ticket has already been resolved');
+      if (req?.user.id)
+        await tx.adminOperation.create({
+          data: {
+            actorId: req.user.id,
+            resourceId: id,
+            action: 'SUPPORT_RESOLVED',
+            reason: 'Legacy support response',
+            details: {},
+          },
+        });
       await tx.notification.create({
         data: {
           userId: ticket.userId,

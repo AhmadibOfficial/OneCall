@@ -20,6 +20,7 @@ import {
 import { ReasonDto } from './operations.dto';
 import { ManagementService } from './management.service';
 import {
+  AvailabilityDto,
   CatalogueDto,
   CaseDto,
   ManagementQuery,
@@ -93,6 +94,16 @@ export class ManagementController {
     @Body() d: ScheduleDto,
   ) {
     return this.service.schedule(r.user.id, id, d);
+  }
+  @Post('providers/:id/availability')
+  @ManagementPermission('providers.write')
+  @Header('Cache-Control', 'no-store')
+  availability(
+    @Req() r: Actor,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() d: AvailabilityDto,
+  ) {
+    return this.service.availability(r.user.id, id, d);
   }
   @Post('bookings/:id/photos/:photoId')
   @ManagementPermission('bookings')

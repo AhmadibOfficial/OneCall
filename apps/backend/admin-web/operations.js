@@ -118,7 +118,33 @@ async function operationsView(name, content = $('content')) {
                 .join('\n') || 'No coverage',
             ),
           );
+          card.append(
+            node(
+              'p',
+              item.available
+                ? 'Available for new assignments'
+                : 'New assignments paused',
+            ),
+            node(
+              'p',
+              'Booking history: ' +
+                (item.activity || [])
+                  .map((a) => a.status + ': ' + a.count)
+                  .join(' · '),
+            ),
+          );
           if (!can('providers.write')) continue;
+          operationForm(
+            card,
+            item.available ? 'Pause new assignments' : 'Resume new assignments',
+            [],
+            (reason) =>
+              api('management/providers/' + item.id + '/availability', {
+                available: !item.available,
+                reason,
+              }),
+            load,
+          );
           const state = selectOptions(catalogue.states.map((s) => [s, s]));
           state.value = 'Kaduna';
           const city = node('input');

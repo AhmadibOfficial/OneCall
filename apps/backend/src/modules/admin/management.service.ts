@@ -13,6 +13,7 @@ import * as argon2 from 'argon2';
 import { PrismaService } from '@/infrastructure/database/prisma/prisma.service';
 import { NIGERIA_SERVICES, NIGERIA_STATES } from '@/modules/services/nigeria';
 import {
+  AvailabilityDto,
   CatalogueDto,
   CaseDto,
   ManagementQuery,
@@ -376,6 +377,28 @@ export class ManagementService {
         ),
       });
       return { id, scheduledAt: date };
+    });
+  }
+  async availability(actorId: string, id: string, dto: AvailabilityDto) {
+    return this.db.$transaction(async (tx) => {
+      await managementActor(tx, actorId, 'providers.write');
+      await tx.$queryRaw`SELECT "id" FROM "Provider" WHERE "id" = ${id}::uuid FOR UPDATE`;
+      const provider = await tx.provider.findUnique({ where: { id } });
+      if (!provider) throw new NotFoundException('Provider unavailable');
+      const result = await tx.provider.update({
+        where: { id },
+        data: { available: dto.available },
+        select: { id: true, available: true },
+      });
+      await this.audit(
+        tx,
+        actorId,
+        id,
+        'PROVIDER_AVAILABILITY_CHANGED',
+        dto.reason,
+        { before: provider.available, after: dto.available },
+      );
+      return result;
     });
   }
   async photo(

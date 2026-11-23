@@ -61,6 +61,10 @@ jobs:
       - run: pnpm --filter backend test:delivery
       - run: pnpm --filter backend test:nigeria
       - run: pnpm --filter backend test:admin
+      - name: Verify management permissions and browser navigation
+        run: |
+          pnpm --filter backend exec eslint src/modules/admin/management*.ts test/admin-operations.e2e-spec.ts
+          CHROME_BIN=google-chrome node --test apps/backend/test/management-ui.test.cjs
       - run: pnpm --filter backend test:parcels
       - run: pnpm --filter backend lint:parcels
       - run: pnpm --filter backend test:social
@@ -106,3 +110,4 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build staging API and delivery image
         run: docker build --file deploy/Dockerfile --tag onecall-staging:ci .
+

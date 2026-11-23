@@ -15,6 +15,7 @@ import {
 } from 'class-validator';
 import { NIGERIA_STATES, NIGERIA_SERVICES } from '@/modules/services/nigeria';
 export class OperationsQuery {
+  @IsOptional() @IsIn(['UNASSIGNED', 'OVERDUE']) queue?: string;
   @IsOptional() @IsString() @Length(0, 120) q?: string;
   @IsOptional()
   @IsIn(['PENDING', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'])

@@ -45,8 +45,7 @@ function operationForm(container, title, inputs, action, done) {
   });
   container.append(form);
 }
-async function operationsView(name) {
-  const content = $('content');
+async function operationsView(name, content = $('content')) {
   content.replaceChildren();
   const filters = node('form'),
     search = node('input');
@@ -63,6 +62,12 @@ async function operationsView(name) {
     ),
   ]);
   if (name === 'bookings') filters.append(field('Status', status));
+  const queue = selectOptions([
+    ['', 'All bookings'],
+    ['UNASSIGNED', 'Unassigned bookings'],
+    ['OVERDUE', 'Past scheduled time'],
+  ]);
+  if (name === 'bookings') filters.append(field('Operations queue', queue));
   filters.append(node('button', 'Search'));
   content.append(filters);
   const list = node('div'),
@@ -80,6 +85,7 @@ async function operationsView(name) {
         q: search.value.trim(),
         page: String(page),
       });
+      if (name === 'bookings' && queue.value) params.set('queue', queue.value);
       if (name === 'bookings' && status.value)
         params.set('status', status.value);
       const data = await api('admin/operations/' + name + '?' + params);
@@ -111,6 +117,33 @@ async function operationsView(name) {
                 .map((c) => c.serviceName + ' · ' + c.cityKey + ', ' + c.state)
                 .join('\n') || 'No coverage',
             ),
+          );
+          card.append(
+            node(
+              'p',
+              item.available
+                ? 'Available for new assignments'
+                : 'New assignments paused',
+            ),
+            node(
+              'p',
+              'Booking history: ' +
+                (item.activity || [])
+                  .map((a) => a.status + ': ' + a.count)
+                  .join(' · '),
+            ),
+          );
+          if (!can('providers.write')) continue;
+          operationForm(
+            card,
+            item.available ? 'Pause new assignments' : 'Resume new assignments',
+            [],
+            (reason) =>
+              api('management/providers/' + item.id + '/availability', {
+                available: !item.available,
+                reason,
+              }),
+            load,
           );
           const state = selectOptions(catalogue.states.map((s) => [s, s]));
           state.value = 'Kaduna';
@@ -220,9 +253,9 @@ async function operationsView(name) {
   await load();
 }
 async function bookingDetail(id) {
+  const content = $('content').firstElementChild;
   const data = await api('admin/operations/bookings/' + id),
-    b = data.booking,
-    content = $('content');
+    b = data.booking;
   content.replaceChildren();
   const back = node('button', 'Back to bookings');
   back.addEventListener('click', () => view('bookings'));
@@ -244,6 +277,10 @@ async function bookingDetail(id) {
     node('p', 'Scheduled: ' + (b.scheduledAt || 'Not scheduled')),
     node(
       'p',
+      'Quoted amount: ' + (b.quote?.amount ?? 'Awaiting provider quote'),
+    ),
+    node(
+      'p',
       b.quoteRequired
         ? b.quote?.acceptedAt
           ? 'Customer accepted quote'
@@ -251,7 +288,7 @@ async function bookingDetail(id) {
         : 'Legacy booking',
     ),
   );
-  if (b.status === 'PENDING' && !b.provider) {
+  if (can('bookings.write') && b.status === 'PENDING' && !b.provider) {
     const provider = selectOptions(
       data.eligibleProviders.map((p) => [
         p.id,
@@ -279,7 +316,10 @@ async function bookingDetail(id) {
         ),
       );
   }
-  if (['PENDING', 'ACCEPTED', 'IN_PROGRESS'].includes(b.status))
+  if (
+    can('bookings.write') &&
+    ['PENDING', 'ACCEPTED', 'IN_PROGRESS'].includes(b.status)
+  )
     operationForm(
       content,
       'Cancel booking',
@@ -287,6 +327,64 @@ async function bookingDetail(id) {
       (reason) =>
         api('admin/operations/bookings/' + id + '/cancel', { reason }),
       () => bookingDetail(id),
+    );
+  if (can('bookings.write') && ['PENDING', 'ACCEPTED'].includes(b.status)) {
+    const date = node('input');
+    date.type = 'datetime-local';
+    date.required = true;
+    operationForm(
+      content,
+      'Reschedule booking',
+      [['Requested time', date]],
+      (reason) =>
+        api('management/bookings/' + id + '/schedule', {
+          scheduledAt: new Date(date.value).toISOString(),
+          reason,
+        }),
+      () => bookingDetail(id),
+    );
+  }
+  content.append(node('h2', 'Booking evidence'));
+  content.append(
+    node(
+      'p',
+      'Uploaded booking photos support review; they are not automatic proof of completion.',
+    ),
+  );
+  for (const photo of b.photos || [])
+    content.append(
+      button(
+        'Download photo · ' + new Date(photo.createdAt).toLocaleString(),
+        async () => {
+          const reason = window.prompt(
+            'Record why you need to review this private booking photo (3–500 characters)',
+          );
+          if (!reason || reason.trim().length < 3) return;
+          const response = await fetch(
+            '/api/v1/management/bookings/' + id + '/photos/' + photo.id,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({ reason: reason.trim() }),
+            },
+          );
+          if (!response.ok)
+            throw new Error(
+              'Photo download failed. Check your access and retry.',
+            );
+          const url = URL.createObjectURL(await response.blob());
+          const a = node('a');
+          a.href = url;
+          a.download =
+            'onecall-booking-photo.' +
+            (photo.mime === 'image/png' ? 'png' : 'jpg');
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        },
+      ),
     );
   content.append(node('h2', 'Admin operations history'));
   if (!data.history.length)

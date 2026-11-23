@@ -362,6 +362,13 @@ export class ParcelService {
             );
           return this.safe(previous, userId);
         }
+        const setting = await db.serviceSetting.findUnique({
+          where: { key: 'parcel-delivery' },
+        });
+        if (setting?.enabled === false)
+          throw new ConflictException(
+            'Parcel requests are currently unavailable',
+          );
         const route = await db.parcelRoute.findFirst({
           where: {
             id: body.routeId,

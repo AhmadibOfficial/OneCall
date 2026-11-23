@@ -136,3 +136,262 @@ article p {
 #content > div > button {
   margin-right: 10px;
 }
+
+/* Management workspace: navigation stays available during content requests. */
+:root {
+  color-scheme: light;
+  --navy: #102a47;
+  --blue: #075cc9;
+  --line: #dce4ee;
+  --muted: #52657c;
+}
+body {
+  margin: 0;
+  background: #f4f7fb;
+  color: #172b45;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+header {
+  background: var(--navy);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 28px;
+}
+header strong {
+  font-size: 24px;
+}
+header button {
+  margin-left: auto;
+}
+main {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+#notice {
+  margin: 0;
+  padding: 0 24px;
+  background: #fff3d7;
+}
+#notice:not(:empty) {
+  padding: 14px 24px;
+}
+#login {
+  max-width: 430px;
+  margin: 64px auto;
+  padding: 32px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+#workspace:not([hidden]) {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  min-height: 85vh;
+}
+aside {
+  background: white;
+  border-right: 1px solid var(--line);
+  padding: 24px 14px;
+}
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+nav button {
+  text-align: left;
+  background: transparent;
+  color: var(--navy);
+  border: 0;
+  padding: 12px 14px;
+  border-radius: 9px;
+  min-height: 44px;
+}
+nav button[aria-current='page'] {
+  background: #e8f1ff;
+  color: #004baf;
+  font-weight: 700;
+}
+.workspace-main {
+  padding: 28px;
+  min-width: 0;
+}
+h1 {
+  margin-top: 0;
+  font-size: 28px;
+  letter-spacing: -0.5px;
+}
+h2 {
+  font-size: 19px;
+}
+article {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+  margin: 16px 0;
+  box-shadow: none;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.cards article {
+  margin: 0;
+}
+.card strong {
+  font-size: 30px;
+  display: block;
+}
+.card span {
+  color: var(--muted);
+  display: block;
+}
+button {
+  border: 1px solid #b7c9df;
+  border-radius: 8px;
+  background: var(--blue);
+  color: white;
+  padding: 10px 16px;
+  cursor: pointer;
+  min-height: 44px;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #f3af24;
+  outline-offset: 3px;
+}
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: end;
+  margin: 18px 0;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 180px;
+  flex: 1;
+}
+input,
+select,
+textarea {
+  font: inherit;
+  box-sizing: border-box;
+  max-width: 100%;
+  border: 1px solid #a9bbcf;
+  border-radius: 7px;
+  padding: 10px;
+  background: white;
+  color: #172b45;
+}
+textarea {
+  min-height: 80px;
+}
+.table-wrap {
+  overflow: auto;
+  max-width: 100%;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: white;
+}
+th,
+td {
+  text-align: left;
+  padding: 13px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  white-space: pre-line;
+}
+th {
+  background: #eaf0f8;
+  font-size: 13px;
+}
+td {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.loading {
+  padding: 24px;
+  background: #eaf0f8;
+  border-radius: 12px;
+}
+details {
+  padding: 12px 0;
+}
+summary {
+  cursor: pointer;
+  min-height: 32px;
+}
+#operator {
+  font-size: 14px;
+  color: var(--muted);
+  padding: 0 12px;
+}
+@media (max-width: 760px) {
+  #workspace:not([hidden]) {
+    grid-template-columns: 1fr;
+  }
+  aside {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 12px;
+  }
+  nav {
+    flex-direction: row;
+    overflow: auto;
+  }
+  nav button {
+    flex-shrink: 0;
+    max-width: 190px;
+  }
+  #operator {
+    margin: 0 0 8px;
+  }
+  .workspace-main {
+    padding: 20px 14px;
+  }
+  header {
+    padding: 14px;
+  }
+  header span {
+    font-size: 12px;
+  }
+  #login {
+    margin: 24px 14px;
+  }
+  form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  label {
+    min-width: 0;
+  }
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .card strong {
+    font-size: 24px;
+  }
+}

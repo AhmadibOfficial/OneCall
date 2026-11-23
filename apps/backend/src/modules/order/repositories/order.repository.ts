@@ -1,7 +1,7 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { OrderStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '@/infrastructure/database/prisma/prisma.service';
-import { cityKey } from '@/modules/services/nigeria';
+import { cityKey, NIGERIA_SERVICES } from '@/modules/services/nigeria';
 import { CreateOrderDto } from '../dto/create-order.dto';
 
 const orderSelect = {
@@ -43,6 +43,12 @@ export class OrderRepository {
 
   create(customerId: string, data: CreateOrderDto) {
     return this.prisma.$transaction(async (tx) => {
+      const service = NIGERIA_SERVICES.find((s) => s.name === data.serviceName);
+      const setting = service
+        ? await tx.serviceSetting.findUnique({ where: { key: service.key } })
+        : null;
+      if (setting?.enabled === false)
+        throw new ConflictException('This service is currently unavailable');
       const order = await tx.order.create({
         data: {
           customerId,
@@ -130,7 +136,7 @@ export class OrderRepository {
     return this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "Provider" WHERE "id" = ${providerId}::uuid FOR UPDATE`;
       const provider = await tx.provider.findFirst({
-        where: { id: providerId, approved: true },
+        where: { id: providerId, approved: true, available: true },
       });
       const order = await tx.order.findUnique({ where: { id } });
       if (!provider || !order || provider.userId === order.customerId)

@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { IsString, Length } from 'class-validator';
@@ -17,6 +18,9 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 export { AdminGuard } from './admin.guard';
 import { AdminGuard } from './admin.guard';
 import { AdminOperationsController } from './operations.controller';
+import { ManagementController } from './management.controller';
+import { ManagementService } from './management.service';
+import { ManagementGuard } from './management.permissions';
 import { AdminOperationsService } from './operations.service';
 class ResponseDto {
   @IsString()
@@ -104,18 +108,33 @@ export class AdminController {
   async resolve(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: ResponseDto,
+    @Req() req?: { user: { id: string } },
   ) {
     const response = dto.response.trim();
     if (!response) throw new ConflictException('A response is required');
     await this.prisma.$transaction(async (tx) => {
       const ticket = await tx.supportTicket.findUnique({ where: { id } });
       if (!ticket) throw new ConflictException('Ticket is unavailable');
+      if (ticket.subject === '[Privacy request] DELETION')
+        throw new ConflictException(
+          'Use the operator deletion procedure; resolving support does not delete personal data',
+        );
       const result = await tx.supportTicket.updateMany({
         where: { id, status: 'OPEN' },
         data: { response, status: 'RESOLVED' },
       });
       if (!result.count)
         throw new ConflictException('Ticket has already been resolved');
+      if (req?.user.id)
+        await tx.adminOperation.create({
+          data: {
+            actorId: req.user.id,
+            resourceId: id,
+            action: 'SUPPORT_RESOLVED',
+            reason: 'Legacy support response',
+            details: {},
+          },
+        });
       await tx.notification.create({
         data: {
           userId: ticket.userId,
@@ -129,7 +148,17 @@ export class AdminController {
 }
 @Module({
   imports: [PrismaModule],
-  controllers: [AdminController, AdminOperationsController],
-  providers: [AdminGuard, JwtAuthGuard, AdminOperationsService],
+  controllers: [
+    AdminController,
+    AdminOperationsController,
+    ManagementController,
+  ],
+  providers: [
+    AdminGuard,
+    JwtAuthGuard,
+    AdminOperationsService,
+    ManagementGuard,
+    ManagementService,
+  ],
 })
 export class AdminModule {}

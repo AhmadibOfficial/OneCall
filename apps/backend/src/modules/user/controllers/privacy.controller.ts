@@ -54,7 +54,7 @@ export class PrivacyController {
       const subject = prefix + dto.kind;
       if (
         await tx.supportTicket.count({
-          where: { userId: req.user.id, subject, status: 'OPEN' },
+          where: { userId: req.user.id, subject, status: { not: 'RESOLVED' } },
         })
       )
         throw new ConflictException(

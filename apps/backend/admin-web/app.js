@@ -1,25 +1,43 @@
 'use strict';
-// Credentials live only in memory; reload signs the operator out.
+// Authentication credentials are kept in memory, never in browser storage.
 let token = '',
   refreshToken = '',
-  busy = false;
+  permissions = [],
+  revision = 0;
 const $ = (id) => document.getElementById(id);
+const can = (permission) =>
+  permissions.includes('*') || permissions.includes(permission);
+const areas = [
+  ['overview', 'Operations Centre', 'overview'],
+  ['bookings', 'Booking and Dispatch', 'bookings'],
+  ['providers', 'Provider Management', 'providers'],
+  ['customers', 'Customer Management', 'customers'],
+  ['parcels', 'Parcel Operations', 'owner'],
+  ['support', 'Support and Disputes', 'support'],
+  ['finance', 'Finance Operations', 'finance'],
+  ['catalogue', 'Service Catalogue', 'catalogue'],
+  ['staff', 'Staff and Permissions', 'owner'],
+  ['reports', 'Business Reports', 'reports'],
+  ['audit', 'Activity History', 'audit'],
+];
 function message(value) {
   $('notice').textContent = value;
 }
 function signedOut() {
+  revision++;
   token = refreshToken = '';
+  permissions = [];
   $('login').hidden = false;
   $('workspace').hidden = true;
   $('logout').hidden = true;
   $('content').replaceChildren();
 }
-async function api(path, body) {
+async function api(path, body, authorization = token) {
   const response = await fetch('/api/v1/' + path, {
     method: body === undefined ? 'GET' : 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: 'Bearer ' + token } : {}),
+      ...(authorization ? { Authorization: 'Bearer ' + authorization } : {}),
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
@@ -28,7 +46,7 @@ async function api(path, body) {
     if (response.status === 401) signedOut();
     throw new Error(
       response.status === 403
-        ? 'Admin access is required. Ask your local operator to grant the ADMIN role.'
+        ? 'Your staff permissions do not allow this action.'
         : (Array.isArray(result.message)
             ? result.message.join(', ')
             : result.message) || 'Request failed. Please retry.',
@@ -46,7 +64,11 @@ function table(headers, rows) {
   wrap.className = 'table-wrap';
   const t = node('table'),
     head = node('tr');
-  headers.forEach((h) => head.append(node('th', h)));
+  headers.forEach((h) => {
+    const th = node('th', h);
+    th.scope = 'col';
+    head.append(th);
+  });
   const thead = node('thead');
   thead.append(head);
   t.append(thead);
@@ -60,117 +82,72 @@ function table(headers, rows) {
   wrap.append(t);
   return wrap;
 }
+function button(label, action) {
+  const b = node('button', label);
+  b.type = 'button';
+  b.onclick = async () => {
+    b.disabled = true;
+    try {
+      await action();
+    } catch (e) {
+      message(e.message);
+    } finally {
+      b.disabled = false;
+    }
+  };
+  return b;
+}
+function cards(container, values) {
+  const wrap = node('div');
+  wrap.className = 'cards';
+  Object.entries(values).forEach(([label, value]) => {
+    const card = node('article');
+    card.className = 'card';
+    card.append(node('strong', value ?? 'Not recorded'), node('span', label));
+    wrap.append(card);
+  });
+  container.append(wrap);
+}
 async function view(name) {
-  if (busy) return;
-  busy = true;
-  message('Loading…');
+  const area = areas.find((a) => a[0] === name);
+  if (!area || !can(area[2])) return;
+  const current = ++revision,
+    container = node('div');
+  $('content').replaceChildren(container);
+  $('page-title').textContent = area[1];
+  document
+    .querySelectorAll('[data-view]')
+    .forEach((b) =>
+      b.setAttribute(
+        'aria-current',
+        b.dataset.view === name ? 'page' : 'false',
+      ),
+    );
+  const loading = node('p', 'Loading ' + area[1].toLowerCase() + '…');
+  loading.className = 'loading';
+  container.append(loading);
+  message('');
   try {
-    if (name === 'parcels') {
-      await parcelView();
-      return;
-    }
-    if (name === 'providers' || name === 'bookings') {
-      await operationsView(name);
-      return;
-    }
-    const data = await api('admin/' + name),
-      content = $('content');
-    content.replaceChildren();
-    if (name === 'overview') {
-      const cards = node('div');
-      cards.className = 'cards';
-      Object.entries(data).forEach(([key, value]) => {
-        const card = node('div');
-        card.className = 'card';
-        card.append(
-          node('strong', value),
-          node('span', key.replace(/([A-Z])/g, ' $1')),
-        );
-        cards.append(card);
-      });
-      content.append(cards);
-    } else if (name === 'providers') {
-      content.append(
-        table(
-          ['Provider', 'Email', 'Approval', 'Coverage'],
-          data.map((p) => [
-            p.displayName || p.user.uid,
-            p.user.email,
-            p.approved ? 'Approved' : 'Pending review',
-            p.coverage
-              .map((c) => c.serviceName + ' · ' + c.cityKey + ', ' + c.state)
-              .join('\n') || 'No coverage',
-          ]),
-        ),
-      );
-    } else if (name === 'bookings') {
-      content.append(
-        table(
-          [
-            'Request ID',
-            'Service / location',
-            'Status',
-            'Customer UID',
-            'Provider UID',
-          ],
-          data.map((o) => [
-            o.id,
-            o.serviceName + '\n' + o.city + ', ' + o.state,
-            o.status,
-            o.customer.uid,
-            o.provider?.user.uid,
-          ]),
-        ),
-      );
-    } else {
-      data.forEach((ticket) => {
-        const card = node('article');
-        card.append(
-          node('h2', ticket.subject),
-          node('p', ticket.user.uid + ' · ' + ticket.status),
-          node('p', ticket.message),
-        );
-        if (ticket.status === 'OPEN') {
-          const form = node('form'),
-            label = node('label', 'Response'),
-            input = node('textarea');
-          input.required = true;
-          input.maxLength = 2000;
-          label.append(input);
-          const button = node('button', 'Respond and resolve');
-          form.append(label, button);
-          form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            button.disabled = true;
-            try {
-              await api('admin/support/' + ticket.id + '/resolve', {
-                response: input.value.trim(),
-              });
-              await view('support');
-            } catch (error) {
-              message(error.message);
-            } finally {
-              button.disabled = false;
-            }
-          });
-          card.append(form);
-        } else card.append(node('p', ticket.response));
-        content.append(card);
-      });
-    }
-    if (Array.isArray(data) && !data.length)
-      content.append(node('p', 'No records yet.'));
-    message('');
+    if (name === 'providers' || name === 'bookings')
+      await operationsView(name, container);
+    else if (name === 'parcels') await parcelView(container);
+    else await managementView(name, container);
   } catch (error) {
-    message(error.message);
+    if (current === revision) {
+      container.replaceChildren(
+        node('p', error.message),
+        button('Retry', () => view(name)),
+      );
+      message(error.message);
+    }
   } finally {
-    busy = false;
+    loading.remove();
   }
 }
 $('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const button = e.target.querySelector('button');
-  button.disabled = true;
+  const submit = e.target.querySelector('button');
+  submit.disabled = true;
   try {
     const result = await api('auth/login', {
       email: $('email').value.trim(),
@@ -179,31 +156,35 @@ $('login-form').addEventListener('submit', async (e) => {
     token = result.accessToken;
     refreshToken = result.refreshToken;
     $('password').value = '';
-    await api('admin/overview');
+    const session = await api('management/session');
+    permissions = session.permissions;
+    $('operator').textContent = session.name + ' · ' + session.uid;
+    $('navigation').replaceChildren(
+      ...areas
+        .filter((a) => can(a[2]))
+        .map((a) => {
+          const b = button(a[1], () => view(a[0]));
+          b.dataset.view = a[0];
+          return b;
+        }),
+    );
     $('login').hidden = true;
     $('workspace').hidden = false;
     $('logout').hidden = false;
     await view('overview');
-  } catch (error) {
+  } catch (e) {
     if (token) await api('auth/logout', { refreshToken }).catch(() => {});
     signedOut();
-    message(error.message);
+    message(e.message);
   } finally {
-    button.disabled = false;
+    submit.disabled = false;
   }
 });
-$('logout').addEventListener('click', async () => {
-  try {
-    await api('auth/logout', { refreshToken });
-    message('Signed out.');
-  } catch {
-    message('Signed out locally. Server logout could not be confirmed.');
-  } finally {
-    signedOut();
-  }
-});
-document
-  .querySelectorAll('[data-view]')
-  .forEach((button) =>
-    button.addEventListener('click', () => view(button.dataset.view)),
+$('logout').onclick = async () => {
+  const refresh = refreshToken,
+    authorization = token;
+  signedOut();
+  await api('auth/logout', { refreshToken: refresh }, authorization).catch(() =>
+    message('Signed out locally. Server logout could not be confirmed.'),
   );
+};

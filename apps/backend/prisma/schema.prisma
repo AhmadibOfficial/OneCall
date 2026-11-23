@@ -226,6 +226,7 @@ model Address {
 }
 
 model Provider {
+  available Boolean @default(true)
   id String @id @default(uuid()) @db.Uuid
 
   userId String @db.Uuid
@@ -538,6 +539,10 @@ model PaymentWebhookEvent {
 }
 
 model SupportTicket {
+  @@index([status, dueAt])
+  assignedToId String? @db.Uuid
+  dueAt DateTime?
+  priority String @default("NORMAL") @db.VarChar(12)
   id String @id @default(uuid()) @db.Uuid
   userId String @db.Uuid
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -734,4 +739,12 @@ model ParcelEvent {
   note String @db.VarChar(500)
   createdAt DateTime @default(now())
   @@index([shipmentId, createdAt])
+}
+
+
+model ServiceSetting {
+  key String @id @db.VarChar(60)
+  description String @db.VarChar(500)
+  enabled Boolean @default(true)
+  updatedAt DateTime @updatedAt
 }

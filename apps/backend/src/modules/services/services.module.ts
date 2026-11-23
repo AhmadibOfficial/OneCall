@@ -34,6 +34,7 @@ class ServicesController {
         cityKey: { in: [cityKey(city), '*'] },
         provider: {
           approved: true,
+          available: true,
           user: {
             status: 'ACTIVE',
             deletedAt: null,
@@ -64,12 +65,19 @@ class ServicesController {
       },
       select: { originAgentId: true },
     });
+    const settings = await this.prisma.serviceSetting.findMany();
     return {
       country: 'NG',
       state,
       city,
-      services: NIGERIA_SERVICES.map((service) => ({
+      services: NIGERIA_SERVICES.filter(
+        (service) =>
+          settings.find((s) => s.key === service.key)?.enabled !== false,
+      ).map((service) => ({
         ...service,
+        description:
+          settings.find((s) => s.key === service.key)?.description ??
+          service.description,
         availableProviders:
           service.key === 'parcel-delivery'
             ? new Set(parcelRoutes.map((route) => route.originAgentId)).size

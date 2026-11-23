@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,6 +11,7 @@ import {
   NIGERIA_SERVICES,
   cityKey,
 } from '@/modules/services/nigeria';
+import { managementActor } from './management.permissions';
 import { ApprovalDto, AssignmentDto, OperationsQuery } from './operations.dto';
 @Injectable()
 export class AdminOperationsService {
@@ -25,18 +25,8 @@ export class AdminOperationsService {
       throw new BadRequestException('Provide a reason of 3–500 characters');
     return reason;
   }
-  private async actor(tx: Prisma.TransactionClient, id: string) {
-    // Share lock prevents a concurrent account/password update during this operation.
-    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${id}::uuid FOR SHARE`;
-    const user = await tx.user.findFirst({
-      where: {
-        id,
-        status: 'ACTIVE',
-        deletedAt: null,
-        roles: { some: { role: { name: 'ADMIN' } } },
-      },
-    });
-    if (!user) throw new ForbiddenException('Admin access required');
+  private actor(tx: Prisma.TransactionClient, id: string, permission: string) {
+    return managementActor(tx, id, permission);
   }
   private audit(
     tx: Prisma.TransactionClient,
@@ -70,6 +60,7 @@ export class AdminOperationsService {
         select: {
           id: true,
           approved: true,
+          available: true,
           displayName: true,
           user: {
             select: {
@@ -87,7 +78,22 @@ export class AdminOperationsService {
       }),
       this.prisma.provider.count({ where }),
     ]);
-    return { items, total, page: q.page, pageSize: 25 };
+    const activity = await this.prisma.order.groupBy({
+      by: ['providerId', 'status'],
+      where: { providerId: { in: items.map((p) => p.id) } },
+      _count: { _all: true },
+    });
+    return {
+      items: items.map((p) => ({
+        ...p,
+        activity: activity
+          .filter((a) => a.providerId === p.id)
+          .map((a) => ({ status: a.status, count: a._count._all })),
+      })),
+      total,
+      page: q.page,
+      pageSize: 25,
+    };
   }
   async approve(actorId: string, id: string, dto: ApprovalDto) {
     const reason = this.reason(dto.reason);
@@ -104,7 +110,7 @@ export class AdminOperationsService {
       return service.name;
     });
     return this.prisma.$transaction(async (tx) => {
-      await this.actor(tx, actorId);
+      await this.actor(tx, actorId, 'providers.write');
       const snapshot = await tx.provider.findUnique({ where: { id } });
       if (!snapshot) throw new NotFoundException('Provider not found');
       await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${snapshot.userId}::uuid FOR SHARE`;
@@ -150,7 +156,7 @@ export class AdminOperationsService {
   async revoke(actorId: string, id: string, value: string) {
     const reason = this.reason(value);
     return this.prisma.$transaction(async (tx) => {
-      await this.actor(tx, actorId);
+      await this.actor(tx, actorId, 'providers.write');
       await tx.$queryRaw`SELECT "id" FROM "Provider" WHERE "id" = ${id}::uuid FOR UPDATE`;
       const provider = await tx.provider.findUnique({ where: { id } });
       if (!provider) throw new NotFoundException('Provider not found');
@@ -200,6 +206,13 @@ export class AdminOperationsService {
           }
         : {}),
     };
+    if (q.queue === 'UNASSIGNED')
+      Object.assign(where, { status: 'PENDING', providerId: null });
+    if (q.queue === 'OVERDUE')
+      Object.assign(where, {
+        status: { in: ['PENDING', 'ACCEPTED', 'IN_PROGRESS'] },
+        scheduledAt: { lt: new Date() },
+      });
     const [items, total] = await Promise.all([
       this.prisma.order.findMany({
         where,
@@ -240,7 +253,12 @@ export class AdminOperationsService {
         amount: true,
         customer: { select: { uid: true } },
         provider: { select: { id: true, user: { select: { uid: true } } } },
-        quote: { select: { id: true, acceptedAt: true } },
+        quote: { select: { id: true, amount: true, acceptedAt: true } },
+        photos: {
+          select: { id: true, mime: true, byteSize: true, createdAt: true },
+          take: 6,
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
     if (!booking) throw new NotFoundException('Booking not found');
@@ -254,6 +272,7 @@ export class AdminOperationsService {
         ? await this.prisma.provider.findMany({
             where: {
               approved: true,
+              available: true,
               user: {
                 status: 'ACTIVE',
                 deletedAt: null,
@@ -288,7 +307,7 @@ export class AdminOperationsService {
   async assign(actorId: string, id: string, dto: AssignmentDto) {
     const reason = this.reason(dto.reason);
     return this.prisma.$transaction(async (tx) => {
-      await this.actor(tx, actorId);
+      await this.actor(tx, actorId, 'bookings.write');
       // Same provider -> order lock order as provider self-accept.
       await tx.$queryRaw`SELECT "id" FROM "Provider" WHERE "id" = ${dto.providerId}::uuid FOR UPDATE`;
       await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${id}::uuid FOR UPDATE`;
@@ -304,6 +323,7 @@ export class AdminOperationsService {
         );
       if (
         !provider?.approved ||
+        !provider.available ||
         provider.user.status !== 'ACTIVE' ||
         provider.user.deletedAt
       )
@@ -356,7 +376,7 @@ export class AdminOperationsService {
   async cancel(actorId: string, id: string, value: string) {
     const reason = this.reason(value);
     return this.prisma.$transaction(async (tx) => {
-      await this.actor(tx, actorId);
+      await this.actor(tx, actorId, 'bookings.write');
       await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${id}::uuid FOR UPDATE`;
       const order = await tx.order.findUnique({
         where: { id },

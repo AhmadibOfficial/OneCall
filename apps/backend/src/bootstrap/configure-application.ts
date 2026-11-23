@@ -20,7 +20,7 @@ export function configureApplication(app: INestApplication): void {
     }),
   );
   app.use(
-    '/admin',
+    ['/admin', '/management'],
     express.static(resolve(__dirname, '../../admin-web'), {
       index: 'index.html',
       setHeaders: (response) => response.setHeader('Cache-Control', 'no-store'),
